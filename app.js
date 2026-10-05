@@ -1,15 +1,28 @@
 /**
- * GrooveSync MV - Main Application Controller
+ * GrooveSync MV - Main Application Controller (Mobile-Optimized)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const stageCanvas = document.getElementById('stageCanvas');
   const stageContainer = document.getElementById('stageContainer');
+  const fullscreenToggleBtn = document.getElementById('fullscreenToggleBtn');
+  const fullscreenExpandIcon = document.getElementById('fullscreenExpandIcon');
+  const fullscreenCollapseIcon = document.getElementById('fullscreenCollapseIcon');
+
   const togglePlayBtn = document.getElementById('togglePlayBtn');
   const playIcon = document.getElementById('playIcon');
   const pauseIcon = document.getElementById('pauseIcon');
+  const playBtnText = document.getElementById('playBtnText');
+
+  const stageBigPlayBtn = document.getElementById('stageBigPlayBtn');
+  const stageBigPlayIcon = document.getElementById('stageBigPlayIcon');
+  const stageBigPauseIcon = document.getElementById('stageBigPauseIcon');
+
   const recordBtn = document.getElementById('recordBtn');
+  const recordBottomBtn = document.getElementById('recordBottomBtn');
+  const recLabel = document.getElementById('recLabel');
+
   const progressBarWrap = document.getElementById('progressBarWrap');
   const progressFill = document.getElementById('progressFill');
   const songTitleEl = document.getElementById('songTitle');
@@ -64,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const recordProgressFill = document.getElementById('recordProgressFill');
   const exportStatusTitle = document.getElementById('exportStatusTitle');
   const exportStatusDesc = document.getElementById('exportStatusDesc');
-  const exportFormat = document.getElementById('exportFormat');
   const exportDuration = document.getElementById('exportDuration');
 
   const quickHelpBtn = document.getElementById('quickHelpBtn');
@@ -92,10 +104,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let recordedChunks = [];
   let isRecording = false;
   let recordTimer = null;
-  let recordTimeRemaining = 0;
 
-  // Current state tracking
+  // Current track tracking
   let currentSongConfig = GROOVE_PRESETS.songs.jpop;
+
+  // Haptic feedback helper
+  function triggerHaptic() {
+    if (navigator.vibrate) {
+      navigator.vibrate(25);
+    }
+  }
 
   // Toast utility
   function showToast(msg) {
@@ -117,9 +135,63 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   }
 
-  // 1. Navigation Tab Switching
+  // 1. Fullscreen Toggle Mode (Expands to 100% phone height)
+  let isFullscreen = false;
+  fullscreenToggleBtn.addEventListener('click', () => {
+    triggerHaptic();
+    isFullscreen = !isFullscreen;
+    if (isFullscreen) {
+      stageContainer.classList.add('fullscreen-mode');
+      fullscreenExpandIcon.classList.add('hidden');
+      fullscreenCollapseIcon.classList.remove('hidden');
+      showToast('全画面モードに切り替えました');
+    } else {
+      stageContainer.classList.remove('fullscreen-mode');
+      fullscreenExpandIcon.classList.remove('hidden');
+      fullscreenCollapseIcon.classList.add('hidden');
+      showToast('通常表示に戻りました');
+    }
+  });
+
+  // 2. Play / Pause Control
+  function updatePlayUI(playing) {
+    if (playing) {
+      stageContainer.classList.add('playing');
+      playIcon.classList.add('hidden');
+      pauseIcon.classList.remove('hidden');
+      playBtnText.textContent = '一時停止';
+
+      stageBigPlayIcon.classList.add('hidden');
+      stageBigPauseIcon.classList.remove('hidden');
+    } else {
+      stageContainer.classList.remove('playing');
+      playIcon.classList.remove('hidden');
+      pauseIcon.classList.add('hidden');
+      playBtnText.textContent = '再生する';
+
+      stageBigPlayIcon.classList.remove('hidden');
+      stageBigPauseIcon.classList.add('hidden');
+    }
+  }
+
+  function togglePlay() {
+    triggerHaptic();
+    if (audioEngine.isPlaying) {
+      audioEngine.pause();
+      updatePlayUI(false);
+    } else {
+      audioEngine.play();
+      updatePlayUI(true);
+    }
+  }
+
+  togglePlayBtn.addEventListener('click', togglePlay);
+  stageBigPlayBtn.addEventListener('click', togglePlay);
+
+  // 3. Navigation Tab Switching
   navTabs.forEach(tab => {
     tab.addEventListener('click', () => {
+      triggerHaptic();
       navTabs.forEach(t => t.classList.remove('active'));
       tabPanels.forEach(p => p.classList.remove('active'));
 
@@ -132,44 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 2. Aspect Ratio Switching (9:16 TikTok vs 16:9 YouTube)
-  const ratioBtns = document.querySelectorAll('.ratio-btn');
-  ratioBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      ratioBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const ratio = btn.dataset.ratio;
-      characterRenderer.setAspectRatio(ratio);
-      if (ratio === '16:9') {
-        stageContainer.classList.add('aspect-16-9');
-      } else {
-        stageContainer.classList.remove('aspect-16-9');
-      }
-      showToast(`アスペクト比を ${ratio} に変更しました`);
-    });
-  });
-
-  // 3. Play / Pause Control
-  function updatePlayUI(playing) {
-    if (playing) {
-      playIcon.classList.add('hidden');
-      pauseIcon.classList.remove('hidden');
-    } else {
-      playIcon.classList.remove('hidden');
-      pauseIcon.classList.add('hidden');
-    }
-  }
-
-  togglePlayBtn.addEventListener('click', () => {
-    if (audioEngine.isPlaying) {
-      audioEngine.pause();
-      updatePlayUI(false);
-    } else {
-      audioEngine.play();
-      updatePlayUI(true);
-    }
-  });
-
   // 4. Progress bar scrub
   progressBarWrap.addEventListener('click', (e) => {
     const rect = progressBarWrap.getBoundingClientRect();
@@ -177,29 +211,62 @@ document.addEventListener('DOMContentLoaded', () => {
     audioEngine.seek(ratio);
   });
 
-  // 5. Motion Presets
-  const motionCards = document.querySelectorAll('[data-motion]');
-  motionCards.forEach(card => {
-    card.addEventListener('click', () => {
-      motionCards.forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      const motionId = card.dataset.motion;
-      characterRenderer.setMotion(motionId);
-      const preset = GROOVE_PRESETS.motions[motionId];
-      if (preset) {
-        hudMotionTag.textContent = `${preset.icon} ${preset.name}`;
-        updateAIPrompt();
-        showToast(`モーション: ${preset.name} に変更`);
-      }
-    });
+  // 5. Motion switching (Sync both quick chips and large cards)
+  function selectMotion(motionId) {
+    triggerHaptic();
+    characterRenderer.setMotion(motionId);
+    const preset = GROOVE_PRESETS.motions[motionId];
+    if (preset) {
+      hudMotionTag.textContent = `${preset.icon} ${preset.name.replace('演奏', '').replace('弾き語り', '')}`;
+      updateAIPrompt();
+
+      // Sync Quick Chips
+      document.querySelectorAll('.quick-chip').forEach(chip => {
+        if (chip.dataset.motion === motionId) chip.classList.add('active');
+        else chip.classList.remove('active');
+      });
+
+      // Sync Large Cards
+      document.querySelectorAll('#panel-motion .touch-card').forEach(card => {
+        const badge = card.querySelector('.badge-status');
+        if (card.dataset.motion === motionId) {
+          card.classList.add('active');
+          if (badge) badge.textContent = '選択中';
+        } else {
+          card.classList.remove('active');
+          if (badge) badge.textContent = '切替';
+        }
+      });
+
+      showToast(`動作: ${preset.name}`);
+    }
+  }
+
+  // Quick chips
+  document.querySelectorAll('.quick-chip').forEach(chip => {
+    chip.addEventListener('click', () => selectMotion(chip.dataset.motion));
+  });
+
+  // Large motion cards
+  document.querySelectorAll('#panel-motion .touch-card').forEach(card => {
+    card.addEventListener('click', () => selectMotion(card.dataset.motion));
   });
 
   // 6. Character Presets
-  const avatarCards = document.querySelectorAll('[data-avatar]');
+  const avatarCards = document.querySelectorAll('#panel-character .touch-card');
   avatarCards.forEach(card => {
     card.addEventListener('click', () => {
-      avatarCards.forEach(c => c.classList.remove('active'));
+      triggerHaptic();
+      avatarCards.forEach(c => {
+        c.classList.remove('active');
+        const b = c.querySelector('.badge-status');
+        if (b) b.textContent = '切替';
+      });
+
       card.classList.add('active');
+      const b = card.querySelector('.badge-status');
+      if (b) b.textContent = '選択中';
+
       const charId = card.dataset.avatar;
       characterRenderer.setCharacter(charId);
       updateAIPrompt();
@@ -217,7 +284,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const img = new Image();
       img.onload = () => {
         characterRenderer.setCustomAvatar(img);
-        avatarCards.forEach(c => c.classList.remove('active'));
+        avatarCards.forEach(c => {
+          c.classList.remove('active');
+          const b = c.querySelector('.badge-status');
+          if (b) b.textContent = '切替';
+        });
         showToast('写真アバターを読み込みました！');
         updateAIPrompt();
       };
@@ -237,7 +308,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (res.success) {
       songTitleEl.textContent = file.name.replace(/\.[^/.]+$/, "");
       audioFileNameHint.textContent = `選択中: ${file.name} (${formatTime(res.duration)})`;
-      document.querySelectorAll('.song-item').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('#panel-audio .touch-card').forEach(s => {
+        s.classList.remove('active');
+        const b = s.querySelector('.badge-status');
+        if (b) b.textContent = '切替';
+      });
       currentSongConfig = {
         title: file.name,
         bpm: 120,
@@ -255,6 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 9. Smartphone Mic Toggle
   micToggleBtn.addEventListener('click', async () => {
+    triggerHaptic();
     const active = await audioEngine.toggleMic();
     if (active) {
       micToggleBtn.classList.add('active');
@@ -263,18 +339,27 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('マイク入力を開始しました。歌ってみてください！');
     } else {
       micToggleBtn.classList.remove('active');
-      micBtnText.textContent = 'スマホのマイクでリアルタイム歌唱テスト';
+      micBtnText.textContent = 'スマホのマイクで歌唱テスト';
       showToast('マイク入力を停止しました');
     }
   });
 
   // 10. Demo Songs Selection
-  const songItems = document.querySelectorAll('.song-item');
-  songItems.forEach(item => {
-    item.addEventListener('click', () => {
-      songItems.forEach(s => s.classList.remove('active'));
-      item.classList.add('active');
-      const songId = item.dataset.song;
+  const songCards = document.querySelectorAll('#panel-audio .touch-card');
+  songCards.forEach(card => {
+    card.addEventListener('click', () => {
+      triggerHaptic();
+      songCards.forEach(s => {
+        s.classList.remove('active');
+        const b = s.querySelector('.badge-status');
+        if (b) b.textContent = '切替';
+      });
+
+      card.classList.add('active');
+      const b = card.querySelector('.badge-status');
+      if (b) b.textContent = '再生中';
+
+      const songId = card.dataset.song;
       const song = GROOVE_PRESETS.songs[songId];
       if (!song) return;
 
@@ -283,10 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
       songTitleEl.textContent = `${song.title} (${song.genre})`;
       hudBpmTag.textContent = `${song.bpm} BPM`;
 
-      // Auto recommend appropriate motion
       if (song.recommendedMotion) {
-        const targetMotionCard = document.querySelector(`[data-motion="${song.recommendedMotion}"]`);
-        if (targetMotionCard) targetMotionCard.click();
+        selectMotion(song.recommendedMotion);
       }
 
       audioEngine.play();
@@ -324,20 +407,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const cameraCards = document.querySelectorAll('[data-camera]');
   cameraCards.forEach(card => {
     card.addEventListener('click', () => {
-      cameraCards.forEach(c => c.classList.remove('active'));
+      triggerHaptic();
+      cameraCards.forEach(c => {
+        c.classList.remove('active');
+        const b = c.querySelector('.badge-status');
+        if (b) b.textContent = '切替';
+      });
       card.classList.add('active');
+      const b = card.querySelector('.badge-status');
+      if (b) b.textContent = '選択中';
+
       characterRenderer.setCamera(card.dataset.camera);
       showToast(`カメラ: ${card.querySelector('h4').textContent}`);
     });
   });
 
-  const stageBtns = document.querySelectorAll('[data-stage]');
-  stageBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      stageBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      characterRenderer.setStage(btn.dataset.stage);
-      showToast(`ステージ: ${btn.textContent}`);
+  const stagePills = document.querySelectorAll('[data-stage]');
+  stagePills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      triggerHaptic();
+      stagePills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      characterRenderer.setStage(pill.dataset.stage);
+      showToast(`ステージ: ${pill.textContent}`);
     });
   });
 
@@ -366,12 +458,14 @@ document.addEventListener('DOMContentLoaded', () => {
   updateAIPrompt();
 
   copyPromptBtn.addEventListener('click', () => {
+    triggerHaptic();
     navigator.clipboard.writeText(aiPromptOutput.value).then(() => {
-      showToast('AI生成用プロンプトをクリップボードにコピーしました！');
+      showToast('AI生成用プロンプトをコピーしました！');
     });
   });
 
   downloadWorkflowBtn.addEventListener('click', () => {
+    triggerHaptic();
     const motion = characterRenderer.motionPreset;
     const char = characterRenderer.characterPreset;
     const workflowObj = {
@@ -395,8 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('ComfyUI設定JSONをダウンロードしました');
   });
 
-  // Save API Key in localStorage
   saveApiKeyBtn.addEventListener('click', () => {
+    triggerHaptic();
     const key = userApiKey.value.trim();
     const provider = apiKeyProvider.value;
     if (key) {
@@ -408,13 +502,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 14. Modals (Help & Export)
-  quickHelpBtn.addEventListener('click', () => helpModal.classList.remove('hidden'));
+  quickHelpBtn.addEventListener('click', () => {
+    triggerHaptic();
+    helpModal.classList.remove('hidden');
+  });
   closeHelpBtn.addEventListener('click', () => helpModal.classList.add('hidden'));
   helpModal.addEventListener('click', (e) => {
     if (e.target === helpModal) helpModal.classList.add('hidden');
   });
 
-  exportQuickBtn.addEventListener('click', () => exportModal.classList.remove('hidden'));
+  exportQuickBtn.addEventListener('click', () => {
+    triggerHaptic();
+    exportModal.classList.remove('hidden');
+  });
   closeModalBtn.addEventListener('click', () => exportModal.classList.add('hidden'));
   exportModal.addEventListener('click', (e) => {
     if (e.target === exportModal) exportModal.classList.add('hidden');
@@ -430,13 +530,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      // 1. Capture video stream from canvas
       const canvasStream = stageCanvas.captureStream(30);
-
-      // 2. Capture audio stream from Web Audio recDestination
       const audioStream = audioEngine.recDestination.stream;
 
-      // 3. Combine into single MediaStream
       const combinedTracks = [
         ...canvasStream.getVideoTracks(),
         ...audioStream.getAudioTracks()
@@ -449,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       mediaRecorder = new MediaRecorder(combinedStream, {
         mimeType: mimeType,
-        videoBitsPerSecond: 4500000 // High crisp quality
+        videoBitsPerSecond: 4500000
       });
 
       recordedChunks = [];
@@ -473,19 +569,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         isRecording = false;
         recordBtn.classList.remove('recording');
+        recordBottomBtn.classList.remove('recording');
+        recLabel.textContent = '録画';
         recordProgressWrap.classList.add('hidden');
         exportStatusTitle.textContent = '録画完了！保存しました';
-        exportStatusDesc = 'スマホの保存フォルダ・カメラロールを確認してください';
         showToast('動画のダウンロードが完了しました！');
       };
 
       mediaRecorder.start(200);
       isRecording = true;
       recordBtn.classList.add('recording');
+      recordBottomBtn.classList.add('recording');
+      recLabel.textContent = '停止';
 
-      // Update modal status
       exportStatusTitle.textContent = '録画中...';
-      exportStatusDesc = `演奏と歌唱をキャプチャしています (${durationSeconds}秒間)`;
       recordProgressWrap.classList.remove('hidden');
       recordProgressFill.style.width = '0%';
 
@@ -512,7 +609,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  recordBtn.addEventListener('click', () => {
+  function handleRecordToggle() {
+    triggerHaptic();
     if (isRecording) {
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
@@ -520,13 +618,19 @@ document.addEventListener('DOMContentLoaded', () => {
       clearInterval(recordTimer);
       isRecording = false;
       recordBtn.classList.remove('recording');
+      recordBottomBtn.classList.remove('recording');
+      recLabel.textContent = '録画';
       showToast('録画を停止しました');
     } else {
       startRecording(15);
     }
-  });
+  }
+
+  recordBtn.addEventListener('click', handleRecordToggle);
+  recordBottomBtn.addEventListener('click', handleRecordToggle);
 
   startRecordingModalBtn.addEventListener('click', () => {
+    triggerHaptic();
     let dur = 15;
     if (exportDuration.value === '30') dur = 30;
     else if (exportDuration.value === 'full') dur = Math.min(audioEngine.duration, 60);
@@ -560,16 +664,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 17. Main Animation Loop (60 FPS)
   function tick() {
-    // 1. Audio analysis update
     audioEngine.updateAnalysis(characterRenderer.lipsyncSens);
-
-    // 2. Character & Stage rendering
     characterRenderer.render(audioEngine);
-
-    // 3. Spectrum visualization
     drawSpectrum();
 
-    // 4. Update HUD and Progress
     if (audioEngine.isPlaying) {
       const cur = audioEngine.currentTime;
       const dur = audioEngine.duration || 30;
@@ -577,7 +675,6 @@ document.addEventListener('DOMContentLoaded', () => {
       progressFill.style.width = `${progressPercent}%`;
       songTimeEl.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
 
-      // Update Lyrics sync
       if (currentSongConfig.lyrics) {
         let activeLyric = currentSongConfig.lyrics[0].text;
         for (const lyric of currentSongConfig.lyrics) {
@@ -589,7 +686,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // 5. Viseme & Groove Monitor meters update
     if (visemeCurrentChar) {
       visemeCurrentChar.textContent = audioEngine.currentChar;
     }
@@ -601,7 +697,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Update individual vowel meter bars
     if (mBars.A) {
       for (const [char, el] of Object.entries(mBars)) {
         if (el) {
