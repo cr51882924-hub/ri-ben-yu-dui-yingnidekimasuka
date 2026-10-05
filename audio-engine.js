@@ -1,5 +1,6 @@
 /**
  * GrooveSync MV - Web Audio & Beat/Viseme Analysis Engine
+ * Supports user audio trimming (start point, end point, custom duration)
  */
 
 class AudioEngine {
@@ -20,6 +21,10 @@ class AudioEngine {
     this.duration = 30;
     this.startTime = 0;
     this.pauseOffset = 0;
+
+    // Trimming range (which part of song to use for MV)
+    this.trimStart = 0;
+    this.trimEnd = 30;
 
     // Synthetic demo song loop nodes & timers
     this.synthInterval = null;
@@ -78,10 +83,17 @@ class AudioEngine {
       this.duration = this.audioBuffer.duration;
       this.currentTrackId = 'custom';
       this.bpm = 120; // Default estimate for custom audio
+
+      // Default trim: first 30 seconds or full length if shorter
+      this.trimStart = 0;
+      this.trimEnd = Math.min(this.duration, 30);
+
       return {
         success: true,
         name: file.name,
-        duration: this.duration
+        duration: this.duration,
+        trimStart: this.trimStart,
+        trimEnd: this.trimEnd
       };
     } catch (err) {
       console.error('Audio decode error:', err);
@@ -89,23 +101,47 @@ class AudioEngine {
     }
   }
 
+  // Set trimming range (start second, end second)
+  setTrimRange(start, end) {
+    this.trimStart = Math.max(0, Math.min(start, this.duration - 1));
+    this.trimEnd = Math.max(this.trimStart + 1, Math.min(end, this.duration));
+    const wasPlaying = this.isPlaying;
+    if (wasPlaying) {
+      this.pause();
+      this.pauseOffset = 0;
+      this.play();
+    } else {
+      this.pauseOffset = 0;
+      this.currentTime = this.trimStart;
+    }
+  }
+
+  getTrimDuration() {
+    return Math.max(1, this.trimEnd - this.trimStart);
+  }
+
   // Select built-in demo track
   selectDemoTrack(id) {
     this.stop();
     this.currentTrackId = id;
     this.audioBuffer = null;
+    this.trimStart = 0;
     if (id === 'jpop') {
       this.bpm = 132;
       this.duration = 30;
+      this.trimEnd = 30;
     } else if (id === 'lofi') {
       this.bpm = 88;
       this.duration = 30;
+      this.trimEnd = 30;
     } else if (id === 'rock') {
       this.bpm = 148;
       this.duration = 30;
+      this.trimEnd = 30;
     } else if (id === 'cyber') {
       this.bpm = 128;
       this.duration = 30;
+      this.trimEnd = 30;
     }
   }
 
@@ -117,16 +153,24 @@ class AudioEngine {
     this.startTime = this.ctx.currentTime - this.pauseOffset;
 
     if (this.audioBuffer) {
-      // Play decoded audio buffer
+      // Play trimmed audio buffer range
+      const trimLen = this.getTrimDuration();
+      const currentOffset = (this.pauseOffset % trimLen);
+      const startPoint = this.trimStart + currentOffset;
+      const playLength = this.trimEnd - startPoint;
+
       this.sourceNode = this.ctx.createBufferSource();
       this.sourceNode.buffer = this.audioBuffer;
       this.sourceNode.connect(this.analyser);
       this.sourceNode.onended = () => {
-        if (this.isPlaying && this.currentTime >= this.duration - 0.2) {
-          this.stop();
+        if (this.isPlaying && this.currentTime >= this.trimEnd - 0.25) {
+          // Loop playback inside the trimmed range!
+          this.pause();
+          this.pauseOffset = 0;
+          this.play();
         }
       };
-      this.sourceNode.start(0, this.pauseOffset % this.duration);
+      this.sourceNode.start(0, startPoint, playLength);
     } else {
       // Play procedural high quality synthesizer track
       this.startSynthTrack();
@@ -136,7 +180,8 @@ class AudioEngine {
   pause() {
     if (!this.isPlaying) return;
     this.isPlaying = false;
-    this.pauseOffset = (this.ctx.currentTime - this.startTime) % this.duration;
+    const trimLen = this.getTrimDuration();
+    this.pauseOffset = (this.ctx.currentTime - this.startTime) % trimLen;
 
     if (this.sourceNode) {
       try { this.sourceNode.stop(); } catch (e) {}
@@ -149,15 +194,16 @@ class AudioEngine {
   stop() {
     this.pause();
     this.pauseOffset = 0;
-    this.currentTime = 0;
+    this.currentTime = this.trimStart;
   }
 
   seek(ratio) {
-    const target = ratio * this.duration;
+    const trimLen = this.getTrimDuration();
+    const target = ratio * trimLen;
     const wasPlaying = this.isPlaying;
     if (wasPlaying) this.pause();
     this.pauseOffset = target;
-    this.currentTime = target;
+    this.currentTime = this.trimStart + target;
     if (wasPlaying) this.play();
   }
 
@@ -197,7 +243,13 @@ class AudioEngine {
     this.analyser.getByteTimeDomainData(this.timeData);
 
     if (this.isPlaying) {
-      this.currentTime = (this.ctx.currentTime - this.startTime) % this.duration;
+      if (this.audioBuffer) {
+        const trimLen = this.getTrimDuration();
+        const elapsed = (this.ctx.currentTime - this.startTime) % trimLen;
+        this.currentTime = this.trimStart + elapsed;
+      } else {
+        this.currentTime = (this.ctx.currentTime - this.startTime) % this.duration;
+      }
     }
 
     // Split frequency spectrum into bands
@@ -246,11 +298,6 @@ class AudioEngine {
     this.grooveLevel += (targetGroove - this.grooveLevel) * 0.15;
 
     // Viseme calculation (A, I, U, E, O)
-    // A: High openness, balanced formants
-    // I: Wide smile, high formant 2, lower formant 1
-    // U: Rounded small lips, lower formants
-    // E: Medium open, wide smile
-    // O: Open rounded, strong formant 1
     const rawA = Math.max(0, form1Avg * 1.2 + form2Avg * 0.6 - 0.2);
     const rawI = Math.max(0, form2Avg * 1.6 - form1Avg * 0.5);
     const rawU = Math.max(0, midLowAvg * 1.2 - form2Avg * 0.8);
@@ -264,7 +311,6 @@ class AudioEngine {
     this.visemes.E = (rawE / sum) * vocalLoudness;
     this.visemes.O = (rawO / sum) * vocalLoudness;
 
-    // Find dominant vowel
     let maxVal = -1;
     let dominant = 'A';
     for (const [char, val] of Object.entries(this.visemes)) {
@@ -277,7 +323,6 @@ class AudioEngine {
       this.currentChar = dominant;
     }
 
-    // Target mouth openness & width
     const targetOpen = Math.min(1.0, Math.max(0, (vocalLoudness - 0.05) * 1.8));
     this.mouthOpen += (targetOpen - this.mouthOpen) * 0.35;
 
@@ -288,12 +333,11 @@ class AudioEngine {
     this.mouthWidth += (targetWidth - this.mouthWidth) * 0.25;
   }
 
-  // Procedural synthesizer music generator for zero-latency, beat-perfect demos
   startSynthTrack() {
     this.stopSynthTrack();
 
     const bpm = this.bpm;
-    const beatInterval = 60 / bpm; // seconds per beat
+    const beatInterval = 60 / bpm;
     const sixteenth = beatInterval / 4;
 
     let step = Math.floor((this.pauseOffset % this.duration) / sixteenth);
@@ -302,7 +346,7 @@ class AudioEngine {
       if (!this.isPlaying) return;
 
       const time = this.ctx.currentTime + 0.05;
-      const currentStep = step % 64; // 4-bar loop
+      const currentStep = step % 64;
 
       this.triggerStepAudio(this.currentTrackId, currentStep, time);
 
@@ -320,7 +364,6 @@ class AudioEngine {
     }
   }
 
-  // Play individual instrument and vocal layers in demo tracks
   triggerStepAudio(genre, step, time) {
     if (!this.ctx) return;
 
@@ -328,7 +371,7 @@ class AudioEngine {
     const isSnare = (genre === 'lofi') ? (step % 16 === 8) : (step % 16 === 8 || (genre === 'rock' && (step % 8 === 4)));
     const isHiHat = (step % 2 === 0);
 
-    // 1. Kick Drum
+    // Kick
     if (isKick) {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -342,7 +385,7 @@ class AudioEngine {
       osc.stop(time + 0.22);
     }
 
-    // 2. Snare / Clap
+    // Snare
     if (isSnare) {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -356,7 +399,7 @@ class AudioEngine {
       osc.stop(time + 0.18);
     }
 
-    // 3. HiHat
+    // HiHat
     if (isHiHat) {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -370,12 +413,10 @@ class AudioEngine {
       osc.stop(time + 0.05);
     }
 
-    // 4. Genre Specific Chords & Guitar/Melody
+    // Melody & Chords
     if (genre === 'jpop') {
-      // J-Pop guitar cutting chords & idol vocal arpeggio
-      const chordScale = [261.63, 329.63, 392.00, 523.25, 440.00]; // C, E, G, C, A
+      const chordScale = [261.63, 329.63, 392.00, 523.25, 440.00];
       if (step % 4 === 0) {
-        // Guitar strum
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sawtooth';
@@ -388,7 +429,6 @@ class AudioEngine {
         osc.start(time);
         osc.stop(time + 0.2);
       }
-      // Vocal melody line (triggers lip-sync!)
       if (step % 2 === 0 && (step % 8 !== 7)) {
         const vocOsc = this.ctx.createOscillator();
         const vocGain = this.ctx.createGain();
@@ -404,12 +444,11 @@ class AudioEngine {
         vocOsc.stop(time + 0.15);
       }
     } else if (genre === 'rock') {
-      // Overdrive guitar power chord & rock vocal belt
       if (step % 2 === 0) {
         const gOsc = this.ctx.createOscillator();
         const gGain = this.ctx.createGain();
         gOsc.type = 'sawtooth';
-        const rockChords = [110, 146.83, 164.81, 130.81]; // A, D, E, C
+        const rockChords = [110, 146.83, 164.81, 130.81];
         const chord = rockChords[Math.floor(step / 16) % rockChords.length];
         gOsc.frequency.setValueAtTime(chord * (step % 4 === 0 ? 1 : 1.5), time);
         gGain.gain.setValueAtTime(0.3, time);
@@ -419,7 +458,6 @@ class AudioEngine {
         gOsc.start(time);
         gOsc.stop(time + 0.15);
       }
-      // Passionate rock vocal belt
       if (step % 4 === 0) {
         const vOsc = this.ctx.createOscillator();
         const vGain = this.ctx.createGain();
@@ -434,7 +472,6 @@ class AudioEngine {
         vOsc.stop(time + 0.3);
       }
     } else if (genre === 'lofi') {
-      // Chill Rhodes piano chord & groovy bass
       if (step % 8 === 0) {
         const pOsc = this.ctx.createOscillator();
         const pGain = this.ctx.createGain();
@@ -448,7 +485,6 @@ class AudioEngine {
         pOsc.start(time);
         pOsc.stop(time + 0.75);
       }
-      // Smooth vocal hum / whisper
       if (step % 4 === 2) {
         const humOsc = this.ctx.createOscillator();
         const humGain = this.ctx.createGain();
@@ -462,7 +498,6 @@ class AudioEngine {
         humOsc.stop(time + 0.26);
       }
     } else if (genre === 'cyber') {
-      // Supersaw lead EDM melody
       if (step % 2 === 0) {
         const sOsc = this.ctx.createOscillator();
         const sGain = this.ctx.createGain();
