@@ -1,121 +1,82 @@
 /**
- * GrooveSync MV - Main Application Controller (Mobile-Optimized)
+ * GrooveSync MV - Main Controller (Accessible 2-View Architecture)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // DOM Elements
+  // Views
+  const viewControls = document.getElementById('viewControls');
+  const viewStage = document.getElementById('viewStage');
+  const tabBtnControls = document.getElementById('tabBtnControls');
+  const tabBtnStage = document.getElementById('tabBtnStage');
+  const jumpToStageBtn = document.getElementById('jumpToStageBtn');
+  const backToControlsBtn = document.getElementById('backToControlsBtn');
+
+  // Stage Canvas
   const stageCanvas = document.getElementById('stageCanvas');
-  const stageContainer = document.getElementById('stageContainer');
-  const fullscreenToggleBtn = document.getElementById('fullscreenToggleBtn');
-  const fullscreenExpandIcon = document.getElementById('fullscreenExpandIcon');
-  const fullscreenCollapseIcon = document.getElementById('fullscreenCollapseIcon');
 
-  const togglePlayBtn = document.getElementById('togglePlayBtn');
-  const playIcon = document.getElementById('playIcon');
-  const pauseIcon = document.getElementById('pauseIcon');
-  const playBtnText = document.getElementById('playBtnText');
+  // Player Elements (Controls Screen)
+  const controlSongTitle = document.getElementById('controlSongTitle');
+  const controlSongTime = document.getElementById('controlSongTime');
+  const mainPlayBtn = document.getElementById('mainPlayBtn');
+  const mainPlayIcon = document.getElementById('mainPlayIcon');
+  const mainPlayText = document.getElementById('mainPlayText');
+  const mainRecordBtn = document.getElementById('mainRecordBtn');
+  const mainRecText = document.getElementById('mainRecText');
 
-  const stageBigPlayBtn = document.getElementById('stageBigPlayBtn');
-  const stageBigPlayIcon = document.getElementById('stageBigPlayIcon');
-  const stageBigPauseIcon = document.getElementById('stageBigPauseIcon');
-
-  const recordBtn = document.getElementById('recordBtn');
-  const recordBottomBtn = document.getElementById('recordBottomBtn');
-  const recLabel = document.getElementById('recLabel');
-
-  const progressBarWrap = document.getElementById('progressBarWrap');
-  const progressFill = document.getElementById('progressFill');
-  const songTitleEl = document.getElementById('songTitle');
-  const songTimeEl = document.getElementById('songTime');
-  const hudMotionTag = document.getElementById('hudMotionTag');
-  const hudBpmTag = document.getElementById('hudBpmTag');
-  const lyricsTextEl = document.getElementById('lyricsText');
-  const lyricsOverlay = document.getElementById('lyricsOverlay');
-
-  // Monitor DOM
-  const visemeCurrentChar = document.getElementById('visemeCurrentChar');
-  const grooveIndicator = document.getElementById('grooveIndicator');
-  const mBars = {
-    A: document.getElementById('barA'),
-    I: document.getElementById('barI'),
-    U: document.getElementById('barU'),
-    E: document.getElementById('barE'),
-    O: document.getElementById('barO')
-  };
-
-  // Nav & Panels
-  const navTabs = document.querySelectorAll('.nav-tab');
-  const tabPanels = document.querySelectorAll('.tab-panel');
+  // Player Elements (Stage Screen)
+  const stagePlayBtn = document.getElementById('stagePlayBtn');
+  const stagePlayIcon = document.getElementById('stagePlayIcon');
+  const stageRecordBtn = document.getElementById('stageRecordBtn');
+  const stageSongTitle = document.getElementById('stageSongTitle');
+  const stageSongTime = document.getElementById('stageSongTime');
+  const stageProgressWrap = document.getElementById('stageProgressWrap');
+  const stageProgressFill = document.getElementById('stageProgressFill');
+  const stageBpmIndicator = document.getElementById('stageBpmIndicator');
+  const stageVisemeChar = document.getElementById('stageVisemeChar');
+  const lyricsText = document.getElementById('lyricsText');
 
   // Sliders
   const lipsyncSensitivity = document.getElementById('lipsyncSensitivity');
   const grooveStrength = document.getElementById('grooveStrength');
   const expressionLevel = document.getElementById('expressionLevel');
-  const headbobStrength = document.getElementById('headbobStrength');
   const lipsyncVal = document.getElementById('lipsyncVal');
   const grooveVal = document.getElementById('grooveVal');
   const expressionVal = document.getElementById('expressionVal');
-  const headbobVal = document.getElementById('headbobVal');
 
   // File Uploads
+  const audioUploadBtn = document.getElementById('audioUploadBtn');
   const audioFileInput = document.getElementById('audioFileInput');
-  const audioUploadBox = document.getElementById('audioUploadBox');
-  const audioFileNameHint = document.getElementById('audioFileNameHint');
+  const audioUploadHint = document.getElementById('audioUploadHint');
+  const avatarUploadBtn = document.getElementById('avatarUploadBtn');
   const avatarFileInput = document.getElementById('avatarFileInput');
-  const avatarUploadBox = document.getElementById('avatarUploadBox');
 
-  // Mic Toggle
+  // Mic
   const micToggleBtn = document.getElementById('micToggleBtn');
-  const micBtnText = document.getElementById('micBtnText');
+  const micBtnTitle = document.getElementById('micBtnTitle');
 
-  // Modals & Exports
-  const exportQuickBtn = document.getElementById('exportQuickBtn');
-  const exportModal = document.getElementById('exportModal');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const startRecordingModalBtn = document.getElementById('startRecordingModalBtn');
-  const recordProgressWrap = document.getElementById('recordProgressWrap');
-  const recordProgressFill = document.getElementById('recordProgressFill');
-  const exportStatusTitle = document.getElementById('exportStatusTitle');
-  const exportStatusDesc = document.getElementById('exportStatusDesc');
-  const exportDuration = document.getElementById('exportDuration');
-
-  const quickHelpBtn = document.getElementById('quickHelpBtn');
-  const helpModal = document.getElementById('helpModal');
-  const closeHelpBtn = document.getElementById('closeHelpBtn');
-
-  // Cost AI Hub Elements
-  const aiPromptOutput = document.getElementById('aiPromptOutput');
+  // Cost & Prompts
   const copyPromptBtn = document.getElementById('copyPromptBtn');
-  const downloadWorkflowBtn = document.getElementById('downloadWorkflowBtn');
-  const userApiKey = document.getElementById('userApiKey');
-  const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
-  const apiKeyProvider = document.getElementById('apiKeyProvider');
 
-  // Spectrum Canvas
-  const spectrumCanvas = document.getElementById('spectrumCanvas');
-  const specCtx = spectrumCanvas ? spectrumCanvas.getContext('2d') : null;
-
-  // Initialize Engines
+  // Engines
   const audioEngine = new window.AudioEngine();
   const characterRenderer = new window.CharacterRenderer(stageCanvas);
 
-  // Recorder state
+  // Recording State
   let mediaRecorder = null;
   let recordedChunks = [];
   let isRecording = false;
   let recordTimer = null;
 
-  // Current track tracking
   let currentSongConfig = GROOVE_PRESETS.songs.jpop;
 
-  // Haptic feedback helper
+  // Haptic Feedback
   function triggerHaptic() {
     if (navigator.vibrate) {
       navigator.vibrate(25);
     }
   }
 
-  // Toast utility
+  // Toast
   function showToast(msg) {
     const toast = document.getElementById('toast');
     const toastMsg = document.getElementById('toastMsg');
@@ -128,49 +89,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2800);
   }
 
-  // Format seconds to mm:ss
+  // Time format
   function formatTime(sec) {
     const m = Math.floor(sec / 60);
     const s = Math.floor(sec % 60);
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   }
 
-  // 1. Fullscreen Toggle Mode (Expands to 100% phone height)
-  let isFullscreen = false;
-  fullscreenToggleBtn.addEventListener('click', () => {
+  // ==========================================
+  // Screen View Switcher (操作画面 ⇔ MV映像)
+  // ==========================================
+  function switchView(target) {
     triggerHaptic();
-    isFullscreen = !isFullscreen;
-    if (isFullscreen) {
-      stageContainer.classList.add('fullscreen-mode');
-      fullscreenExpandIcon.classList.add('hidden');
-      fullscreenCollapseIcon.classList.remove('hidden');
-      showToast('全画面モードに切り替えました');
+    if (target === 'controls') {
+      viewControls.classList.add('active-view');
+      viewStage.classList.add('hidden');
+      tabBtnControls.classList.add('active');
+      tabBtnStage.classList.remove('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      stageContainer.classList.remove('fullscreen-mode');
-      fullscreenExpandIcon.classList.remove('hidden');
-      fullscreenCollapseIcon.classList.add('hidden');
-      showToast('通常表示に戻りました');
-    }
-  });
+      viewControls.classList.remove('active-view');
+      viewStage.classList.remove('hidden');
+      tabBtnControls.classList.remove('active');
+      tabBtnStage.classList.add('active');
 
-  // 2. Play / Pause Control
+      // Auto play when switching to stage if not already playing
+      if (!audioEngine.isPlaying) {
+        audioEngine.play();
+        updatePlayUI(true);
+      }
+      showToast('MVを全画面表示しました');
+    }
+  }
+
+  tabBtnControls.addEventListener('click', () => switchView('controls'));
+  tabBtnStage.addEventListener('click', () => switchView('stage'));
+  jumpToStageBtn.addEventListener('click', () => switchView('stage'));
+  backToControlsBtn.addEventListener('click', () => switchView('controls'));
+
+  // ==========================================
+  // Playback Control (Synchronized across both views)
+  // ==========================================
   function updatePlayUI(playing) {
     if (playing) {
-      stageContainer.classList.add('playing');
-      playIcon.classList.add('hidden');
-      pauseIcon.classList.remove('hidden');
-      playBtnText.textContent = '一時停止';
-
-      stageBigPlayIcon.classList.add('hidden');
-      stageBigPauseIcon.classList.remove('hidden');
+      mainPlayIcon.textContent = '⏸';
+      mainPlayText.textContent = '音楽を一時停止';
+      stagePlayIcon.textContent = '⏸';
     } else {
-      stageContainer.classList.remove('playing');
-      playIcon.classList.remove('hidden');
-      pauseIcon.classList.add('hidden');
-      playBtnText.textContent = '再生する';
-
-      stageBigPlayIcon.classList.remove('hidden');
-      stageBigPauseIcon.classList.add('hidden');
+      mainPlayIcon.textContent = '▶';
+      mainPlayText.textContent = '音楽を再生する';
+      stagePlayIcon.textContent = '▶';
     }
   }
 
@@ -185,97 +153,118 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  togglePlayBtn.addEventListener('click', togglePlay);
-  stageBigPlayBtn.addEventListener('click', togglePlay);
+  mainPlayBtn.addEventListener('click', togglePlay);
+  stagePlayBtn.addEventListener('click', togglePlay);
 
-  // 3. Navigation Tab Switching
-  navTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      triggerHaptic();
-      navTabs.forEach(t => t.classList.remove('active'));
-      tabPanels.forEach(p => p.classList.remove('active'));
-
-      tab.classList.add('active');
-      const targetId = `panel-${tab.dataset.tab}`;
-      const targetPanel = document.getElementById(targetId);
-      if (targetPanel) {
-        targetPanel.classList.add('active');
-      }
-    });
-  });
-
-  // 4. Progress bar scrub
-  progressBarWrap.addEventListener('click', (e) => {
-    const rect = progressBarWrap.getBoundingClientRect();
+  // Progress scrub on stage
+  stageProgressWrap.addEventListener('click', (e) => {
+    const rect = stageProgressWrap.getBoundingClientRect();
     const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     audioEngine.seek(ratio);
   });
 
-  // 5. Motion switching (Sync both quick chips and large cards)
-  function selectMotion(motionId) {
-    triggerHaptic();
-    characterRenderer.setMotion(motionId);
-    const preset = GROOVE_PRESETS.motions[motionId];
-    if (preset) {
-      hudMotionTag.textContent = `${preset.icon} ${preset.name.replace('演奏', '').replace('弾き語り', '')}`;
-      updateAIPrompt();
-
-      // Sync Quick Chips
-      document.querySelectorAll('.quick-chip').forEach(chip => {
-        if (chip.dataset.motion === motionId) chip.classList.add('active');
-        else chip.classList.remove('active');
-      });
-
-      // Sync Large Cards
-      document.querySelectorAll('#panel-motion .touch-card').forEach(card => {
-        const badge = card.querySelector('.badge-status');
-        if (card.dataset.motion === motionId) {
-          card.classList.add('active');
-          if (badge) badge.textContent = '選択中';
-        } else {
-          card.classList.remove('active');
-          if (badge) badge.textContent = '切替';
+  // ==========================================
+  // Motion Presets Selection
+  // ==========================================
+  const motionCards = document.querySelectorAll('[data-motion]');
+  motionCards.forEach(card => {
+    card.addEventListener('click', () => {
+      triggerHaptic();
+      motionCards.forEach(c => {
+        c.classList.remove('active');
+        const pill = c.querySelector('.status-pill');
+        if (pill) {
+          pill.textContent = 'タップで選択';
+          pill.classList.remove('selected');
         }
       });
 
-      showToast(`動作: ${preset.name}`);
-    }
-  }
+      card.classList.add('active');
+      const pill = card.querySelector('.status-pill');
+      if (pill) {
+        pill.textContent = '✔ 選択中';
+        pill.classList.add('selected');
+      }
 
-  // Quick chips
-  document.querySelectorAll('.quick-chip').forEach(chip => {
-    chip.addEventListener('click', () => selectMotion(chip.dataset.motion));
+      const motionId = card.dataset.motion;
+      characterRenderer.setMotion(motionId);
+      const preset = GROOVE_PRESETS.motions[motionId];
+      if (preset) {
+        showToast(`動作を「${preset.name}」に変更しました`);
+      }
+    });
   });
 
-  // Large motion cards
-  document.querySelectorAll('#panel-motion .touch-card').forEach(card => {
-    card.addEventListener('click', () => selectMotion(card.dataset.motion));
+  // ==========================================
+  // Demo Songs Selection
+  // ==========================================
+  const songCards = document.querySelectorAll('[data-song]');
+  songCards.forEach(card => {
+    card.addEventListener('click', () => {
+      triggerHaptic();
+      songCards.forEach(s => {
+        s.classList.remove('active');
+        const pill = s.querySelector('.status-pill');
+        if (pill) pill.textContent = 'タップで再生';
+      });
+
+      card.classList.add('active');
+      const pill = card.querySelector('.status-pill');
+      if (pill) pill.textContent = '再生中';
+
+      const songId = card.dataset.song;
+      const song = GROOVE_PRESETS.songs[songId];
+      if (!song) return;
+
+      currentSongConfig = song;
+      audioEngine.selectDemoTrack(songId);
+
+      controlSongTitle.textContent = `${song.title} (${song.genre})`;
+      stageSongTitle.textContent = `${song.title} (${song.genre})`;
+      stageBpmIndicator.textContent = `${song.bpm} BPM`;
+
+      // Recommend motion
+      if (song.recommendedMotion) {
+        const targetMotionCard = document.querySelector(`[data-motion="${song.recommendedMotion}"]`);
+        if (targetMotionCard) targetMotionCard.click();
+      }
+
+      audioEngine.play();
+      updatePlayUI(true);
+      showToast(`「${song.title}」を再生開始`);
+    });
   });
 
-  // 6. Character Presets
-  const avatarCards = document.querySelectorAll('#panel-character .touch-card');
+  // ==========================================
+  // Avatar Selection & Photo Upload
+  // ==========================================
+  const avatarCards = document.querySelectorAll('[data-avatar]');
   avatarCards.forEach(card => {
     card.addEventListener('click', () => {
       triggerHaptic();
       avatarCards.forEach(c => {
         c.classList.remove('active');
-        const b = c.querySelector('.badge-status');
-        if (b) b.textContent = '切替';
+        const pill = c.querySelector('.status-pill');
+        if (pill) {
+          pill.textContent = 'タップで選択';
+          pill.classList.remove('selected');
+        }
       });
 
       card.classList.add('active');
-      const b = card.querySelector('.badge-status');
-      if (b) b.textContent = '選択中';
+      const pill = card.querySelector('.status-pill');
+      if (pill) {
+        pill.textContent = '✔ 選択中';
+        pill.classList.add('selected');
+      }
 
       const charId = card.dataset.avatar;
       characterRenderer.setCharacter(charId);
-      updateAIPrompt();
-      showToast(`アーティスト: ${GROOVE_PRESETS.characters[charId]?.name || charId}`);
+      showToast(`アーティストを「${GROOVE_PRESETS.characters[charId]?.name || charId}」に設定`);
     });
   });
 
-  // 7. Custom Avatar Upload
-  avatarUploadBox.addEventListener('click', () => avatarFileInput.click());
+  avatarUploadBtn.addEventListener('click', () => avatarFileInput.click());
   avatarFileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -286,99 +275,79 @@ document.addEventListener('DOMContentLoaded', () => {
         characterRenderer.setCustomAvatar(img);
         avatarCards.forEach(c => {
           c.classList.remove('active');
-          const b = c.querySelector('.badge-status');
-          if (b) b.textContent = '切替';
+          const pill = c.querySelector('.status-pill');
+          if (pill) {
+            pill.textContent = 'タップで選択';
+            pill.classList.remove('selected');
+          }
         });
-        showToast('写真アバターを読み込みました！');
-        updateAIPrompt();
+        showToast('ご自身の写真アバターを適用しました！');
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
   });
 
-  // 8. Custom Audio File Upload
-  audioUploadBox.addEventListener('click', () => audioFileInput.click());
+  // ==========================================
+  // User Audio File Upload
+  // ==========================================
+  audioUploadBtn.addEventListener('click', () => audioFileInput.click());
   audioFileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    audioFileNameHint.textContent = `読込中: ${file.name}...`;
+    audioUploadHint.textContent = `読込中: ${file.name}...`;
     const res = await audioEngine.loadUserFile(file);
     if (res.success) {
-      songTitleEl.textContent = file.name.replace(/\.[^/.]+$/, "");
-      audioFileNameHint.textContent = `選択中: ${file.name} (${formatTime(res.duration)})`;
-      document.querySelectorAll('#panel-audio .touch-card').forEach(s => {
+      const cleanName = file.name.replace(/\.[^/.]+$/, "");
+      controlSongTitle.textContent = cleanName;
+      stageSongTitle.textContent = cleanName;
+      audioUploadHint.textContent = `選択中: ${file.name} (${formatTime(res.duration)})`;
+
+      songCards.forEach(s => {
         s.classList.remove('active');
-        const b = s.querySelector('.badge-status');
-        if (b) b.textContent = '切替';
+        const pill = s.querySelector('.status-pill');
+        if (pill) pill.textContent = 'タップで再生';
       });
+
       currentSongConfig = {
-        title: file.name,
+        title: cleanName,
         bpm: 120,
         lyrics: [{ time: 0, text: '♪ アップロード楽曲を再生中' }]
       };
-      hudBpmTag.textContent = `120 BPM`;
+      stageBpmIndicator.textContent = `120 BPM`;
+
       audioEngine.play();
       updatePlayUI(true);
-      showToast(`制作楽曲「${file.name}」を読み込みました！`);
+      showToast(`制作楽曲「${cleanName}」を読み込みました！`);
     } else {
-      audioFileNameHint.textContent = 'エラー: 音声形式を確認してください';
+      audioUploadHint.textContent = 'エラー: 音声ファイルを確認してください';
       showToast('音声の読み込みに失敗しました');
     }
   });
 
-  // 9. Smartphone Mic Toggle
+  // ==========================================
+  // Smartphone Mic Toggle
+  // ==========================================
   micToggleBtn.addEventListener('click', async () => {
     triggerHaptic();
     const active = await audioEngine.toggleMic();
     if (active) {
       micToggleBtn.classList.add('active');
-      micBtnText.textContent = 'マイク入力中（タップで停止）';
-      songTitleEl.textContent = '🎤 リアルタイムマイク歌唱中';
+      micBtnTitle.textContent = '🎤 マイク入力中（タップで停止）';
+      controlSongTitle.textContent = '🎤 リアルタイムマイク歌唱中';
+      stageSongTitle.textContent = '🎤 リアルタイムマイク歌唱中';
       showToast('マイク入力を開始しました。歌ってみてください！');
     } else {
       micToggleBtn.classList.remove('active');
-      micBtnText.textContent = 'スマホのマイクで歌唱テスト';
+      micBtnTitle.textContent = 'スマホのマイクで歌唱テスト';
       showToast('マイク入力を停止しました');
     }
   });
 
-  // 10. Demo Songs Selection
-  const songCards = document.querySelectorAll('#panel-audio .touch-card');
-  songCards.forEach(card => {
-    card.addEventListener('click', () => {
-      triggerHaptic();
-      songCards.forEach(s => {
-        s.classList.remove('active');
-        const b = s.querySelector('.badge-status');
-        if (b) b.textContent = '切替';
-      });
-
-      card.classList.add('active');
-      const b = card.querySelector('.badge-status');
-      if (b) b.textContent = '再生中';
-
-      const songId = card.dataset.song;
-      const song = GROOVE_PRESETS.songs[songId];
-      if (!song) return;
-
-      currentSongConfig = song;
-      audioEngine.selectDemoTrack(songId);
-      songTitleEl.textContent = `${song.title} (${song.genre})`;
-      hudBpmTag.textContent = `${song.bpm} BPM`;
-
-      if (song.recommendedMotion) {
-        selectMotion(song.recommendedMotion);
-      }
-
-      audioEngine.play();
-      updatePlayUI(true);
-      showToast(`デモ楽曲: ${song.title} を再生`);
-    });
-  });
-
-  // 11. Sliders Event Handlers
+  // ==========================================
+  // Sliders Event Handlers
+  // ==========================================
   lipsyncSensitivity.addEventListener('input', (e) => {
     const val = e.target.value;
     lipsyncVal.textContent = `${val}%`;
@@ -397,131 +366,25 @@ document.addEventListener('DOMContentLoaded', () => {
     characterRenderer.expressionLevel = val / 100;
   });
 
-  headbobStrength.addEventListener('input', (e) => {
-    const val = e.target.value;
-    headbobVal.textContent = `${val}%`;
-    characterRenderer.headbobStrength = val / 100;
-  });
-
-  // 12. Camera & Stage Effects
-  const cameraCards = document.querySelectorAll('[data-camera]');
-  cameraCards.forEach(card => {
-    card.addEventListener('click', () => {
-      triggerHaptic();
-      cameraCards.forEach(c => {
-        c.classList.remove('active');
-        const b = c.querySelector('.badge-status');
-        if (b) b.textContent = '切替';
-      });
-      card.classList.add('active');
-      const b = card.querySelector('.badge-status');
-      if (b) b.textContent = '選択中';
-
-      characterRenderer.setCamera(card.dataset.camera);
-      showToast(`カメラ: ${card.querySelector('h4').textContent}`);
-    });
-  });
-
-  const stagePills = document.querySelectorAll('[data-stage]');
-  stagePills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      triggerHaptic();
-      stagePills.forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      characterRenderer.setStage(pill.dataset.stage);
-      showToast(`ステージ: ${pill.textContent}`);
-    });
-  });
-
-  document.getElementById('laserEffectToggle').addEventListener('change', (e) => {
-    characterRenderer.showLasers = e.target.checked;
-  });
-
-  document.getElementById('particleEffectToggle').addEventListener('change', (e) => {
-    characterRenderer.showParticles = e.target.checked;
-  });
-
-  document.getElementById('lyricsToggle').addEventListener('change', (e) => {
-    if (e.target.checked) lyricsOverlay.classList.remove('hidden');
-    else lyricsOverlay.classList.add('hidden');
-  });
-
-  // 13. Cost Saver Hub - AI Prompts & ComfyUI Export
-  function updateAIPrompt() {
+  // ==========================================
+  // Copy AI Prompt
+  // ==========================================
+  copyPromptBtn.addEventListener('click', () => {
+    triggerHaptic();
     const motion = characterRenderer.motionPreset;
     const char = characterRenderer.characterPreset;
     const bpm = audioEngine ? audioEngine.bpm : 120;
-
     const fullPrompt = `Masterpiece, 8k resolution, official music video shot. ${char.prompt}. ${motion.promptSnippet}. Real-time beat synchronization at ${bpm} BPM, cinematic stage lighting with atmospheric smoke and volumetric lasers, high expressive singing face, natural rhythmic body movement and instrumental performance. --ar 9:16 --v 6.1`;
-    aiPromptOutput.value = fullPrompt;
-  }
-  updateAIPrompt();
 
-  copyPromptBtn.addEventListener('click', () => {
-    triggerHaptic();
-    navigator.clipboard.writeText(aiPromptOutput.value).then(() => {
-      showToast('AI生成用プロンプトをコピーしました！');
+    navigator.clipboard.writeText(fullPrompt).then(() => {
+      showToast('AI動画生成用プロンプトをコピーしました！');
     });
   });
 
-  downloadWorkflowBtn.addEventListener('click', () => {
-    triggerHaptic();
-    const motion = characterRenderer.motionPreset;
-    const char = characterRenderer.characterPreset;
-    const workflowObj = {
-      name: "GrooveSync_Expressive_MV_Pipeline",
-      version: "1.0",
-      description: "Low-cost ComfyUI workflow for LivePortrait + AnimateAnyone / Wan2.1",
-      nodes: {
-        "1": { class_type: "AudioBeatExtractor", inputs: { bpm: audioEngine.bpm } },
-        "2": { class_type: "LivePortraitFaceDriving", inputs: { expression_scale: characterRenderer.expressionLevel, lip_sync_sensitivity: characterRenderer.lipsyncSens } },
-        "3": { class_type: "SkeletalMotionTransfer", inputs: { motion_preset: motion.id, instrument: motion.instrument, groove_sway: characterRenderer.grooveStrength } },
-        "4": { class_type: "PromptSynthesizer", inputs: { character: char.styleName, positive_prompt: aiPromptOutput.value } }
-      }
-    };
-    const blob = new Blob([JSON.stringify(workflowObj, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `groovesync-comfyui-${motion.id}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('ComfyUI設定JSONをダウンロードしました');
-  });
-
-  saveApiKeyBtn.addEventListener('click', () => {
-    triggerHaptic();
-    const key = userApiKey.value.trim();
-    const provider = apiKeyProvider.value;
-    if (key) {
-      localStorage.setItem(`groovesync_api_${provider}`, key);
-      showToast(`${provider} のAPIキーを保存しました（格安生成準備完了）`);
-    } else {
-      showToast('APIキーを入力してください');
-    }
-  });
-
-  // 14. Modals (Help & Export)
-  quickHelpBtn.addEventListener('click', () => {
-    triggerHaptic();
-    helpModal.classList.remove('hidden');
-  });
-  closeHelpBtn.addEventListener('click', () => helpModal.classList.add('hidden'));
-  helpModal.addEventListener('click', (e) => {
-    if (e.target === helpModal) helpModal.classList.add('hidden');
-  });
-
-  exportQuickBtn.addEventListener('click', () => {
-    triggerHaptic();
-    exportModal.classList.remove('hidden');
-  });
-  closeModalBtn.addEventListener('click', () => exportModal.classList.add('hidden'));
-  exportModal.addEventListener('click', (e) => {
-    if (e.target === exportModal) exportModal.classList.add('hidden');
-  });
-
-  // 15. Real Video Recording & Download Pipeline (Canvas + Web Audio -> MP4/WebM)
-  function startRecording(durationSeconds) {
+  // ==========================================
+  // Video Recording & Download Pipeline (Canvas + Web Audio -> WebM/MP4)
+  // ==========================================
+  function startRecording(durationSeconds = 15) {
     if (isRecording) return;
 
     if (!audioEngine.isPlaying) {
@@ -568,41 +431,32 @@ document.addEventListener('DOMContentLoaded', () => {
         URL.revokeObjectURL(videoUrl);
 
         isRecording = false;
-        recordBtn.classList.remove('recording');
-        recordBottomBtn.classList.remove('recording');
-        recLabel.textContent = '録画';
-        recordProgressWrap.classList.add('hidden');
-        exportStatusTitle.textContent = '録画完了！保存しました';
+        mainRecordBtn.classList.remove('recording');
+        stageRecordBtn.classList.remove('recording');
+        mainRecText.textContent = 'MVを録画・保存';
         showToast('動画のダウンロードが完了しました！');
       };
 
       mediaRecorder.start(200);
       isRecording = true;
-      recordBtn.classList.add('recording');
-      recordBottomBtn.classList.add('recording');
-      recLabel.textContent = '停止';
-
-      exportStatusTitle.textContent = '録画中...';
-      recordProgressWrap.classList.remove('hidden');
-      recordProgressFill.style.width = '0%';
+      mainRecordBtn.classList.add('recording');
+      stageRecordBtn.classList.add('recording');
+      mainRecText.textContent = `録画中... (${durationSeconds}秒)`;
 
       let elapsed = 0;
-      const interval = 100;
       clearInterval(recordTimer);
       recordTimer = setInterval(() => {
-        elapsed += 0.1;
-        const progress = Math.min(100, (elapsed / durationSeconds) * 100);
-        recordProgressFill.style.width = `${progress}%`;
-
+        elapsed += 1;
+        mainRecText.textContent = `録画中... (${durationSeconds - elapsed}秒)`;
         if (elapsed >= durationSeconds) {
           clearInterval(recordTimer);
           if (mediaRecorder && mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
           }
         }
-      }, interval);
+      }, 1000);
 
-      showToast(`MV録画を開始しました（${durationSeconds}秒）`);
+      showToast(`MV録画を開始しました（${durationSeconds}秒間）`);
     } catch (err) {
       console.error('Recording error:', err);
       showToast('録画機能の起動に失敗しました');
@@ -617,63 +471,33 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       clearInterval(recordTimer);
       isRecording = false;
-      recordBtn.classList.remove('recording');
-      recordBottomBtn.classList.remove('recording');
-      recLabel.textContent = '録画';
+      mainRecordBtn.classList.remove('recording');
+      stageRecordBtn.classList.remove('recording');
+      mainRecText.textContent = 'MVを録画・保存';
       showToast('録画を停止しました');
     } else {
       startRecording(15);
     }
   }
 
-  recordBtn.addEventListener('click', handleRecordToggle);
-  recordBottomBtn.addEventListener('click', handleRecordToggle);
+  mainRecordBtn.addEventListener('click', handleRecordToggle);
+  stageRecordBtn.addEventListener('click', handleRecordToggle);
 
-  startRecordingModalBtn.addEventListener('click', () => {
-    triggerHaptic();
-    let dur = 15;
-    if (exportDuration.value === '30') dur = 30;
-    else if (exportDuration.value === 'full') dur = Math.min(audioEngine.duration, 60);
-    startRecording(dur);
-  });
-
-  // 16. Spectrum Visualizer Drawer
-  function drawSpectrum() {
-    if (!specCtx || !audioEngine.freqData) return;
-    const w = spectrumCanvas.width;
-    const h = spectrumCanvas.height;
-    specCtx.clearRect(0, 0, w, h);
-
-    const binCount = audioEngine.analyser.frequencyBinCount;
-    const barWidth = (w / (binCount / 3));
-    let x = 0;
-
-    for (let i = 0; i < binCount / 3; i++) {
-      const v = audioEngine.freqData[i] / 255.0;
-      const barHeight = v * h;
-
-      const grad = specCtx.createLinearGradient(0, h, 0, 0);
-      grad.addColorStop(0, '#8b5cf6');
-      grad.addColorStop(1, '#06b6d4');
-      specCtx.fillStyle = grad;
-
-      specCtx.fillRect(x, h - barHeight, barWidth - 1, barHeight);
-      x += barWidth;
-    }
-  }
-
-  // 17. Main Animation Loop (60 FPS)
+  // ==========================================
+  // Main Animation Loop (60 FPS)
+  // ==========================================
   function tick() {
     audioEngine.updateAnalysis(characterRenderer.lipsyncSens);
     characterRenderer.render(audioEngine);
-    drawSpectrum();
 
     if (audioEngine.isPlaying) {
       const cur = audioEngine.currentTime;
       const dur = audioEngine.duration || 30;
       const progressPercent = Math.min(100, (cur / dur) * 100);
-      progressFill.style.width = `${progressPercent}%`;
-      songTimeEl.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
+
+      controlSongTime.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
+      stageSongTime.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
+      stageProgressFill.style.width = `${progressPercent}%`;
 
       if (currentSongConfig.lyrics) {
         let activeLyric = currentSongConfig.lyrics[0].text;
@@ -682,31 +506,12 @@ document.addEventListener('DOMContentLoaded', () => {
             activeLyric = lyric.text;
           }
         }
-        lyricsTextEl.textContent = activeLyric;
+        lyricsText.textContent = activeLyric;
       }
     }
 
-    if (visemeCurrentChar) {
-      visemeCurrentChar.textContent = audioEngine.currentChar;
-    }
-    if (grooveIndicator) {
-      if (audioEngine.beatPulse > 0.4) {
-        grooveIndicator.classList.add('pulse');
-      } else {
-        grooveIndicator.classList.remove('pulse');
-      }
-    }
-
-    if (mBars.A) {
-      for (const [char, el] of Object.entries(mBars)) {
-        if (el) {
-          if (char === audioEngine.currentChar && audioEngine.mouthOpen > 0.15) {
-            el.classList.add('active');
-          } else {
-            el.classList.remove('active');
-          }
-        }
-      }
+    if (stageVisemeChar) {
+      stageVisemeChar.textContent = audioEngine.currentChar;
     }
 
     requestAnimationFrame(tick);
