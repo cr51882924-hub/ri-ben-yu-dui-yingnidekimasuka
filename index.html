@@ -2,712 +2,427 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>GrooveSync MV - スマホで直感操作できる高表現力AIミュージックビデオ制作</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <title>GrooveSync MV - 画面いっぱいで見やすいAIミュージックビデオ制作</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="app" class="app-container">
-    <!-- Top Header -->
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand-logo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 18V5l12-2v13"></path>
-            <circle cx="6" cy="18" r="3"></circle>
-            <circle cx="18" cy="16" r="3"></circle>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <h1>GrooveSync <span>MV</span></h1>
-          <p class="tagline">スマホ専用・高表現力AIスタジオ</p>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button id="quickHelpBtn" class="touch-icon-btn" aria-label="ヘルプ・使い方">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
+  <div id="app" class="app-root">
+
+    <!-- Top Mode Switch Bar (画面切り替え: 操作画面 ⇔ MV映像) -->
+    <header class="top-mode-header">
+      <div class="mode-switch-container">
+        <button id="tabBtnControls" class="main-mode-btn active">
+          <span class="mode-btn-icon">🎛️</span>
+          <div class="mode-btn-text">
+            <strong>操作画面</strong>
+            <span>全画面で大きく設定</span>
+          </div>
         </button>
-        <button id="exportQuickBtn" class="touch-export-btn">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <span>動画を保存</span>
+
+        <button id="tabBtnStage" class="main-mode-btn">
+          <span class="mode-btn-icon">🎬</span>
+          <div class="mode-btn-text">
+            <strong>MV映像</strong>
+            <span>動画を画面いっぱいに見る</span>
+          </div>
         </button>
       </div>
     </header>
 
-    <!-- Main Stage Viewport Section -->
-    <section class="stage-section">
-      <div class="stage-container" id="stageContainer">
-        <!-- Canvas for Character & Stage Rendering -->
-        <canvas id="stageCanvas" width="720" height="1280"></canvas>
+    <!-- =============================================================== -->
+    <!-- VIEW 1: 操作画面 (iPhoneの画面いっぱいに広がる超見やすい大画面UI) -->
+    <!-- =============================================================== -->
+    <main id="viewControls" class="main-view active-view">
+      
+      <!-- Quick Play & Record Master Bar (最上部の特大再生バー) -->
+      <section class="master-player-card">
+        <div class="now-playing-info">
+          <span class="now-playing-label">現在選択中の楽曲:</span>
+          <h2 id="controlSongTitle" class="now-playing-title">Shining Beat (J-POP)</h2>
+          <span id="controlSongTime" class="now-playing-time">00:00 / 00:30</span>
+        </div>
 
-        <!-- Overlay HUD (Live preview, status, lyrics) -->
-        <div class="stage-hud">
-          <div class="hud-top">
-            <div class="live-pill">
-              <span class="live-pulse-dot"></span>
-              <span id="liveStatusText">プレビュー中</span>
-            </div>
-            <div class="hud-badges">
-              <span class="hud-chip" id="hudMotionTag">🎸 エレキギター</span>
-              <span class="hud-chip" id="hudBpmTag">132 BPM</span>
-            </div>
-            <!-- Fullscreen Toggle Button -->
-            <button id="fullscreenToggleBtn" class="stage-action-btn" title="全画面表示" aria-label="全画面表示">
-              <svg id="fullscreenExpandIcon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
-              </svg>
-              <svg id="fullscreenCollapseIcon" class="hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"></path>
-              </svg>
-            </button>
+        <!-- Master Play / Pause & Record Buttons (高さ64pxの特大ボタン) -->
+        <div class="master-btn-row">
+          <button id="mainPlayBtn" class="giant-btn giant-play-btn">
+            <span id="mainPlayIcon" class="giant-icon">▶</span>
+            <span id="mainPlayText">音楽を再生する</span>
+          </button>
+
+          <button id="mainRecordBtn" class="giant-btn giant-rec-btn">
+            <span class="rec-dot"></span>
+            <span id="mainRecText">MVを録画・保存</span>
+          </button>
+        </div>
+
+        <!-- Big Button to Switch to Fullscreen Video View -->
+        <button id="jumpToStageBtn" class="view-stage-banner-btn">
+          <span class="banner-icon">🎬</span>
+          <div class="banner-text">
+            <strong>ここを押すと「MV映像」が全画面で流れます</strong>
+            <span>キャラクターが曲に合わせて歌い踊る映像を見る</span>
           </div>
+          <span class="banner-arrow">→</span>
+        </button>
+      </section>
 
-          <!-- Lyrics Display overlay -->
-          <div class="lyrics-overlay" id="lyricsOverlay">
-            <h2 class="lyrics-main" id="lyricsText">音に合わせて感情豊かに歌い踊る</h2>
-          </div>
-
-          <!-- Quick center Play / Pause overlay on stage tap -->
-          <div class="stage-tap-overlay" id="stageTapOverlay">
-            <button class="stage-big-play-btn" id="stageBigPlayBtn" aria-label="再生・一時停止">
-              <svg id="stageBigPlayIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-              <svg id="stageBigPauseIcon" class="hidden" viewBox="0 0 24 24" width="36" height="36" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16"></rect>
-                <rect x="14" y="4" width="4" height="16"></rect>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Stage Bottom Timeline & Controls Bar -->
-          <div class="stage-controls">
-            <div class="progress-bar-wrap" id="progressBarWrap">
-              <div class="progress-fill" id="progressFill"></div>
-            </div>
-
-            <div class="controls-row">
-              <div class="track-info">
-                <span class="song-title" id="songTitle">Shining Beat (J-POP)</span>
-                <span class="song-time" id="songTime">00:00 / 00:30</span>
-              </div>
-              <div class="quick-stage-btns">
-                <button id="recordBtn" class="touch-record-btn" aria-label="動画を録画">
-                  <span class="record-circle"></span>
-                  <span class="rec-label" id="recLabel">録画</span>
-                </button>
-              </div>
-            </div>
+      <!-- Section 1: 動作・パフォーマンス (超大型カード一覧) -->
+      <section class="large-section">
+        <div class="section-title-wrap">
+          <span class="step-badge">1</span>
+          <div>
+            <h3 class="section-title">動作を選ぶ（演奏・ダンス・体の揺れ）</h3>
+            <p class="section-sub">指でタップすると、歌いながらの動作が切り替わります</p>
           </div>
         </div>
 
-        <!-- Realtime Viseme & Groove Monitor Float -->
-        <div class="viseme-monitor" id="visemeMonitor">
-          <div class="viseme-meter">
-            <span class="meter-label">母音:</span>
-            <span class="meter-val" id="visemeCurrentChar">A</span>
-          </div>
-          <div class="meter-bars">
-            <div class="m-bar" id="barA"><span>あ</span></div>
-            <div class="m-bar" id="barI"><span>い</span></div>
-            <div class="m-bar" id="barU"><span>う</span></div>
-            <div class="m-bar" id="barE"><span>え</span></div>
-            <div class="m-bar" id="barO"><span>お</span></div>
-          </div>
-          <div class="groove-meter">
-            <span class="meter-label">リズム:</span>
-            <div class="groove-indicator" id="grooveIndicator"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick 1-Tap Motion Carousel (Right below player for instant thumb switching) -->
-      <div class="quick-motion-bar">
-        <span class="quick-bar-label">ワンタップ動作切替:</span>
-        <div class="quick-chips-scroll">
-          <button class="quick-chip active" data-motion="guitar">🎸 ギター</button>
-          <button class="quick-chip" data-motion="acoustic">🪕 アコギ</button>
-          <button class="quick-chip" data-motion="keyboard">🎹 ピアノ</button>
-          <button class="quick-chip" data-motion="dance">💃 ダンス</button>
-          <button class="quick-chip" data-motion="sway">🌊 体を揺らす</button>
-          <button class="quick-chip" data-motion="headbang">⚡ ロック熱唱</button>
-          <button class="quick-chip" data-motion="dj">🎧 DJ</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Bottom Navigation Tabs (Thumb-Friendly, Large Touch Area) -->
-    <nav class="studio-nav">
-      <button class="nav-tab active" data-tab="motion">
-        <span class="nav-icon">🎸</span>
-        <span class="nav-text">モーション</span>
-      </button>
-
-      <button class="nav-tab" data-tab="character">
-        <span class="nav-icon">👤</span>
-        <span class="nav-text">アーティスト</span>
-      </button>
-
-      <button class="nav-tab" data-tab="audio">
-        <span class="nav-icon">🎵</span>
-        <span class="nav-text">楽曲・音源</span>
-      </button>
-
-      <button class="nav-tab" data-tab="effects">
-        <span class="nav-icon">🎬</span>
-        <span class="nav-text">ステージ演出</span>
-      </button>
-
-      <button class="nav-tab nav-highlight" data-tab="costhub">
-        <span class="nav-icon">💰</span>
-        <span class="nav-text">低コストAI</span>
-      </button>
-    </nav>
-
-    <!-- Scrollable Tab Panels Area (Big, Readable, Finger-Friendly) -->
-    <main class="panels-container">
-      <!-- 1. Motion & Performance Tab -->
-      <section class="tab-panel active" id="panel-motion">
-        <div class="panel-header">
-          <h3>🎸 パフォーマンス＆動作モード</h3>
-          <p class="panel-desc">指でタップして、歌いながらの演奏やダンス、体の揺れを変更できます。</p>
-        </div>
-
-        <div class="large-cards-list">
-          <button class="touch-card active" data-motion="guitar">
-            <div class="card-left-icon">🎸</div>
-            <div class="card-body">
-              <div class="card-title-row">
+        <div class="giant-cards-list">
+          <button class="accessible-card active" data-motion="guitar">
+            <span class="card-icon-big">🎸</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
                 <h4>エレキギター演奏</h4>
-                <span class="badge-status">選択中</span>
+                <span class="status-pill selected">✔ 選択中</span>
               </div>
-              <p>リフを弾きながら体を揺らして熱唱</p>
+              <p>ギターリフを激しく弾きながら体を揺らして熱唱</p>
             </div>
           </button>
 
-          <button class="touch-card" data-motion="acoustic">
-            <div class="card-left-icon">🪕</div>
-            <div class="card-body">
-              <div class="card-title-row">
+          <button class="accessible-card" data-motion="acoustic">
+            <span class="card-icon-big">🪕</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
                 <h4>アコギ弾き語り</h4>
-                <span class="badge-status">切替</span>
+                <span class="status-pill">タップで選択</span>
               </div>
-              <p>アコースティックコードをかき鳴らす表現</p>
+              <p>アコースティックギターのコードを弾きながら歌唱</p>
             </div>
           </button>
 
-          <button class="touch-card" data-motion="keyboard">
-            <div class="card-left-icon">🎹</div>
-            <div class="card-body">
-              <div class="card-title-row">
-                <h4>キーボード / ピアノ</h4>
-                <span class="badge-status">切替</span>
+          <button class="accessible-card" data-motion="keyboard">
+            <span class="card-icon-big">🎹</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>ピアノ / キーボード</h4>
+                <span class="status-pill">タップで選択</span>
               </div>
-              <p>両手で鍵盤を演奏しながら歌唱</p>
+              <p>両手で鍵盤を演奏し、曲のリズムに合わせて歌う</p>
             </div>
           </button>
 
-          <button class="touch-card" data-motion="dance">
-            <div class="card-left-icon">💃</div>
-            <div class="card-body">
-              <div class="card-title-row">
+          <button class="accessible-card" data-motion="dance">
+            <span class="card-icon-big">💃</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
                 <h4>ダンス＆ステップ</h4>
-                <span class="badge-status">切替</span>
+                <span class="status-pill">タップで選択</span>
               </div>
-              <p>リズムに合わせた軽快なポップ振付</p>
+              <p>ビートに合わせた軽快なポップダンスと手の振付</p>
             </div>
           </button>
 
-          <button class="touch-card" data-motion="sway">
-            <div class="card-left-icon">🌊</div>
-            <div class="card-body">
-              <div class="card-title-row">
-                <h4>チル・体を揺らす</h4>
-                <span class="badge-status">切替</span>
+          <button class="accessible-card" data-motion="sway">
+            <span class="card-icon-big">🌊</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>体を揺らす（チル・グルーヴ）</h4>
+                <span class="status-pill">タップで選択</span>
               </div>
-              <p>ビートのグルーヴに身を任せて自然に揺れる</p>
+              <p>マイクを持ち、曲のリズムに合わせて心地よく体を揺らす</p>
             </div>
           </button>
 
-          <button class="touch-card" data-motion="headbang">
-            <div class="card-left-icon">⚡</div>
-            <div class="card-body">
-              <div class="card-title-row">
-                <h4>ロック・スタンド熱唱</h4>
-                <span class="badge-status">切替</span>
+          <button class="accessible-card" data-motion="headbang">
+            <span class="card-icon-big">⚡</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>ロック熱唱（マイクスタンド）</h4>
+                <span class="status-pill">タップで選択</span>
               </div>
-              <p>マイクを握りしめ激しく歌い上げる</p>
+              <p>スタンドマイクを両手で握りしめ、激しく歌い上げる</p>
             </div>
           </button>
 
-          <button class="touch-card" data-motion="dj">
-            <div class="card-left-icon">🎧</div>
-            <div class="card-body">
-              <div class="card-title-row">
+          <button class="accessible-card" data-motion="dj">
+            <span class="card-icon-big">🎧</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
                 <h4>DJ & ビートバウンス</h4>
-                <span class="badge-status">切替</span>
+                <span class="status-pill">タップで選択</span>
               </div>
-              <p>スクラッチとリズムノリでフロアを煽る</p>
+              <p>スクラッチとリズムノリで会場を煽りながら歌う</p>
             </div>
           </button>
         </div>
-
-        <!-- Expressiveness Fine Tuning (Fat, Easy-to-Drag Sliders) -->
-        <div class="settings-block">
-          <h4 class="block-title">表現力・連動スライダー</h4>
-          <p class="block-subtitle">親指で左右にスライドして動きの大きさを調整できます</p>
-
-          <div class="large-slider-card">
-            <div class="slider-info">
-              <span class="slider-label">口パク感度（リップシンクの開き幅）</span>
-              <span class="slider-value" id="lipsyncVal">85%</span>
-            </div>
-            <input type="range" id="lipsyncSensitivity" class="fat-slider" min="20" max="150" value="85">
-          </div>
-
-          <div class="large-slider-card">
-            <div class="slider-info">
-              <span class="slider-label">体の揺れ・グルーヴの強さ</span>
-              <span class="slider-value" id="grooveVal">70%</span>
-            </div>
-            <input type="range" id="grooveStrength" class="fat-slider" min="0" max="120" value="70">
-          </div>
-
-          <div class="large-slider-card">
-            <div class="slider-info">
-              <span class="slider-label">感情表現（目力・眉の動き）</span>
-              <span class="slider-value" id="expressionVal">80%</span>
-            </div>
-            <input type="range" id="expressionLevel" class="fat-slider" min="20" max="100" value="80">
-          </div>
-
-          <div class="large-slider-card">
-            <div class="slider-info">
-              <span class="slider-label">頭・首のノリ（ヘッドボブ）</span>
-              <span class="slider-value" id="headbobVal">75%</span>
-            </div>
-            <input type="range" id="headbobStrength" class="fat-slider" min="0" max="120" value="75">
-          </div>
-        </div>
       </section>
 
-      <!-- 2. Character & Persona Tab -->
-      <section class="tab-panel" id="panel-character">
-        <div class="panel-header">
-          <h3>👤 アーティスト設定</h3>
-          <p class="panel-desc">MVの主役キャラクターやご自身の写真を設定できます。</p>
-        </div>
-
-        <!-- Custom Upload Big Button -->
-        <div class="large-upload-card" id="avatarUploadBox">
-          <div class="upload-icon-circle">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
-              <line x1="16" y1="5" x2="22" y2="5"></line>
-              <line x1="19" y1="2" x2="19" y2="8"></line>
-              <circle cx="9" cy="9" r="2"></circle>
-              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
-            </svg>
-          </div>
-          <div class="upload-info">
-            <h4>写真をアップロードして動かす</h4>
-            <p>スマホの写真やイラストからAIアバターを生成</p>
-          </div>
-          <input type="file" id="avatarFileInput" accept="image/*" class="file-input-hidden">
-        </div>
-
-        <div class="settings-block">
-          <h4 class="block-title">プリセット・アーティスト</h4>
-          <div class="large-cards-list">
-            <button class="touch-card active" data-avatar="anime-rock">
-              <div class="avatar-circle preview-anime-rock"></div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>アスカ（ロックシンガー）</h4>
-                  <span class="badge-status">選択中</span>
-                </div>
-                <p>赤髪ツインテールの情熱的なボーカル</p>
-              </div>
-            </button>
-
-            <button class="touch-card" data-avatar="cyber-idol">
-              <div class="avatar-circle preview-cyber-idol"></div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>ルナ（サイバーポップ）</h4>
-                  <span class="badge-status">切替</span>
-                </div>
-                <p>近未来の光るホログラムアイドル</p>
-              </div>
-            </button>
-
-            <button class="touch-card" data-avatar="indie-boy">
-              <div class="avatar-circle preview-indie-boy"></div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>レン（弾き語り/シティポップ）</h4>
-                  <span class="badge-status">切替</span>
-                </div>
-                <p>アコースティックな温かみのある男性シンガー</p>
-              </div>
-            </button>
-
-            <button class="touch-card" data-avatar="lofi-girl">
-              <div class="avatar-circle preview-lofi-girl"></div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>ミオ（チル / Lo-Fi）</h4>
-                  <span class="badge-status">切替</span>
-                </div>
-                <p>ヘッドフォンをつけたリラックスボーカル</p>
-              </div>
-            </button>
+      <!-- Section 2: 楽曲の取り込みと選択 (大きなボタン) -->
+      <section class="large-section">
+        <div class="section-title-wrap">
+          <span class="step-badge">2</span>
+          <div>
+            <h3 class="section-title">あなたの楽曲を取り込む・選ぶ</h3>
+            <p class="section-sub">スマホ内のオリジナル曲やデモ曲をワンタップでセット</p>
           </div>
         </div>
-      </section>
 
-      <!-- 3. Audio & Song Tab -->
-      <section class="tab-panel" id="panel-audio">
-        <div class="panel-header">
-          <h3>🎵 楽曲＆音源設定</h3>
-          <p class="panel-desc">制作されたオリジナル楽曲を取り込み、自動でビートとボーカルを解析します。</p>
+        <!-- Big Audio File Upload -->
+        <div class="giant-action-card audio-upload-card" id="audioUploadBtn">
+          <span class="action-card-icon">📁</span>
+          <div class="action-card-text">
+            <strong>スマホから制作楽曲ファイルを選択</strong>
+            <span id="audioUploadHint">MP3, WAV, AAC, M4A 形式に対応（ここをタップ）</span>
+          </div>
+          <input type="file" id="audioFileInput" accept="audio/*" class="hidden-input">
         </div>
 
-        <!-- Big Audio File Upload Card -->
-        <div class="large-upload-card" id="audioUploadBox">
-          <div class="upload-icon-circle audio-icon">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17 8 12 3 7 8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
+        <!-- Big Mic Test Button -->
+        <button id="micToggleBtn" class="giant-action-card mic-card">
+          <span class="action-card-icon">🎤</span>
+          <div class="action-card-text">
+            <strong id="micBtnTitle">スマホのマイクで歌唱テスト</strong>
+            <span>マイクに向かって歌うとリアルタイムに口パクします</span>
           </div>
-          <div class="upload-info">
-            <h4>あなたの制作楽曲をアップロード</h4>
-            <p id="audioFileNameHint">MP3, WAV, AAC, M4A 形式に対応（タップして選択）</p>
-          </div>
-          <input type="file" id="audioFileInput" accept="audio/*" class="file-input-hidden">
-        </div>
-
-        <!-- Mic Test Large Button -->
-        <button id="micToggleBtn" class="touch-btn-block">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-            <line x1="12" y1="19" x2="12" y2="23"></line>
-            <line x1="8" y1="23" x2="16" y2="23"></line>
-          </svg>
-          <span id="micBtnText">スマホのマイクで歌唱テスト</span>
         </button>
 
-        <div class="settings-block">
-          <h4 class="block-title">すぐに試せるデモ楽曲</h4>
-          <div class="large-cards-list">
-            <button class="touch-card active" data-song="jpop">
-              <div class="song-circle-icon">▶</div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>Shining Beat（J-POP）</h4>
-                  <span class="badge-status">再生中</span>
-                </div>
-                <p>BPM 132 • 明るいメロディとギターカッティング</p>
+        <!-- Demo Songs List -->
+        <div class="sub-block-title">すぐに試せるデモ楽曲：</div>
+        <div class="giant-cards-list">
+          <button class="accessible-card active" data-song="jpop">
+            <span class="card-icon-big">🎵</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>Shining Beat（J-POP）</h4>
+                <span class="status-pill selected">再生中</span>
               </div>
-            </button>
-
-            <button class="touch-card" data-song="lofi">
-              <div class="song-circle-icon">▶</div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>Midnight Groove（チル）</h4>
-                  <span class="badge-status">切替</span>
-                </div>
-                <p>BPM 88 • 重厚なビートと心地よいグルーヴ</p>
-              </div>
-            </button>
-
-            <button class="touch-card" data-song="rock">
-              <div class="song-circle-icon">▶</div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>Overdrive Ignition（ロック）</h4>
-                  <span class="badge-status">切替</span>
-                </div>
-                <p>BPM 148 • 激しいギターリフと疾走ドラム</p>
-              </div>
-            </button>
-
-            <button class="touch-card" data-song="cyber">
-              <div class="song-circle-icon">▶</div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>Neon Skyline（EDM）</h4>
-                  <span class="badge-status">切替</span>
-                </div>
-                <p>BPM 128 • ドロップに合わせてバウンス</p>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Realtime Spectrum Visualizer -->
-        <div class="settings-block">
-          <h4 class="block-title">リアルタイム音響スペクトラム</h4>
-          <div class="spectrum-box">
-            <canvas id="spectrumCanvas" width="400" height="90"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4. Stage & Visual Effects Tab -->
-      <section class="tab-panel" id="panel-effects">
-        <div class="panel-header">
-          <h3>🎬 ステージ演出＆カメラ</h3>
-          <p class="panel-desc">ライブハウスやMVらしい迫力あるカメラワークとライティングです。</p>
-        </div>
-
-        <div class="settings-block">
-          <h4 class="block-title">カメラアングル</h4>
-          <div class="large-cards-list">
-            <button class="touch-card active" data-camera="dynamic">
-              <div class="card-left-icon">📹</div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>ダイナミック・ビートズーム</h4>
-                  <span class="badge-status">選択中</span>
-                </div>
-                <p>キック音やサビでグッと迫る迫力カメラ</p>
-              </div>
-            </button>
-
-            <button class="touch-card" data-camera="closeup">
-              <div class="card-left-icon">🔍</div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>リップシンク・クローズアップ</h4>
-                  <span class="badge-status">切替</span>
-                </div>
-                <p>表情と口元の動きを大きく捉える</p>
-              </div>
-            </button>
-
-            <button class="touch-card" data-camera="orbit">
-              <div class="card-left-icon">🔄</div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>ステージ・オービット</h4>
-                  <span class="badge-status">切替</span>
-                </div>
-                <p>アーティストの周囲をなめらかに旋回</p>
-              </div>
-            </button>
-
-            <button class="touch-card" data-camera="handheld">
-              <div class="card-left-icon">📱</div>
-              <div class="card-body">
-                <div class="card-title-row">
-                  <h4>手持ちスマホ風</h4>
-                  <span class="badge-status">切替</span>
-                </div>
-                <p>リアルな臨場感のある手ブレ演出</p>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <div class="settings-block">
-          <h4 class="block-title">ステージテーマ</h4>
-          <div class="large-pills-wrap">
-            <button class="touch-pill active" data-stage="livehouse">🎪 ライブハウス（レーザー＆スモーク）</button>
-            <button class="touch-pill" data-stage="cyberpunk">🌃 サイバーネオン都市</button>
-            <button class="touch-pill" data-stage="sunset">🌇 夕暮れルーフトップ</button>
-            <button class="touch-pill" data-stage="studio">🎙️ スタジオ・ミニマル</button>
-          </div>
-        </div>
-
-        <div class="settings-block">
-          <h4 class="block-title">演出スイッチ</h4>
-          <div class="touch-toggle-row">
-            <span class="toggle-text">ビート連動レーザー照明</span>
-            <label class="switch">
-              <input type="checkbox" id="laserEffectToggle" checked>
-              <span class="slider round"></span>
-            </label>
-          </div>
-          <div class="touch-toggle-row">
-            <span class="toggle-text">ステージ・パーティクル浮遊</span>
-            <label class="switch">
-              <input type="checkbox" id="particleEffectToggle" checked>
-              <span class="slider round"></span>
-            </label>
-          </div>
-          <div class="touch-toggle-row">
-            <span class="toggle-text">リリック（歌詞テロップ）表示</span>
-            <label class="switch">
-              <input type="checkbox" id="lyricsToggle" checked>
-              <span class="slider round"></span>
-            </label>
-          </div>
-        </div>
-      </section>
-
-      <!-- 5. Cost-Saving AI Hub Tab -->
-      <section class="tab-panel" id="panel-costhub">
-        <div class="panel-header">
-          <h3>💰 費用を抑えるAI活用ハブ</h3>
-          <p class="panel-desc">「高額な月額費用」の悩みを根本解決する最新オープンソース＆格安APIソリューションです。</p>
-        </div>
-
-        <div class="cost-feature-box">
-          <h4>💡 なぜ従来のツールは高いのか？</h4>
-          <div class="cost-two-cards">
-            <div class="cost-item legacy">
-              <span class="cost-tag red">従来の高額AI</span>
-              <h5>月額 ¥8,000〜¥30,000+</h5>
-              <p>・生成分数に厳しい制限<br>・口だけ動いて体は静止<br>・ギターやダンスができない</p>
+              <p>BPM 132 • 明るいギターと疾走感のあるアイドルポップ</p>
             </div>
-            <div class="cost-item modern">
-              <span class="cost-tag green">GrooveSync + 最新AI</span>
-              <h5>1曲 ¥10〜¥50程度！</h5>
-              <p>・<strong>LivePortrait</strong>で超高精度リップシンク<br>・<strong>AnimateAnyone</strong>で全身骨格追従<br>・無駄な月額契約なし</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-block">
-          <h4 class="block-title">ワンタップ生成プロンプト</h4>
-          <p class="block-subtitle">Runway、Luma、Kling、Sora等でそのまま使える高表現MVプロンプトです</p>
-          <textarea id="aiPromptOutput" readonly class="large-code-box" rows="4"></textarea>
-          <button id="copyPromptBtn" class="touch-btn-block">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            <span>プロンプトをコピーする</span>
           </button>
-          <button id="downloadWorkflowBtn" class="touch-btn-secondary">
-            <span>ComfyUI設定JSONをダウンロード</span>
+
+          <button class="accessible-card" data-song="lofi">
+            <span class="card-icon-big">🎵</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>Midnight Groove（チル・ヒップホップ）</h4>
+                <span class="status-pill">タップで再生</span>
+              </div>
+              <p>BPM 88 • 首を揺らす重厚なビートとローズピアノ</p>
+            </div>
+          </button>
+
+          <button class="accessible-card" data-song="rock">
+            <span class="card-icon-big">🎵</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>Overdrive Ignition（ロック）</h4>
+                <span class="status-pill">タップで再生</span>
+              </div>
+              <p>BPM 148 • 歪んだギターリフと激しいビート</p>
+            </div>
+          </button>
+
+          <button class="accessible-card" data-song="cyber">
+            <span class="card-icon-big">🎵</span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>Neon Skyline（EDM）</h4>
+                <span class="status-pill">タップで再生</span>
+              </div>
+              <p>BPM 128 • ドロップに合わせてバウンスするダンス曲</p>
+            </div>
           </button>
         </div>
+      </section>
 
-        <div class="settings-block">
-          <h4 class="block-title">格安クラウドAPI連携（従量課金設定）</h4>
-          <div class="api-form">
-            <label class="form-label">連携プロバイダー</label>
-            <select id="apiKeyProvider" class="large-select">
-              <option value="fal">Fal.ai (LivePortrait / Wan2.1)</option>
-              <option value="replicate">Replicate (AnimateAnyone / Champ)</option>
-              <option value="runpod">RunPod (格安GPU)</option>
-            </select>
-
-            <label class="form-label" style="margin-top: 12px;">APIキー（任意）</label>
-            <input type="password" id="userApiKey" placeholder="fal_... または r8_..." class="large-input">
-            <button id="saveApiKeyBtn" class="touch-btn-secondary" style="margin-top: 10px;">APIキーを保存</button>
+      <!-- Section 3: アーティスト・写真の設定 -->
+      <section class="large-section">
+        <div class="section-title-wrap">
+          <span class="step-badge">3</span>
+          <div>
+            <h3 class="section-title">アーティスト（主役）を設定する</h3>
+            <p class="section-sub">ご自身の写真やオリジナルイラストを設定できます</p>
           </div>
         </div>
+
+        <!-- Big Custom Photo Upload -->
+        <div class="giant-action-card photo-upload-card" id="avatarUploadBtn">
+          <span class="action-card-icon">📷</span>
+          <div class="action-card-text">
+            <strong>スマホの写真・イラストをアバターにする</strong>
+            <span>写真を取り込んで、歌って演奏させることができます</span>
+          </div>
+          <input type="file" id="avatarFileInput" accept="image/*" class="hidden-input">
+        </div>
+
+        <div class="sub-block-title">プリセット・キャラクター：</div>
+        <div class="giant-cards-list">
+          <button class="accessible-card active" data-avatar="anime-rock">
+            <span class="avatar-badge-preview preview-anime-rock"></span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>アスカ（女性ロックボーカル）</h4>
+                <span class="status-pill selected">✔ 選択中</span>
+              </div>
+              <p>赤髪ツインテールの情熱的なシンガー</p>
+            </div>
+          </button>
+
+          <button class="accessible-card" data-avatar="indie-boy">
+            <span class="avatar-badge-preview preview-indie-boy"></span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>レン（男性シンガーソングライター）</h4>
+                <span class="status-pill">タップで選択</span>
+              </div>
+              <p>弾き語りやシティポップが似合う男性ボーカル</p>
+            </div>
+          </button>
+
+          <button class="accessible-card" data-avatar="cyber-idol">
+            <span class="avatar-badge-preview preview-cyber-idol"></span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>ルナ（サイバーポップアイドル）</h4>
+                <span class="status-pill">タップで選択</span>
+              </div>
+              <p>光るサイバーネオンの近未来系ボーカル</p>
+            </div>
+          </button>
+
+          <button class="accessible-card" data-avatar="lofi-girl">
+            <span class="avatar-badge-preview preview-lofi-girl"></span>
+            <div class="card-content-big">
+              <div class="card-head-row">
+                <h4>ミオ（チル / Lo-Fiガール）</h4>
+                <span class="status-pill">タップで選択</span>
+              </div>
+              <p>ヘッドフォンをつけたリラックス系ボーカル</p>
+            </div>
+          </button>
+        </div>
       </section>
+
+      <!-- Section 4: リップシンク・揺れの微調整 (特大スライダー) -->
+      <section class="large-section">
+        <div class="section-title-wrap">
+          <span class="step-badge">4</span>
+          <div>
+            <h3 class="section-title">表現力・動きの微調整</h3>
+            <p class="section-sub">スライダーを左右に動かして大きさやノリを調整できます</p>
+          </div>
+        </div>
+
+        <div class="giant-slider-card">
+          <div class="slider-label-row">
+            <span class="slider-name">口パクの大きさ（リップシンク感度）</span>
+            <span id="lipsyncVal" class="slider-val-badge">85%</span>
+          </div>
+          <input type="range" id="lipsyncSensitivity" class="super-fat-slider" min="20" max="150" value="85">
+        </div>
+
+        <div class="giant-slider-card">
+          <div class="slider-label-row">
+            <span class="slider-name">体の揺れ・グルーヴの強さ</span>
+            <span id="grooveVal" class="slider-val-badge">70%</span>
+          </div>
+          <input type="range" id="grooveStrength" class="super-fat-slider" min="0" max="120" value="70">
+        </div>
+
+        <div class="giant-slider-card">
+          <div class="slider-label-row">
+            <span class="slider-name">感情表現（目力・眉・首のノリ）</span>
+            <span id="expressionVal" class="slider-val-badge">80%</span>
+          </div>
+          <input type="range" id="expressionLevel" class="super-fat-slider" min="20" max="100" value="80">
+        </div>
+      </section>
+
+      <!-- Section 5: コスト削減AIハブ (文字が大きく読みやすい) -->
+      <section class="large-section">
+        <div class="section-title-wrap">
+          <span class="step-badge">5</span>
+          <div>
+            <h3 class="section-title">高額な費用をゼロにするAI活用ハブ</h3>
+            <p class="section-sub">「既存ツールが高い」というお悩みを解決する格安AIの解説です</p>
+          </div>
+        </div>
+
+        <div class="accessible-info-box">
+          <h4>💡 なぜ既存のAIツールは高いのか？</h4>
+          <p class="info-p">
+            従来の商用ツールは「月額1万〜3万円」の定額サブスクが多く、しかも毎月数分しか生成できない制限があります。
+          </p>
+          <div class="cost-card-pair">
+            <div class="cost-pill red">
+              <strong>従来の高額ツール</strong>
+              <span>月額 ¥10,000〜¥30,000</span>
+              <p>口元だけ動き、体や楽器の演奏ができない</p>
+            </div>
+            <div class="cost-pill green">
+              <strong>GrooveSync + 最新AI</strong>
+              <span>1曲あたり数十円程度！</span>
+              <p>LivePortrait & AnimateAnyoneで全身演奏＆格安生成</p>
+            </div>
+          </div>
+
+          <button id="copyPromptBtn" class="giant-btn giant-secondary-btn" style="margin-top: 14px;">
+            <span>📋 AI動画生成用プロンプトをコピーする</span>
+          </button>
+        </div>
+      </section>
+      
+      <div style="height: 100px;"></div>
     </main>
 
-    <!-- Bottom Sticky One-Hand Action Bar (Always within thumb reach) -->
-    <footer class="bottom-action-bar">
-      <button id="togglePlayBtn" class="action-play-btn" aria-label="再生・一時停止">
-        <svg id="playIcon" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
-        <svg id="pauseIcon" class="hidden" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-          <rect x="6" y="4" width="4" height="16"></rect>
-          <rect x="14" y="4" width="4" height="16"></rect>
-        </svg>
-        <span id="playBtnText">再生する</span>
-      </button>
 
-      <button id="recordBottomBtn" class="action-rec-btn" aria-label="動画を録画">
-        <span class="red-rec-dot"></span>
-        <span>動画録画</span>
-      </button>
-    </footer>
+    <!-- =============================================================== -->
+    <!-- VIEW 2: MV映像 (iPhoneの画面いっぱいに広がる全画面動画ビュー) -->
+    <!-- =============================================================== -->
+    <div id="viewStage" class="stage-view-fullscreen hidden">
+      <!-- Fullscreen Stage Canvas -->
+      <canvas id="stageCanvas" width="720" height="1280"></canvas>
 
-    <!-- Video Export & Download Modal -->
-    <div class="modal-overlay hidden" id="exportModal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>🎬 ミュージックビデオの書き出し</h3>
-          <button id="closeModalBtn" class="modal-close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="export-preview-box">
-            <div class="export-status-icon" id="exportStatusIcon">🎥</div>
-            <h4 id="exportStatusTitle">録画準備完了</h4>
-            <p id="exportStatusDesc">スマホの写真・ファイルアプリに直接保存できます。</p>
-            <div class="progress-bar-wrap modal-progress hidden" id="recordProgressWrap">
-              <div class="progress-fill" id="recordProgressFill"></div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <label class="form-label">録画時間</label>
-            <select id="exportDuration" class="large-select">
-              <option value="15">15秒（Shorts / サビダイジェスト）</option>
-              <option value="30">30秒（フルコーラス）</option>
-              <option value="full">楽曲全体（フルサイズ）</option>
-            </select>
-          </div>
-
-          <div class="form-row" style="margin-top: 14px;">
-            <label class="form-label">動画形式</label>
-            <select id="exportFormat" class="large-select">
-              <option value="webm">WebM（高画質・スマホ即座プレビュー）</option>
-              <option value="mp4">MP4互換形式</option>
-            </select>
-          </div>
-
-          <button id="startRecordingModalBtn" class="touch-btn-block" style="margin-top: 20px;">
-            <span>● 録画を開始してビデオを保存</span>
-          </button>
-        </div>
+      <!-- Top Overlay: Return to Controls button & Status -->
+      <div class="stage-fullscreen-header">
+        <button id="backToControlsBtn" class="stage-back-btn">
+          <span>← 🎛️ 操作画面に戻る</span>
+        </button>
+        <span class="stage-mode-indicator" id="stageBpmIndicator">132 BPM</span>
       </div>
-    </div>
 
-    <!-- Help Modal -->
-    <div class="modal-overlay hidden" id="helpModal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>📖 GrooveSync MV の使い方</h3>
-          <button id="closeHelpBtn" class="modal-close-btn">&times;</button>
+      <!-- Center Floating Lyrics -->
+      <div class="stage-center-lyrics" id="stageLyrics">
+        <h2 id="lyricsText">音に合わせて感情豊かに歌い踊る</h2>
+      </div>
+
+      <!-- Realtime Viseme Badge (口の形表示) -->
+      <div class="stage-viseme-badge">
+        <span>母音: <strong id="stageVisemeChar">A</strong></span>
+      </div>
+
+      <!-- Bottom Floating Player Controls on Fullscreen Stage -->
+      <div class="stage-fullscreen-footer">
+        <div class="stage-progress-bar" id="stageProgressWrap">
+          <div class="stage-progress-fill" id="stageProgressFill"></div>
         </div>
-        <div class="modal-body guide-content">
-          <div class="guide-steps">
-            <div class="guide-step">
-              <span class="step-num">1</span>
-              <div>
-                <strong>制作楽曲を読み込む</strong>
-                <p>「楽曲・音源」タブから制作されたオリジナル曲（MP3/WAV）を取り込みます。デモ曲でもすぐに体験できます。</p>
-              </div>
-            </div>
-            <div class="guide-step">
-              <span class="step-num">2</span>
-              <div>
-                <strong>動作モードを選択</strong>
-                <p>画面下部のチップや「モーション」タブから、「ギター」「ピアノ」「ダンス」「体を揺らす」などを選ぶと、体全体が曲に合わせて動きます。</p>
-              </div>
-            </div>
-            <div class="guide-step">
-              <span class="step-num">3</span>
-              <div>
-                <strong>スマホに動画保存</strong>
-                <p>画面下の「動画録画」ボタンを押すだけで、演奏とリップシンクが一体になったMVをスマホに直接保存できます。</p>
-              </div>
-            </div>
+
+        <div class="stage-footer-row">
+          <div class="stage-song-info">
+            <strong id="stageSongTitle">Shining Beat (J-POP)</strong>
+            <span id="stageSongTime">00:00 / 00:30</span>
+          </div>
+
+          <div class="stage-footer-btns">
+            <button id="stagePlayBtn" class="stage-circle-btn play">
+              <span id="stagePlayIcon">▶</span>
+            </button>
+            <button id="stageRecordBtn" class="stage-circle-btn rec">
+              <span class="stage-rec-dot"></span>
+            </button>
           </div>
         </div>
       </div>
