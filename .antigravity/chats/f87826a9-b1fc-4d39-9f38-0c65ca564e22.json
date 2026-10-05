@@ -3,7 +3,7 @@
   "name": "日本語対応にできますか？",
   "createdAt": "2026-10-05T10:00:19.658Z",
   "filename": "f87826a9-b1fc-4d39-9f38-0c65ca564e22.json",
-  "geminiStarted": false,
+  "geminiStarted": true,
   "messages": [
     {
       "id": "3d585ee6-a90e-4373-bed5-3c9124a4fd98",
@@ -15,6 +15,18 @@
       "parent_message_id": null,
       "created_at": "2026-10-05T10:03:09.408Z",
       "sender": "ios",
+      "is_cancelled": false
+    },
+    {
+      "id": "1b8fc75d-f31c-409b-a45f-6ff7242e3797",
+      "role": "agent",
+      "content": "はい、もちろん日本語に対応しています！\n\nこれからのやり取りやご指示はすべて日本語で対応いたします。\n\nWebサイトやアプリの作成、プログラミングに関するご相談、コードの作成・修正など、何でも日本語でお気軽にお申し付けください。\n\nどのようなものを作成されたいか、またはどのようなサポートが必要か、ぜひ教えてください！",
+      "status": "completed",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "3d585ee6-a90e-4373-bed5-3c9124a4fd98",
+      "created_at": "2026-10-05T10:03:54.915Z",
+      "sender": "macOS",
       "is_cancelled": false
     }
   ]
