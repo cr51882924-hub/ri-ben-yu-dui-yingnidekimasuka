@@ -172,6 +172,18 @@
       "created_at": "2026-10-06T13:03:42.941Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "76cc6c4c-da72-4cb6-b87a-2841469bf132",
+      "role": "user",
+      "content": "肯定1の人物の画像のアップですが、確かに選択する画面は表示されます。選択し、チェックボタンを押してもアップロードがされません。",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-06T13:30:38.870Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
