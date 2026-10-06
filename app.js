@@ -66,6 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const avatarFileInput = document.getElementById('avatarFileInput');
   const avatarCardTitle = document.getElementById('avatarCardTitle');
   const avatarCardHint = document.getElementById('avatarCardHint');
+  const avatarCardIcon = document.getElementById('avatarCardIcon');
+  const avatarPreviewImg = document.getElementById('avatarPreviewImg');
 
   // Mic
   const micToggleBtn = document.getElementById('micToggleBtn');
@@ -392,6 +394,11 @@ document.addEventListener('DOMContentLoaded', () => {
       controlSongTitle.textContent = `${song.title} (${song.genre})`;
       stageSongTitle.textContent = `${song.title} (${song.genre})`;
       stageBpmIndicator.textContent = `${song.bpm} BPM`;
+
+      // Reset audio upload button state
+      audioUploadBtn.classList.remove('applied');
+      audioCardTitle.textContent = 'あなたが制作した楽曲ファイルをアップロード';
+      audioUploadHint.textContent = 'MP3, WAV, AAC, M4A 形式に対応（ここをタップ）';
 
       // Reset trimmer
       trimStartSeconds = 0;
