@@ -146,12 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Trimmer Sync & Update Function
   // ==========================================
   function updateTrimmerUI() {
-    const totalDuration = audioEngine.duration || 30;
+    const totalDuration = Math.max(1, audioEngine.duration || 30);
 
     // Constrain start
-    trimStartSeconds = Math.max(0, Math.min(trimStartSeconds, totalDuration - 1));
+    trimStartSeconds = Math.max(0, Math.min(trimStartSeconds, totalDuration - 0.5));
     // Constrain duration
-    trimDurationSeconds = Math.max(1, Math.min(trimDurationSeconds, totalDuration - trimStartSeconds));
+    trimDurationSeconds = Math.max(0.5, Math.min(trimDurationSeconds, totalDuration - trimStartSeconds));
 
     const endSeconds = trimStartSeconds + trimDurationSeconds;
 
@@ -171,6 +171,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     trimDurationSlider.value = trimDurationSeconds;
     trimDurationSlider.max = Math.max(1, Math.floor(totalDuration));
+
+    // Update Full Song Preview Timeline labels & range
+    if (fullPlayerTotalTime) {
+      fullPlayerTotalTime.textContent = formatTime(totalDuration);
+    }
+    if (timelineMidLabel) {
+      timelineMidLabel.textContent = formatTime(totalDuration / 2);
+    }
+    if (timelineEndLabel) {
+      timelineEndLabel.textContent = `${formatTime(totalDuration)} (終了)`;
+    }
+    if (fullSongSeekSlider) {
+      fullSongSeekSlider.max = totalDuration;
+    }
+    if (timelineSelectionRange) {
+      const leftPercent = (trimStartSeconds / totalDuration) * 100;
+      const widthPercent = (trimDurationSeconds / totalDuration) * 100;
+      timelineSelectionRange.style.left = `${leftPercent}%`;
+      timelineSelectionRange.style.width = `${Math.min(100 - leftPercent, widthPercent)}%`;
+    }
 
     // Badges & Summaries
     controlTrimRangeBadge.textContent = `再生区間: ${formatTime(trimStartSeconds)} 〜 ${formatTime(endSeconds)} (${Math.round(trimDurationSeconds)}秒間)`;
@@ -210,13 +230,82 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Full Song Preview Player Controls
+  function updateFullPlayerUI(isPlaying) {
+    if (fullPlayIcon) fullPlayIcon.textContent = isPlaying ? '⏸' : '▶';
+    if (fullPlayLabel) fullPlayLabel.textContent = isPlaying ? '一時停止する' : '曲全体を再生する';
+    if (fullPlayerStatusBadge) {
+      if (isPlaying) {
+        fullPlayerStatusBadge.textContent = '再生中 🔊';
+        fullPlayerStatusBadge.classList.add('playing');
+      } else {
+        fullPlayerStatusBadge.textContent = '一時停止中';
+        fullPlayerStatusBadge.classList.remove('playing');
+      }
+    }
+  }
+
+  if (fullPlayToggleBtn) {
+    fullPlayToggleBtn.addEventListener('click', () => {
+      triggerHaptic();
+      if (audioEngine.isPlaying && audioEngine.playMode === 'full') {
+        audioEngine.pause();
+        updatePlayUI(false);
+        updateFullPlayerUI(false);
+      } else {
+        const startSec = (audioEngine.currentTime && audioEngine.currentTime < audioEngine.duration - 0.5)
+          ? audioEngine.currentTime
+          : 0;
+        audioEngine.playFull(startSec);
+        updatePlayUI(true);
+        updateFullPlayerUI(true);
+        showToast(`曲全体の再生を開始しました（${formatTime(startSec)}〜）。秒数を確認できます`);
+      }
+    });
+  }
+
+  if (fullPlayRewindBtn) {
+    fullPlayRewindBtn.addEventListener('click', () => {
+      triggerHaptic();
+      audioEngine.seekFull(0);
+      audioEngine.playFull(0);
+      updatePlayUI(true);
+      updateFullPlayerUI(true);
+      showToast('曲の最初 (00:00) から再生します');
+    });
+  }
+
+  if (fullSongSeekSlider) {
+    fullSongSeekSlider.addEventListener('input', (e) => {
+      const targetSec = parseFloat(e.target.value);
+      audioEngine.seekFull(targetSec);
+      if (fullPlayerCurrentTime) fullPlayerCurrentTime.textContent = formatTime(targetSec);
+      if (timelinePlayhead) {
+        const dur = Math.max(1, audioEngine.duration);
+        timelinePlayhead.style.left = `${(targetSec / dur) * 100}%`;
+      }
+    });
+  }
+
+  // ★ The Sync to Start Button
+  if (setStartFromCurrentBtn) {
+    setStartFromCurrentBtn.addEventListener('click', () => {
+      triggerHaptic();
+      const curSec = Math.floor(audioEngine.currentTime || 0);
+      trimStartSeconds = curSec;
+      updateTrimmerUI();
+      showToast(`📍 現在の秒数「${formatTime(curSec)}」を開始位置にセットしました！`);
+    });
+  }
+
   // Test Play Trimmed Section
   previewTrimBtn.addEventListener('click', () => {
     triggerHaptic();
     audioEngine.pause();
     audioEngine.pauseOffset = 0;
-    audioEngine.play();
+    audioEngine.playTrim();
     updatePlayUI(true);
+    updateFullPlayerUI(false);
     showToast(`選択した区間（${formatTime(trimStartSeconds)}〜）を再生中`);
   });
 
@@ -346,9 +435,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (audioEngine.isPlaying) {
       audioEngine.pause();
       updatePlayUI(false);
+      updateFullPlayerUI(false);
     } else {
-      audioEngine.play();
+      audioEngine.playTrim();
       updatePlayUI(true);
+      updateFullPlayerUI(false);
     }
   }
 
@@ -706,13 +797,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       audioUploadHint.textContent = `読込中: ${file.name}...`;
       const res = await audioEngine.loadUserFile(file);
-      if (res.success) {
+      if (res && res.success) {
         const cleanName = file.name.replace(/\.[^/.]+$/, "");
         controlSongTitle.textContent = cleanName;
         stageSongTitle.textContent = cleanName;
         audioUploadBtn.classList.add('applied');
         audioCardTitle.textContent = `✔ 読込完了: ${file.name}`;
-        audioUploadHint.textContent = `全体の長さ: ${formatTime(res.duration)}（下で使う区間を調整できます）`;
+        audioUploadHint.textContent = `全体の長さ: ${formatTime(res.duration)}（下で秒数確認・使う区間を調整できます）`;
 
         songCards.forEach(s => {
           s.classList.remove('active');
@@ -732,17 +823,20 @@ document.addEventListener('DOMContentLoaded', () => {
         trimDurationSeconds = Math.min(res.duration, 30);
         updateTrimmerUI();
 
-        audioEngine.play();
+        // Start playback in full preview mode from 00:00 so user hears whole song and monitors seconds
+        audioEngine.playFull(0);
         updatePlayUI(true);
-        showToast(`制作楽曲「${cleanName}」を読み込みました！長さをお選びください。`);
+        updateFullPlayerUI(true);
+        showToast(`🎉 楽曲「${cleanName}」（全体 ${formatTime(res.duration)}）を読み込みました！曲全体のサウンドを流して秒数を確認できます。`);
       } else {
-        audioUploadHint.textContent = 'エラー: 音声ファイルを確認してください';
-        showToast('音声の読み込みに失敗しました');
+        const errDetail = (res && res.error) ? res.error : '音声ファイルを確認してください';
+        audioUploadHint.textContent = `エラー: ${errDetail}`;
+        showToast('音声の読み込みに失敗しました。MP3やWAV、ボイスメモ(M4A)等をお試しください。');
       }
     } catch (err) {
       console.error('Audio load error:', err);
-      audioUploadHint.textContent = 'エラー: 音声ファイルの読み込みに失敗しました';
-      showToast('音声の読み込みに失敗しました');
+      audioUploadHint.textContent = 'エラー: 音声ファイルの読み込みに失敗しました（別のファイルをお試しください）';
+      showToast('音声ファイルの読み込みに失敗しました');
     } finally {
       audioFileInput.value = '';
     }
@@ -779,8 +873,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Make sure audio is playing from start of trim
     audioEngine.pause();
     audioEngine.pauseOffset = 0;
-    audioEngine.play();
+    audioEngine.playTrim();
     updatePlayUI(true);
+    updateFullPlayerUI(false);
 
     try {
       const canvasStream = stageCanvas.captureStream(30);
@@ -897,13 +992,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (audioEngine.isPlaying) {
       const cur = audioEngine.currentTime;
-      const trimLen = audioEngine.getTrimDuration();
-      const currentOffset = Math.max(0, cur - audioEngine.trimStart);
-      const progressPercent = Math.min(100, (currentOffset / trimLen) * 100);
+      const totalDur = Math.max(1, audioEngine.duration || 30);
 
-      controlSongTime.textContent = `${formatTime(cur)} / ${formatTime(audioEngine.trimEnd)}`;
-      stageSongTime.textContent = `${formatTime(cur)} / ${formatTime(audioEngine.trimEnd)}`;
-      stageProgressFill.style.width = `${progressPercent}%`;
+      if (audioEngine.playMode === 'full') {
+        const fullPercent = Math.min(100, (cur / totalDur) * 100);
+        controlSongTime.textContent = `${formatTime(cur)} / ${formatTime(totalDur)}`;
+        stageSongTime.textContent = `${formatTime(cur)} / ${formatTime(totalDur)}`;
+        stageProgressFill.style.width = `${fullPercent}%`;
+
+        if (fullPlayerCurrentTime) {
+          fullPlayerCurrentTime.textContent = formatTime(cur);
+        }
+        if (timelinePlayhead) {
+          timelinePlayhead.style.left = `${fullPercent}%`;
+        }
+        if (fullSongSeekSlider && !fullSongSeekSlider.matches(':active')) {
+          fullSongSeekSlider.value = cur;
+        }
+      } else {
+        const trimLen = audioEngine.getTrimDuration();
+        const currentOffset = Math.max(0, cur - audioEngine.trimStart);
+        const progressPercent = Math.min(100, (currentOffset / trimLen) * 100);
+
+        controlSongTime.textContent = `${formatTime(cur)} / ${formatTime(audioEngine.trimEnd)}`;
+        stageSongTime.textContent = `${formatTime(cur)} / ${formatTime(audioEngine.trimEnd)}`;
+        stageProgressFill.style.width = `${progressPercent}%`;
+
+        if (fullPlayerCurrentTime) {
+          fullPlayerCurrentTime.textContent = formatTime(cur);
+        }
+        if (timelinePlayhead) {
+          const fullPercent = Math.min(100, (cur / totalDur) * 100);
+          timelinePlayhead.style.left = `${fullPercent}%`;
+        }
+        if (fullSongSeekSlider && !fullSongSeekSlider.matches(':active')) {
+          fullSongSeekSlider.value = cur;
+        }
+      }
 
       if (currentSongConfig.lyrics) {
         let activeLyric = currentSongConfig.lyrics[0].text;
@@ -913,6 +1038,10 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
         lyricsText.textContent = activeLyric;
+      }
+    } else {
+      if (fullPlayerStatusBadge && fullPlayerStatusBadge.classList.contains('playing')) {
+        updateFullPlayerUI(false);
       }
     }
 
