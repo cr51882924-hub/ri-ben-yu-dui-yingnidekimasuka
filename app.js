@@ -595,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (appReloadBtn) {
     appReloadBtn.addEventListener('click', () => {
       triggerHaptic();
-      showToast('🔄 最新バージョン (v6) を読み込んでいます...');
+      showToast('🔄 最新バージョン (v7) を読み込んでいます...');
       setTimeout(() => {
         try {
           const url = new URL(window.location.href);
