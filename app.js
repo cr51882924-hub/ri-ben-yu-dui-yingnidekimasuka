@@ -198,22 +198,49 @@ document.addEventListener('DOMContentLoaded', () => {
   function switchView(target) {
     triggerHaptic();
     if (target === 'controls') {
+      const alreadyControls = viewControls.classList.contains('active-view');
       viewControls.classList.add('active-view');
       viewStage.classList.add('hidden');
       tabBtnControls.classList.add('active');
+      tabBtnControls.setAttribute('aria-selected', 'true');
       tabBtnStage.classList.remove('active');
+      tabBtnStage.setAttribute('aria-selected', 'false');
+
+      if (tabControlsSub) tabControlsSub.textContent = '✔ 現在表示中';
+      if (tabStageSub) tabStageSub.textContent = '完成動画を見る →';
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // アニメーション効果で押した反応を明示
+      tabBtnControls.classList.remove('pulse-anim');
+      void tabBtnControls.offsetWidth; // reflow
+      tabBtnControls.classList.add('pulse-anim');
+
+      if (alreadyControls) {
+        showToast('✅ すでに「操作画面」を表示しています（下へスクロールして設定できます）');
+      } else {
+        showToast('🎛️ 操作画面に戻りました');
+      }
     } else {
       viewControls.classList.remove('active-view');
       viewStage.classList.remove('hidden');
       tabBtnControls.classList.remove('active');
+      tabBtnControls.setAttribute('aria-selected', 'false');
       tabBtnStage.classList.add('active');
+      tabBtnStage.setAttribute('aria-selected', 'true');
+
+      if (tabControlsSub) tabControlsSub.textContent = '設定に戻る ←';
+      if (tabStageSub) tabStageSub.textContent = '✔ 現在表示中';
+
+      tabBtnStage.classList.remove('pulse-anim');
+      void tabBtnStage.offsetWidth;
+      tabBtnStage.classList.add('pulse-anim');
 
       if (!audioEngine.isPlaying) {
         audioEngine.play();
         updatePlayUI(true);
       }
-      showToast('MVを全画面表示しました');
+      showToast('🎬 MV映像を全画面表示しました');
     }
   }
 
@@ -221,6 +248,55 @@ document.addEventListener('DOMContentLoaded', () => {
   tabBtnStage.addEventListener('click', () => switchView('stage'));
   jumpToStageBtn.addEventListener('click', () => switchView('stage'));
   backToControlsBtn.addEventListener('click', () => switchView('controls'));
+
+  // ==========================================
+  // Super Large Mode (文字・ボタン超特大モード)
+  // 視力に不安のあるユーザー向け拡大トグル
+  // ==========================================
+  function setZoomHuge(enable, showFeedback = true) {
+    if (enable) {
+      document.body.classList.add('zoom-huge');
+      if (zoomBtnText) zoomBtnText.textContent = '文字・ボタンを標準サイズに戻す';
+      if (zoomStatusBadge) {
+        zoomStatusBadge.textContent = '特大ON';
+        zoomStatusBadge.classList.add('active');
+      }
+      if (zoomToggleBtn) zoomToggleBtn.classList.add('active');
+      try { localStorage.setItem('groove_zoom_huge', 'true'); } catch (e) {}
+      if (showFeedback) {
+        triggerHaptic();
+        showToast('🔍 文字とボタンを特大サイズに拡大しました！');
+      }
+    } else {
+      document.body.classList.remove('zoom-huge');
+      if (zoomBtnText) zoomBtnText.textContent = '文字・ボタンを特大にする';
+      if (zoomStatusBadge) {
+        zoomStatusBadge.textContent = '標準';
+        zoomStatusBadge.classList.remove('active');
+      }
+      if (zoomToggleBtn) zoomToggleBtn.classList.remove('active');
+      try { localStorage.setItem('groove_zoom_huge', 'false'); } catch (e) {}
+      if (showFeedback) {
+        triggerHaptic();
+        showToast('文字・ボタンを標準サイズに戻しました');
+      }
+    }
+  }
+
+  if (zoomToggleBtn) {
+    zoomToggleBtn.addEventListener('click', () => {
+      const isCurrentlyHuge = document.body.classList.contains('zoom-huge');
+      setZoomHuge(!isCurrentlyHuge, true);
+    });
+  }
+
+  // 保存設定の自動復元
+  try {
+    const savedZoom = localStorage.getItem('groove_zoom_huge');
+    if (savedZoom === 'true') {
+      setZoomHuge(true, false);
+    }
+  } catch (e) {}
 
   // ==========================================
   // Playback Control
