@@ -11,7 +11,7 @@ class CharacterRenderer {
     // Rendering parameters
     this.aspectRatio = '9:16';
     this.motionPreset = GROOVE_PRESETS.motions.guitar;
-    this.characterPreset = GROOVE_PRESETS.characters['anime-rock'];
+    this.characterPreset = null;
     this.stageTheme = GROOVE_PRESETS.stages.livehouse;
     this.cameraMode = 'dynamic';
 
