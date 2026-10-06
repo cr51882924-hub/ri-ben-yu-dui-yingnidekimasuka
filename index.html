@@ -109,14 +109,17 @@
         </div>
 
         <!-- Big Photo Upload Button -->
-        <div class="giant-action-card photo-upload-card" id="avatarUploadBtn">
-          <span class="action-card-icon">📷</span>
+        <div class="giant-action-card photo-upload-card" id="avatarUploadBtn" role="button" tabindex="0" aria-label="あなたが用意した人物の写真をアップロード">
+          <div class="avatar-preview-wrap" id="avatarPreviewWrap">
+            <span class="action-card-icon" id="avatarCardIcon">📷</span>
+            <img id="avatarPreviewImg" class="avatar-preview-img hidden" alt="アップロードした写真">
+          </div>
           <div class="action-card-text">
             <strong id="avatarCardTitle">あなたが用意した人物の写真をアップロード</strong>
             <span id="avatarCardHint">タップしてスマホの写真ライブラリから選択</span>
           </div>
-          <input type="file" id="avatarFileInput" accept="image/*" class="hidden-input">
         </div>
+        <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/gif,image/heic,image/heif,image/*" class="sr-only-input" tabindex="-1">
 
         <div class="sub-block-title">またはプリセットから選択：</div>
         <div class="giant-cards-list">
@@ -179,14 +182,14 @@
         </div>
 
         <!-- Big Audio File Upload Button -->
-        <div class="giant-action-card audio-upload-card" id="audioUploadBtn">
+        <div class="giant-action-card audio-upload-card" id="audioUploadBtn" role="button" tabindex="0" aria-label="あなたが制作した楽曲ファイルをアップロード">
           <span class="action-card-icon">📁</span>
           <div class="action-card-text">
             <strong id="audioCardTitle">あなたが制作した楽曲ファイルをアップロード</strong>
             <span id="audioUploadHint">MP3, WAV, AAC, M4A 形式に対応（ここをタップ）</span>
           </div>
-          <input type="file" id="audioFileInput" accept="audio/*" class="hidden-input">
         </div>
+        <input type="file" id="audioFileInput" accept="audio/*,audio/mp3,audio/wav,audio/m4a,audio/aac,audio/ogg" class="sr-only-input" tabindex="-1">
 
         <button id="micToggleBtn" class="giant-action-card mic-card">
           <span class="action-card-icon">🎤</span>
