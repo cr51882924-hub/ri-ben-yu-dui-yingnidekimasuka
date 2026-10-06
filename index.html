@@ -15,20 +15,29 @@
     <!-- Top Mode Switch Bar (操作画面 ⇔ MV映像) -->
     <header class="top-mode-header">
       <div class="mode-switch-container">
-        <button id="tabBtnControls" class="main-mode-btn active">
+        <button id="tabBtnControls" class="main-mode-btn active" role="tab" aria-selected="true">
           <span class="mode-btn-icon">🎛️</span>
           <div class="mode-btn-text">
-            <strong>操作画面</strong>
-            <span>全画面で大きく設定</span>
+            <strong id="tabControlsTitle">操作画面</strong>
+            <span id="tabControlsSub">✔ 現在表示中</span>
           </div>
         </button>
 
-        <button id="tabBtnStage" class="main-mode-btn">
+        <button id="tabBtnStage" class="main-mode-btn" role="tab" aria-selected="false">
           <span class="mode-btn-icon">🎬</span>
           <div class="mode-btn-text">
-            <strong>MV映像</strong>
-            <span>動画を画面いっぱいに見る</span>
+            <strong id="tabStageTitle">MV映像</strong>
+            <span id="tabStageSub">完成動画を見る →</span>
           </div>
+        </button>
+      </div>
+
+      <!-- 視力サポート：文字・ボタン超特大表示トグル -->
+      <div class="header-accessibility-bar">
+        <button id="zoomToggleBtn" class="zoom-toggle-btn" aria-label="文字とボタンを特大サイズに拡大します">
+          <span class="zoom-icon">🔍</span>
+          <span id="zoomBtnText">文字・ボタンを特大にする</span>
+          <span id="zoomStatusBadge" class="zoom-status-badge">標準</span>
         </button>
       </div>
     </header>

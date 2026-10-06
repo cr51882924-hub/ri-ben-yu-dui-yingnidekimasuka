@@ -87,6 +87,21 @@ html, body {
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 6px 10px;
+  user-select: none;
+}
+
+.main-mode-btn:active {
+  transform: scale(0.96);
+}
+
+.main-mode-btn.pulse-anim {
+  animation: tabPulse 0.35s ease;
+}
+
+@keyframes tabPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.96); background: rgba(168, 85, 247, 0.3); }
+  100% { transform: scale(1); }
 }
 
 .main-mode-btn.active {
@@ -113,9 +128,61 @@ html, body {
 }
 
 .mode-btn-text span {
-  font-size: 0.76rem;
-  font-weight: 500;
-  opacity: 0.88;
+  font-size: 0.78rem;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+/* Accessibility Bar: 大画面・特大文字切り替えボタン */
+.header-accessibility-bar {
+  margin-top: 8px;
+}
+
+.zoom-toggle-btn {
+  width: 100%;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #1e293b;
+  border: 2px solid #38bdf8;
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 8px 14px;
+}
+
+.zoom-toggle-btn:active {
+  transform: scale(0.97);
+}
+
+.zoom-toggle-btn.active {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border-color: #fef08a;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.55);
+}
+
+.zoom-icon {
+  font-size: 1.35rem;
+}
+
+.zoom-status-badge {
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 0.82rem;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-left: 6px;
+  letter-spacing: 0.5px;
+}
+
+.zoom-toggle-btn.active .zoom-status-badge {
+  background: #fef08a;
+  color: #0f172a;
 }
 
 /* ==========================================================================
