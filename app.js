@@ -69,6 +69,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const avatarCardIcon = document.getElementById('avatarCardIcon');
   const avatarPreviewImg = document.getElementById('avatarPreviewImg');
 
+  // Custom Avatar Banner Elements
+  const customAvatarBanner = document.getElementById('customAvatarBanner');
+  const customAvatarStatusTitle = document.getElementById('customAvatarStatusTitle');
+  const customAvatarStatusSub = document.getElementById('customAvatarStatusSub');
+  const viewStageFromAvatarBtn = document.getElementById('viewStageFromAvatarBtn');
+  const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+  const resetToPresetBtn = document.getElementById('resetToPresetBtn');
+  let savedCustomAvatarCanvas = null;
+  let savedCustomAvatarName = '';
+
   // Mic
   const micToggleBtn = document.getElementById('micToggleBtn');
   const micBtnTitle = document.getElementById('micBtnTitle');
