@@ -403,12 +403,12 @@ class AudioEngine {
     this.startTime = this.ctx.currentTime - offset;
 
     if (this.userAudioMode === 'element' && this.audioElement) {
-      this.audioElement.currentTime = startPoint;
+      try { this.audioElement.currentTime = startPoint; } catch (e) {}
       this.audioElement.play().catch(e => console.warn('Audio play error:', e));
       this.audioElement.ontimeupdate = () => {
         if (this.isPlaying && this.playMode === 'trim') {
           if (this.audioElement.currentTime >= this.trimEnd - 0.1) {
-            this.audioElement.currentTime = this.trimStart;
+            try { this.audioElement.currentTime = this.trimStart; } catch (e) {}
           }
         }
       };
@@ -443,7 +443,7 @@ class AudioEngine {
     const playLength = Math.max(0.1, this.duration - this.fullPlayOffset);
 
     if (this.userAudioMode === 'element' && this.audioElement) {
-      this.audioElement.currentTime = this.fullPlayOffset;
+      try { this.audioElement.currentTime = this.fullPlayOffset; } catch (e) {}
       this.audioElement.play().catch(e => console.warn('Audio play error:', e));
       this.audioElement.ontimeupdate = () => {
         if (this.isPlaying && this.playMode === 'full') {
@@ -514,7 +514,7 @@ class AudioEngine {
     this.fullPlayOffset = 0;
     this.currentTime = (this.playMode === 'trim') ? this.trimStart : 0;
     if (this.userAudioMode === 'element' && this.audioElement) {
-      this.audioElement.currentTime = this.currentTime;
+      try { this.audioElement.currentTime = this.currentTime; } catch (e) {}
     }
   }
 
@@ -525,7 +525,7 @@ class AudioEngine {
     this.fullPlayOffset = sec;
     this.currentTime = sec;
     if (this.userAudioMode === 'element' && this.audioElement) {
-      this.audioElement.currentTime = sec;
+      try { this.audioElement.currentTime = sec; } catch (e) {}
     }
     if (wasPlaying) {
       this.playFull(sec);
@@ -543,7 +543,7 @@ class AudioEngine {
       this.pauseOffset = target;
       this.currentTime = this.trimStart + target;
       if (this.userAudioMode === 'element' && this.audioElement) {
-        this.audioElement.currentTime = this.currentTime;
+        try { this.audioElement.currentTime = this.currentTime; } catch (e) {}
       }
       if (wasPlaying) this.playTrim(target);
     }
