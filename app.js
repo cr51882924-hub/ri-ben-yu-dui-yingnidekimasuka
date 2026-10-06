@@ -823,11 +823,18 @@ document.addEventListener('DOMContentLoaded', () => {
         trimDurationSeconds = Math.min(res.duration, 30);
         updateTrimmerUI();
 
-        // Start playback in full preview mode from 00:00 so user hears whole song and monitors seconds
-        audioEngine.playFull(0);
-        updatePlayUI(true);
-        updateFullPlayerUI(true);
-        showToast(`🎉 楽曲「${cleanName}」（全体 ${formatTime(res.duration)}）を読み込みました！曲全体のサウンドを流して秒数を確認できます。`);
+        // Safely try starting playback in full preview mode (browsers may restrict auto-play after async file picking)
+        try {
+          audioEngine.playFull(0);
+          updatePlayUI(true);
+          updateFullPlayerUI(true);
+          showToast(`🎉 楽曲「${cleanName}」（全体 ${formatTime(res.duration)}）を読み込みました！曲全体のサウンドを流して秒数を確認できます。`);
+        } catch (playErr) {
+          console.warn('Auto play blocked by browser policy:', playErr);
+          updatePlayUI(false);
+          updateFullPlayerUI(false);
+          showToast(`🎉 楽曲「${cleanName}」を読み込みました！下の「▶ 曲全体を再生する」を押して試聴できます。`);
+        }
       } else {
         const errDetail = (res && res.error) ? res.error : '音声ファイルを確認してください';
         audioUploadHint.textContent = `エラー: ${errDetail}`;

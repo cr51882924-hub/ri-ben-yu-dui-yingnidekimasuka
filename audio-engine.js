@@ -171,7 +171,7 @@ class AudioEngine {
           const el = document.createElement(tag);
           el.preload = 'auto';
           el.playsInline = true;
-          el.crossOrigin = 'anonymous';
+          // Note: DO NOT set crossOrigin on Blob URLs as it causes CORS failures on mobile browsers
           el.style.display = 'none';
           document.body.appendChild(el);
           el.src = url;
