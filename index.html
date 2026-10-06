@@ -266,12 +266,69 @@
           <span class="step-badge highlight-badge">3</span>
           <div>
             <h3 class="section-title">楽曲の長さ・使う区間を調整する</h3>
-            <p class="section-sub">事前に曲を切る必要はありません！ここで決めた長さが動画の長さになります</p>
+            <p class="section-sub">曲全体のサウンドを流して秒数を確認しながら、動画にしたいサビやワンフレーズを選べます</p>
           </div>
         </div>
 
         <div class="trimmer-card">
-          <div class="trimmer-status-box">
+          <!-- ★新設: 曲全体プレビュー＆リアルタイム秒数モニター -->
+          <div class="song-full-preview-box">
+            <div class="preview-box-header">
+              <span class="preview-box-tag">🎵 楽曲全体の秒数チェック＆サビ探し</span>
+              <span class="preview-box-hint">曲を流してサビの秒数を確認できます</span>
+            </div>
+
+            <!-- 大型リアルタイム秒数ディスプレイ -->
+            <div class="current-time-large-display">
+              <div class="time-readout-wrap">
+                <span class="time-label">現在の再生位置:</span>
+                <span id="fullPlayerCurrentTime" class="time-counter-big">00:00</span>
+                <span class="time-slash">/</span>
+                <span id="fullPlayerTotalTime" class="time-counter-total">00:30</span>
+              </div>
+              <div id="fullPlayerStatusBadge" class="player-status-badge">一時停止中</div>
+            </div>
+
+            <!-- 曲全体のタイムライン・シークバー＆切り取り範囲の可視化バー -->
+            <div class="timeline-visual-container">
+              <div class="timeline-track" id="timelineTrack">
+                <!-- 選択中の動画区間ハイライト帯 -->
+                <div class="timeline-selection-range" id="timelineSelectionRange">
+                  <span class="selection-range-label">動画にする区間</span>
+                </div>
+                <!-- 現在の再生位置インジケーター（再生針） -->
+                <div class="timeline-playhead" id="timelinePlayhead"></div>
+              </div>
+              <!-- タイムラインのシークスライダー（操作用スライダー） -->
+              <input type="range" id="fullSongSeekSlider" class="timeline-seek-slider" min="0" max="30" value="0" step="0.5" aria-label="曲全体の再生位置をシーク">
+              <div class="timeline-labels">
+                <span>00:00 (曲の始まり)</span>
+                <span id="timelineMidLabel">00:15</span>
+                <span id="timelineEndLabel">00:30 (曲の終わり)</span>
+              </div>
+            </div>
+
+            <!-- 再生操作＆「サビ頭出し」ボタン群 -->
+            <div class="full-player-controls-row">
+              <button id="fullPlayToggleBtn" class="giant-btn giant-play-inline-btn" type="button">
+                <span id="fullPlayIcon">▶</span>
+                <span id="fullPlayLabel">曲全体を再生する</span>
+              </button>
+
+              <button id="fullPlayRewindBtn" class="btn-sub-action" type="button" title="曲の最初に戻る">
+                <span>⏮ 最初から (00:00)</span>
+              </button>
+
+              <button id="setStartFromCurrentBtn" class="btn-start-sync-action" type="button">
+                <span class="btn-icon">📍</span>
+                <span>いまの秒数を開始位置にセット</span>
+              </button>
+            </div>
+            <div class="preview-helper-text">💡 曲を聴きながらサビが来たら「📍 いまの秒数を開始位置にセット」を押すと、一発で開始位置を合わせられます！</div>
+          </div>
+
+          <!-- 区間設定ステータス（開始位置・終了位置・動画の長さ） -->
+          <div class="trimmer-status-box" style="margin-top: 20px;">
             <div class="trim-stat">
               <span class="stat-label">動画の開始位置:</span>
               <strong id="trimStartReadout" class="stat-val">00:00</strong>
@@ -303,7 +360,7 @@
               <span id="startSliderVal" class="slider-val-badge">00:00</span>
             </div>
             <input type="range" id="trimStartSlider" class="super-fat-slider" min="0" max="30" value="0" step="1">
-            <div class="slider-subtext">サビの始まりやAメロの始まりに合わせられます</div>
+            <div class="slider-subtext">上のプレイヤーで秒数を確認して合わせるか、「いまの秒数を開始位置にセット」を押してください</div>
           </div>
 
           <!-- Duration Slider -->
@@ -313,12 +370,12 @@
               <span id="durationSliderVal" class="slider-val-badge">30秒</span>
             </div>
             <input type="range" id="trimDurationSlider" class="super-fat-slider" min="5" max="60" value="30" step="1">
-            <div class="slider-subtext">5秒〜60秒まで、お好みの長さに自由に調整できます</div>
+            <div class="slider-subtext">5秒〜60秒（または楽曲全体）まで、お好みの長さに自由に調整できます</div>
           </div>
 
           <!-- Test Play Trimmed Section Button -->
           <button id="previewTrimBtn" class="giant-btn giant-secondary-btn" style="margin-top: 18px;">
-            <span>▶ 選択した区間（サビ）だけ聴いて確認する</span>
+            <span>🔁 選択した区間（サビ）だけをループ試聴する</span>
           </button>
         </div>
       </section>
