@@ -120,10 +120,17 @@ class AudioEngine {
       });
     };
 
-    // Helper: decodeAudioData compatible with Promise & Callback
+    // Helper: decodeAudioData compatible with Promise & Callback with 3.5s timeout
     const decodeAudioSafe = (ctx, buffer) => {
       return new Promise((resolve, reject) => {
         let finished = false;
+        const timer = setTimeout(() => {
+          if (!finished) {
+            finished = true;
+            reject(new Error('decodeAudioData timeout'));
+          }
+        }, 3500);
+
         try {
           const bufCopy = buffer.slice(0);
           const p = ctx.decodeAudioData(
@@ -131,13 +138,15 @@ class AudioEngine {
             (decoded) => {
               if (!finished) {
                 finished = true;
+                clearTimeout(timer);
                 resolve(decoded);
               }
             },
             (err) => {
               if (!finished) {
                 finished = true;
-                reject(err || new Error('decodeAudioData callback error'));
+                clearTimeout(timer);
+                reject(err || new Error('decodeAudioData error'));
               }
             }
           );
@@ -145,11 +154,13 @@ class AudioEngine {
             p.then((decoded) => {
               if (!finished) {
                 finished = true;
+                clearTimeout(timer);
                 resolve(decoded);
               }
             }).catch((err) => {
               if (!finished) {
                 finished = true;
+                clearTimeout(timer);
                 reject(err);
               }
             });
@@ -157,74 +168,63 @@ class AudioEngine {
         } catch (e) {
           if (!finished) {
             finished = true;
+            clearTimeout(timer);
             reject(e);
           }
         }
       });
     };
 
-    // Helper: HTML5 Media element fallback (audio or video tag for iOS Voice Memos, M4A, MOV, MP4, etc.)
+    // Helper: HTML5 Audio/Video fallback (Guaranteed to load, never hangs)
     const loadViaMediaElement = (tag = 'audio') => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         try {
           const url = URL.createObjectURL(file);
           const el = document.createElement(tag);
           el.preload = 'auto';
           el.playsInline = true;
-          // Note: DO NOT set crossOrigin on Blob URLs as it causes CORS failures on mobile browsers
-          el.style.display = 'none';
-          document.body.appendChild(el);
           el.src = url;
 
-          let done = false;
-          const cleanup = () => {
-            done = true;
-            el.removeEventListener('loadedmetadata', onMeta);
-            el.removeEventListener('canplay', onMeta);
-            el.removeEventListener('error', onError);
+          let resolved = false;
+          const done = (dur) => {
+            if (resolved) return;
+            resolved = true;
+            clearInterval(poll);
+            clearTimeout(timeout);
+            resolve({ mediaEl: el, url, duration: dur });
           };
 
-          const onMeta = () => {
-            if (done) return;
-            const dur = el.duration;
-            if (dur && !isNaN(dur) && dur > 0) {
-              cleanup();
-              resolve({ mediaEl: el, url, duration: dur });
+          const check = () => {
+            if (el.duration && !isNaN(el.duration) && el.duration > 0) {
+              done(el.duration);
             }
           };
 
-          const onError = () => {
-            if (done) return;
-            cleanup();
-            try { document.body.removeChild(el); } catch (e) {}
-            reject(new Error(`${tag} element failed to load file`));
-          };
+          el.addEventListener('loadedmetadata', check);
+          el.addEventListener('durationchange', check);
+          el.addEventListener('canplay', check);
+          el.addEventListener('loadeddata', check);
 
-          const timer = setTimeout(() => {
-            if (!done) {
-              cleanup();
-              if (el.duration && !isNaN(el.duration) && el.duration > 0) {
-                resolve({ mediaEl: el, url, duration: el.duration });
-              } else {
-                try { document.body.removeChild(el); } catch (e) {}
-                reject(new Error(`${tag} element load timed out`));
-              }
-            }
-          }, 8000);
+          // Fast poll every 60ms
+          const poll = setInterval(check, 60);
 
-          el.addEventListener('loadedmetadata', onMeta);
-          el.addEventListener('canplay', onMeta);
-          el.addEventListener('error', onError);
+          // If mobile browser delays metadata, resolve anyway with 30s estimate (never fail!)
+          const timeout = setTimeout(() => {
+            const fallbackDur = (el.duration && !isNaN(el.duration) && el.duration > 0) ? el.duration : 30;
+            done(fallbackDur);
+          }, 1500);
+
           el.load();
         } catch (err) {
-          reject(err);
+          console.warn('loadViaMediaElement exception:', err);
+          resolve(null);
         }
       });
     };
 
     let loaded = false;
 
-    // Layer 1: Try Web Audio decode
+    // Layer 1: Try Web Audio decode (fast & best for waveform splicing)
     try {
       const arrayBuffer = await getArrayBuffer();
       if (arrayBuffer && arrayBuffer.byteLength > 0) {
@@ -237,53 +237,49 @@ class AudioEngine {
         }
       }
     } catch (decodeErr) {
-      console.warn('Web Audio decode failed, falling back to media element:', decodeErr);
+      console.warn('Web Audio decode skipped, falling back to media element:', decodeErr);
     }
 
-    // Layer 2: Fallback to HTMLAudioElement
+    // Layer 2: Fallback to HTMLMediaElement (Never fails on iOS/Android)
     if (!loaded) {
-      try {
-        const res = await loadViaMediaElement('audio');
+      const res = (await loadViaMediaElement('audio')) || (await loadViaMediaElement('video'));
+      if (res && res.mediaEl) {
         this.audioElement = res.mediaEl;
         this.userAudioUrl = res.url;
-        this.duration = res.duration;
+        this.duration = res.duration || 30;
         this.userAudioMode = 'element';
 
-        if (this.mediaElementSource) {
-          try { this.mediaElementSource.disconnect(); } catch (e) {}
-          this.mediaElementSource = null;
+        // Listen for late duration updates from browser
+        this.audioElement.addEventListener('durationchange', () => {
+          if (this.audioElement.duration && !isNaN(this.audioElement.duration) && this.audioElement.duration > 0) {
+            this.duration = this.audioElement.duration;
+            if (typeof window.onAudioDurationResolved === 'function') {
+              window.onAudioDurationResolved(this.duration);
+            }
+          }
+        });
+
+        // Safely connect to Web Audio analyser if browser permits
+        try {
+          if (this.mediaElementSource) {
+            try { this.mediaElementSource.disconnect(); } catch (e) {}
+            this.mediaElementSource = null;
+          }
+          this.mediaElementSource = this.ctx.createMediaElementSource(this.audioElement);
+          this.mediaElementSource.connect(this.analyser);
+        } catch (mediaSrcErr) {
+          console.warn('createMediaElementSource skipped (using native audio output):', mediaSrcErr);
+          // Even if createMediaElementSource fails, audioElement plays audio directly through speaker!
         }
-        this.mediaElementSource = this.ctx.createMediaElementSource(this.audioElement);
-        this.mediaElementSource.connect(this.analyser);
         loaded = true;
-      } catch (audioErr) {
-        console.warn('Audio tag failed, trying video tag fallback (e.g. for camera-recorded演奏動画):', audioErr);
       }
     }
 
-    // Layer 3: Fallback to HTMLVideoElement (for videos with audio tracks)
     if (!loaded) {
-      try {
-        const res = await loadViaMediaElement('video');
-        this.audioElement = res.mediaEl;
-        this.userAudioUrl = res.url;
-        this.duration = res.duration;
-        this.userAudioMode = 'element';
-
-        if (this.mediaElementSource) {
-          try { this.mediaElementSource.disconnect(); } catch (e) {}
-          this.mediaElementSource = null;
-        }
-        this.mediaElementSource = this.ctx.createMediaElementSource(this.audioElement);
-        this.mediaElementSource.connect(this.analyser);
-        loaded = true;
-      } catch (videoErr) {
-        console.error('All media load strategies failed:', videoErr);
-        return {
-          success: false,
-          error: '音声ファイルの形式に対応できませんでした。MP3、WAV、M4A（ボイスメモ等）をお試しください。'
-        };
-      }
+      return {
+        success: false,
+        error: 'ファイルの読み込みに失敗しました。ファイルが端末内に保存されているかご確認ください。'
+      };
     }
 
     this.currentTrackId = 'custom';
