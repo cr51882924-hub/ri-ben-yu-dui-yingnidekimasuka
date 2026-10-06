@@ -40,9 +40,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const startSliderVal = document.getElementById('startSliderVal');
   const durationSliderVal = document.getElementById('durationSliderVal');
   const previewTrimBtn = document.getElementById('previewTrimBtn');
+  const previewTrimIcon = document.getElementById('previewTrimIcon');
+  const previewTrimLabel = document.getElementById('previewTrimLabel');
   const trimPresetChips = document.querySelectorAll('.trim-preset-chip');
   const exportSummaryTitle = document.getElementById('exportSummaryTitle');
   const exportSummaryDesc = document.getElementById('exportSummaryDesc');
+
+  // Direct Min/Sec Inputs & Steppers
+  const trimStartMinInput = document.getElementById('trimStartMinInput');
+  const trimStartSecInput = document.getElementById('trimStartSecInput');
+  const startMinus10Btn = document.getElementById('startMinus10Btn');
+  const startMinus1Btn = document.getElementById('startMinus1Btn');
+  const startPlus1Btn = document.getElementById('startPlus1Btn');
+  const startPlus10Btn = document.getElementById('startPlus10Btn');
+  const trimDurationInput = document.getElementById('trimDurationInput');
+  const durMinus5Btn = document.getElementById('durMinus5Btn');
+  const durPlus5Btn = document.getElementById('durPlus5Btn');
+  const startPosBadge = document.getElementById('startPosBadge');
+  const durationBadge = document.getElementById('durationBadge');
+  const confirmStartTxt = document.getElementById('confirmStartTxt');
+  const confirmEndTxt = document.getElementById('confirmEndTxt');
+  const confirmDurTxt = document.getElementById('confirmDurTxt');
 
   // Full Song Preview Player & Timeline Elements
   const fullPlayerCurrentTime = document.getElementById('fullPlayerCurrentTime');
