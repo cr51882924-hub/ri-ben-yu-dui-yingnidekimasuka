@@ -45,6 +45,13 @@ class AudioEngine {
 
     this.bpm = 132;
     this.audioBuffer = null; // user loaded song
+    this.audioElement = null; // HTMLAudioElement fallback
+    this.mediaElementSource = null;
+    this.userAudioUrl = null;
+    this.userAudioMode = null; // 'buffer' or 'element'
+
+    this.playMode = 'trim'; // 'trim' or 'full'
+    this.fullPlayOffset = 0;
 
     this.onEndedCallbacks = [];
   }
@@ -72,60 +79,227 @@ class AudioEngine {
     }
   }
 
-  // Load user audio file
+  // Load user audio file with bulletproof multi-layer fallback
   async loadUserFile(file) {
     this.init();
     this.stop();
 
-    const arrayBuffer = await file.arrayBuffer();
-    try {
-      this.audioBuffer = await this.ctx.decodeAudioData(arrayBuffer);
-      this.duration = this.audioBuffer.duration;
-      this.currentTrackId = 'custom';
-      this.bpm = 120; // Default estimate for custom audio
-
-      // Default trim: first 30 seconds or full length if shorter
-      this.trimStart = 0;
-      this.trimEnd = Math.min(this.duration, 30);
-
-      return {
-        success: true,
-        name: file.name,
-        duration: this.duration,
-        trimStart: this.trimStart,
-        trimEnd: this.trimEnd
-      };
-    } catch (err) {
-      console.error('Audio decode error:', err);
-      return { success: false, error: err.message };
+    // Clean up previous custom audio instances
+    if (this.audioElement) {
+      try {
+        this.audioElement.pause();
+        this.audioElement.src = '';
+      } catch (e) {}
+      this.audioElement = null;
     }
+    if (this.userAudioUrl) {
+      try { URL.revokeObjectURL(this.userAudioUrl); } catch (e) {}
+      this.userAudioUrl = null;
+    }
+    this.audioBuffer = null;
+    this.userAudioMode = null;
+
+    // Helper: read ArrayBuffer safely across browsers/WebViews
+    const getArrayBuffer = () => {
+      if (typeof file.arrayBuffer === 'function') {
+        return file.arrayBuffer();
+      }
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error('FileReader failed'));
+        reader.readAsArrayBuffer(file);
+      });
+    };
+
+    // Helper: decodeAudioData compatible with Promise & Callback
+    const decodeAudioSafe = (ctx, buffer) => {
+      return new Promise((resolve, reject) => {
+        let finished = false;
+        try {
+          const bufCopy = buffer.slice(0);
+          const p = ctx.decodeAudioData(
+            bufCopy,
+            (decoded) => {
+              if (!finished) {
+                finished = true;
+                resolve(decoded);
+              }
+            },
+            (err) => {
+              if (!finished) {
+                finished = true;
+                reject(err || new Error('decodeAudioData callback error'));
+              }
+            }
+          );
+          if (p && typeof p.then === 'function') {
+            p.then((decoded) => {
+              if (!finished) {
+                finished = true;
+                resolve(decoded);
+              }
+            }).catch((err) => {
+              if (!finished) {
+                finished = true;
+                reject(err);
+              }
+            });
+          }
+        } catch (e) {
+          if (!finished) {
+            finished = true;
+            reject(e);
+          }
+        }
+      });
+    };
+
+    // Helper: HTML5 Audio element fallback (ideal for iOS Voice Memos, M4A, AAC, etc.)
+    const loadViaAudioElement = () => {
+      return new Promise((resolve, reject) => {
+        try {
+          const url = URL.createObjectURL(file);
+          const audio = new Audio();
+          audio.preload = 'auto';
+          audio.src = url;
+
+          let done = false;
+          const cleanup = () => {
+            done = true;
+            audio.removeEventListener('loadedmetadata', onMeta);
+            audio.removeEventListener('canplay', onMeta);
+            audio.removeEventListener('error', onError);
+          };
+
+          const onMeta = () => {
+            if (done) return;
+            const dur = audio.duration;
+            if (dur && !isNaN(dur) && dur > 0) {
+              cleanup();
+              resolve({ audio, url, duration: dur });
+            }
+          };
+
+          const onError = () => {
+            if (done) return;
+            cleanup();
+            reject(new Error('HTMLAudioElement failed to load file'));
+          };
+
+          const timer = setTimeout(() => {
+            if (!done) {
+              cleanup();
+              if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
+                resolve({ audio, url, duration: audio.duration });
+              } else {
+                reject(new Error('Audio element load timed out'));
+              }
+            }
+          }, 8000);
+
+          audio.addEventListener('loadedmetadata', onMeta);
+          audio.addEventListener('canplay', onMeta);
+          audio.addEventListener('error', onError);
+          audio.load();
+        } catch (err) {
+          reject(err);
+        }
+      });
+    };
+
+    let loaded = false;
+
+    // Layer 1: Try Web Audio decode
+    try {
+      const arrayBuffer = await getArrayBuffer();
+      if (arrayBuffer && arrayBuffer.byteLength > 0) {
+        const decoded = await decodeAudioSafe(this.ctx, arrayBuffer);
+        if (decoded && decoded.duration > 0) {
+          this.audioBuffer = decoded;
+          this.duration = decoded.duration;
+          this.userAudioMode = 'buffer';
+          loaded = true;
+        }
+      }
+    } catch (decodeErr) {
+      console.warn('Web Audio decode failed, falling back to HTMLAudioElement:', decodeErr);
+    }
+
+    // Layer 2: Fallback to HTMLAudioElement
+    if (!loaded) {
+      try {
+        const res = await loadViaAudioElement();
+        this.audioElement = res.audio;
+        this.userAudioUrl = res.url;
+        this.duration = res.duration;
+        this.userAudioMode = 'element';
+
+        if (this.mediaElementSource) {
+          try { this.mediaElementSource.disconnect(); } catch (e) {}
+          this.mediaElementSource = null;
+        }
+        this.mediaElementSource = this.ctx.createMediaElementSource(this.audioElement);
+        this.mediaElementSource.connect(this.analyser);
+        loaded = true;
+      } catch (audioErr) {
+        console.error('All audio load strategies failed:', audioErr);
+        return { success: false, error: '音声ファイルの読み込みに失敗しました' };
+      }
+    }
+
+    this.currentTrackId = 'custom';
+    this.bpm = 120;
+    this.trimStart = 0;
+    this.trimEnd = Math.min(this.duration, 30);
+    this.pauseOffset = 0;
+    this.fullPlayOffset = 0;
+    this.currentTime = 0;
+    this.playMode = 'full'; // Default to full mode on upload so user can check entire song
+
+    return {
+      success: true,
+      name: file.name,
+      duration: this.duration,
+      trimStart: this.trimStart,
+      trimEnd: this.trimEnd
+    };
   }
 
   // Set trimming range (start second, end second)
   setTrimRange(start, end) {
-    this.trimStart = Math.max(0, Math.min(start, this.duration - 1));
-    this.trimEnd = Math.max(this.trimStart + 1, Math.min(end, this.duration));
-    const wasPlaying = this.isPlaying;
-    if (wasPlaying) {
+    this.trimStart = Math.max(0, Math.min(start, this.duration - 0.5));
+    this.trimEnd = Math.max(this.trimStart + 0.5, Math.min(end, this.duration));
+    if (this.isPlaying && this.playMode === 'trim') {
       this.pause();
       this.pauseOffset = 0;
-      this.play();
-    } else {
-      this.pauseOffset = 0;
-      this.currentTime = this.trimStart;
+      this.playTrim();
     }
   }
 
   getTrimDuration() {
-    return Math.max(1, this.trimEnd - this.trimStart);
+    return Math.max(0.5, this.trimEnd - this.trimStart);
   }
 
   // Select built-in demo track
   selectDemoTrack(id) {
     this.stop();
     this.currentTrackId = id;
+    if (this.audioElement) {
+      try {
+        this.audioElement.pause();
+        this.audioElement.src = '';
+      } catch (e) {}
+      this.audioElement = null;
+    }
+    if (this.userAudioUrl) {
+      try { URL.revokeObjectURL(this.userAudioUrl); } catch (e) {}
+      this.userAudioUrl = null;
+    }
     this.audioBuffer = null;
+    this.userAudioMode = null;
     this.trimStart = 0;
+    this.playMode = 'trim';
     if (id === 'jpop') {
       this.bpm = 132;
       this.duration = 30;
@@ -145,43 +319,119 @@ class AudioEngine {
     }
   }
 
-  play() {
+  // Play specified trim range (loops inside the trim range)
+  playTrim(startAt) {
     this.init();
-    if (this.isPlaying) return;
+    if (this.isPlaying) this.pause();
 
     this.isPlaying = true;
-    this.startTime = this.ctx.currentTime - this.pauseOffset;
+    this.playMode = 'trim';
 
-    if (this.audioBuffer) {
-      // Play trimmed audio buffer range
-      const trimLen = this.getTrimDuration();
-      const currentOffset = (this.pauseOffset % trimLen);
-      const startPoint = this.trimStart + currentOffset;
-      const playLength = this.trimEnd - startPoint;
+    const trimLen = this.getTrimDuration();
+    const offset = (startAt !== undefined) ? (startAt % trimLen) : (this.pauseOffset % trimLen);
+    this.pauseOffset = offset;
+    const startPoint = this.trimStart + offset;
+    const playLength = Math.max(0.1, this.trimEnd - startPoint);
 
+    this.startTime = this.ctx.currentTime - offset;
+
+    if (this.userAudioMode === 'element' && this.audioElement) {
+      this.audioElement.currentTime = startPoint;
+      this.audioElement.play().catch(e => console.warn('Audio play error:', e));
+      this.audioElement.ontimeupdate = () => {
+        if (this.isPlaying && this.playMode === 'trim') {
+          if (this.audioElement.currentTime >= this.trimEnd - 0.1) {
+            this.audioElement.currentTime = this.trimStart;
+          }
+        }
+      };
+    } else if (this.audioBuffer) {
       this.sourceNode = this.ctx.createBufferSource();
       this.sourceNode.buffer = this.audioBuffer;
       this.sourceNode.connect(this.analyser);
       this.sourceNode.onended = () => {
-        if (this.isPlaying && this.currentTime >= this.trimEnd - 0.25) {
-          // Loop playback inside the trimmed range!
+        if (this.isPlaying && this.playMode === 'trim' && this.currentTime >= this.trimEnd - 0.25) {
           this.pause();
           this.pauseOffset = 0;
-          this.play();
+          this.playTrim();
         }
       };
       this.sourceNode.start(0, startPoint, playLength);
     } else {
-      // Play procedural high quality synthesizer track
       this.startSynthTrack();
+    }
+  }
+
+  // Play the FULL song from a given second to the end (for finding chorus / checking seconds)
+  playFull(startSecond = 0) {
+    this.init();
+    if (this.isPlaying) this.pause();
+
+    this.isPlaying = true;
+    this.playMode = 'full';
+    this.fullPlayOffset = Math.max(0, Math.min(startSecond, this.duration - 0.1));
+    this.startTime = this.ctx.currentTime;
+    this.currentTime = this.fullPlayOffset;
+
+    const playLength = Math.max(0.1, this.duration - this.fullPlayOffset);
+
+    if (this.userAudioMode === 'element' && this.audioElement) {
+      this.audioElement.currentTime = this.fullPlayOffset;
+      this.audioElement.play().catch(e => console.warn('Audio play error:', e));
+      this.audioElement.ontimeupdate = () => {
+        if (this.isPlaying && this.playMode === 'full') {
+          if (this.audioElement.currentTime >= this.duration - 0.1) {
+            this.stop();
+          }
+        }
+      };
+    } else if (this.audioBuffer) {
+      this.sourceNode = this.ctx.createBufferSource();
+      this.sourceNode.buffer = this.audioBuffer;
+      this.sourceNode.connect(this.analyser);
+      this.sourceNode.onended = () => {
+        if (this.isPlaying && this.playMode === 'full') {
+          if (this.currentTime >= this.duration - 0.25) {
+            this.stop();
+          }
+        }
+      };
+      this.sourceNode.start(0, this.fullPlayOffset, playLength);
+    } else {
+      this.startSynthTrack();
+    }
+  }
+
+  // Standard play defaults to trim mode or continues current mode
+  play() {
+    if (this.playMode === 'full') {
+      this.playFull(this.fullPlayOffset);
+    } else {
+      this.playTrim();
     }
   }
 
   pause() {
     if (!this.isPlaying) return;
     this.isPlaying = false;
-    const trimLen = this.getTrimDuration();
-    this.pauseOffset = (this.ctx.currentTime - this.startTime) % trimLen;
+
+    if (this.playMode === 'full') {
+      if (this.userAudioMode === 'element' && this.audioElement) {
+        this.fullPlayOffset = this.audioElement.currentTime;
+        this.audioElement.pause();
+      } else if (this.audioBuffer) {
+        const elapsed = this.ctx.currentTime - this.startTime;
+        this.fullPlayOffset = Math.min(this.duration, this.fullPlayOffset + elapsed);
+      }
+    } else {
+      const trimLen = this.getTrimDuration();
+      if (this.userAudioMode === 'element' && this.audioElement) {
+        this.pauseOffset = Math.max(0, this.audioElement.currentTime - this.trimStart) % trimLen;
+        this.audioElement.pause();
+      } else {
+        this.pauseOffset = (this.ctx.currentTime - this.startTime) % trimLen;
+      }
+    }
 
     if (this.sourceNode) {
       try { this.sourceNode.stop(); } catch (e) {}
@@ -194,17 +444,42 @@ class AudioEngine {
   stop() {
     this.pause();
     this.pauseOffset = 0;
-    this.currentTime = this.trimStart;
+    this.fullPlayOffset = 0;
+    this.currentTime = (this.playMode === 'trim') ? this.trimStart : 0;
+    if (this.userAudioMode === 'element' && this.audioElement) {
+      this.audioElement.currentTime = this.currentTime;
+    }
+  }
+
+  seekFull(targetSeconds) {
+    const sec = Math.max(0, Math.min(targetSeconds, this.duration));
+    const wasPlaying = this.isPlaying;
+    if (wasPlaying) this.pause();
+    this.fullPlayOffset = sec;
+    this.currentTime = sec;
+    if (this.userAudioMode === 'element' && this.audioElement) {
+      this.audioElement.currentTime = sec;
+    }
+    if (wasPlaying) {
+      this.playFull(sec);
+    }
   }
 
   seek(ratio) {
-    const trimLen = this.getTrimDuration();
-    const target = ratio * trimLen;
-    const wasPlaying = this.isPlaying;
-    if (wasPlaying) this.pause();
-    this.pauseOffset = target;
-    this.currentTime = this.trimStart + target;
-    if (wasPlaying) this.play();
+    if (this.playMode === 'full') {
+      this.seekFull(ratio * this.duration);
+    } else {
+      const trimLen = this.getTrimDuration();
+      const target = ratio * trimLen;
+      const wasPlaying = this.isPlaying;
+      if (wasPlaying) this.pause();
+      this.pauseOffset = target;
+      this.currentTime = this.trimStart + target;
+      if (this.userAudioMode === 'element' && this.audioElement) {
+        this.audioElement.currentTime = this.currentTime;
+      }
+      if (wasPlaying) this.playTrim(target);
+    }
   }
 
   toggleMic() {
@@ -243,12 +518,27 @@ class AudioEngine {
     this.analyser.getByteTimeDomainData(this.timeData);
 
     if (this.isPlaying) {
-      if (this.audioBuffer) {
-        const trimLen = this.getTrimDuration();
-        const elapsed = (this.ctx.currentTime - this.startTime) % trimLen;
-        this.currentTime = this.trimStart + elapsed;
+      if (this.playMode === 'full') {
+        if (this.userAudioMode === 'element' && this.audioElement) {
+          this.currentTime = this.audioElement.currentTime;
+        } else if (this.audioBuffer) {
+          const elapsed = this.ctx.currentTime - this.startTime;
+          this.currentTime = Math.min(this.duration, this.fullPlayOffset + elapsed);
+        } else {
+          this.currentTime = (this.ctx.currentTime - this.startTime + this.fullPlayOffset) % this.duration;
+        }
       } else {
-        this.currentTime = (this.ctx.currentTime - this.startTime) % this.duration;
+        if (this.userAudioMode === 'element' && this.audioElement) {
+          this.currentTime = this.audioElement.currentTime;
+        } else if (this.audioBuffer) {
+          const trimLen = this.getTrimDuration();
+          const elapsed = (this.ctx.currentTime - this.startTime) % trimLen;
+          this.currentTime = this.trimStart + elapsed;
+        } else {
+          const trimLen = this.getTrimDuration();
+          const elapsed = (this.ctx.currentTime - this.startTime) % trimLen;
+          this.currentTime = this.trimStart + elapsed;
+        }
       }
     }
 
