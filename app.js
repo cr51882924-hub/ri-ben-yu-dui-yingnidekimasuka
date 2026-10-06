@@ -125,11 +125,23 @@ document.addEventListener('DOMContentLoaded', () => {
   let trimStartSeconds = 0;
   let trimDurationSeconds = 30;
 
-  // Recording State
+  // Recording State & Storage
   let mediaRecorder = null;
   let recordedChunks = [];
   let isRecording = false;
   let recordTimer = null;
+  let lastRecordedBlob = null;
+  let lastRecordedUrl = null;
+  let lastRecordedFilename = '';
+  let lastRecordedFile = null;
+
+  // Video Complete Modal Elements
+  const videoCompleteModal = document.getElementById('videoCompleteModal');
+  const completeVideoPreview = document.getElementById('completeVideoPreview');
+  const saveToPhotosBtn = document.getElementById('saveToPhotosBtn');
+  const directDownloadBtn = document.getElementById('directDownloadBtn');
+  const closeModalCrossBtn = document.getElementById('closeModalCrossBtn');
+  const closeModalBottomBtn = document.getElementById('closeModalBottomBtn');
 
   let currentSongConfig = GROOVE_PRESETS.songs.jpop;
 
