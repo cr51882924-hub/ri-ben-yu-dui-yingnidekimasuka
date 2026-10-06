@@ -613,6 +613,51 @@ html, body {
   height: 100%;
 }
 
+.sr-only-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.giant-action-card.applied {
+  background: rgba(16, 185, 129, 0.16) !important;
+  border: 2.5px solid #10b981 !important;
+  box-shadow: 0 0 22px rgba(16, 185, 129, 0.4) !important;
+}
+
+.avatar-preview-wrap {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  position: relative;
+}
+
+.avatar-preview-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+  display: block;
+}
+
+.avatar-preview-img.hidden,
+.action-card-icon.hidden {
+  display: none !important;
+}
+
 /* ==========================================================================
    STEP 3: Trimmer Card (楽曲の長さ・動画にする区間の調整)
    ========================================================================== */
@@ -1120,6 +1165,12 @@ body.zoom-huge .giant-action-card {
   min-height: 88px;
   padding: 18px 16px;
   border-width: 2.5px;
+}
+
+body.zoom-huge .avatar-preview-wrap,
+body.zoom-huge .avatar-preview-img {
+  width: 68px;
+  height: 68px;
 }
 
 body.zoom-huge .action-card-icon {
