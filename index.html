@@ -213,14 +213,14 @@
         </div>
 
         <!-- Big Audio File Upload Button -->
-        <div class="giant-action-card audio-upload-card" id="audioUploadBtn" role="button" tabindex="0" aria-label="あなたが制作した楽曲ファイルをアップロード">
+        <label for="audioFileInput" class="giant-action-card audio-upload-card" id="audioUploadBtn" role="button" tabindex="0" aria-label="あなたが制作した楽曲ファイルをアップロード">
           <span class="action-card-icon">📁</span>
           <div class="action-card-text">
             <strong id="audioCardTitle">あなたが制作した楽曲ファイルをアップロード</strong>
             <span id="audioUploadHint">MP3, WAV, AAC, M4A（スマホ録音・動画の音声もOK）に対応（ここをタップ）</span>
           </div>
-        </div>
-        <input type="file" id="audioFileInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.mp4,.mov,.m4v,.webm" class="sr-only-input" tabindex="-1">
+        </label>
+        <input type="file" id="audioFileInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.mp4,.mov,.m4v,.webm,.caf,.aif" class="sr-only-input" tabindex="-1">
 
         <button id="micToggleBtn" class="giant-action-card mic-card">
           <span class="action-card-icon">🎤</span>
@@ -568,9 +568,9 @@
 
   <!-- Scripts with cache busting query -->
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-  <script src="audio-engine.js?v=20261006_04"></script>
-  <script src="presets.js?v=20261006_04"></script>
-  <script src="character-renderer.js?v=20261006_04"></script>
-  <script src="app.js?v=20261006_04"></script>
+  <script src="audio-engine.js?v=20261006_05"></script>
+  <script src="presets.js?v=20261006_05"></script>
+  <script src="character-renderer.js?v=20261006_05"></script>
+  <script src="app.js?v=20261006_05"></script>
 </body>
 </html>
