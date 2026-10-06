@@ -1016,3 +1016,193 @@ html, body {
   pointer-events: none;
   transform: translate(-50%, 20px);
 }
+
+/* ==========================================================================
+   SUPER ACCESSIBLE LARGE MODE (文字・ボタン特大モード)
+   視力に不安のあるユーザー向けに、文字とボタンを極限まで拡大・強調するモード
+   ========================================================================== */
+body.zoom-huge {
+  font-size: 21px;
+  line-height: 1.6;
+}
+
+body.zoom-huge .app-root {
+  max-width: 680px;
+}
+
+body.zoom-huge .main-mode-btn {
+  min-height: 70px;
+}
+
+body.zoom-huge .mode-btn-text strong {
+  font-size: 1.35rem;
+}
+
+body.zoom-huge .mode-btn-text span {
+  font-size: 0.92rem;
+}
+
+body.zoom-huge .zoom-toggle-btn {
+  min-height: 58px;
+  font-size: 1.2rem;
+  border-width: 3px;
+}
+
+body.zoom-huge .flow-badge {
+  font-size: 1.08rem;
+}
+
+body.zoom-huge .flow-chip {
+  font-size: 0.98rem;
+  padding: 8px 14px;
+}
+
+body.zoom-huge .now-playing-title {
+  font-size: 1.75rem;
+}
+
+body.zoom-huge .range-badge {
+  font-size: 0.98rem;
+  padding: 6px 14px;
+}
+
+body.zoom-huge .now-playing-time {
+  font-size: 1.15rem;
+}
+
+body.zoom-huge .giant-btn {
+  min-height: 76px;
+  font-size: 1.4rem;
+  border-radius: 20px;
+}
+
+body.zoom-huge .giant-icon {
+  font-size: 1.9rem;
+}
+
+body.zoom-huge .rec-dot {
+  width: 18px;
+  height: 18px;
+}
+
+body.zoom-huge .view-stage-banner-btn {
+  min-height: 82px;
+  padding: 16px 18px;
+}
+
+body.zoom-huge .banner-text strong {
+  font-size: 1.25rem;
+}
+
+body.zoom-huge .banner-text span {
+  font-size: 1.02rem;
+}
+
+body.zoom-huge .step-badge {
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+}
+
+body.zoom-huge .section-title {
+  font-size: 1.65rem;
+}
+
+body.zoom-huge .section-sub {
+  font-size: 1.1rem;
+}
+
+body.zoom-huge .sub-block-title {
+  font-size: 1.2rem;
+}
+
+body.zoom-huge .giant-action-card {
+  min-height: 88px;
+  padding: 18px 16px;
+  border-width: 2.5px;
+}
+
+body.zoom-huge .action-card-icon {
+  font-size: 2.6rem;
+}
+
+body.zoom-huge .action-card-text strong {
+  font-size: 1.35rem;
+}
+
+body.zoom-huge .action-card-text span {
+  font-size: 1.05rem;
+}
+
+body.zoom-huge .accessible-card {
+  min-height: 92px;
+  padding: 18px 16px;
+  border-width: 2.5px;
+}
+
+body.zoom-huge .accessible-card.active {
+  border-width: 3.5px;
+  border-color: #c084fc;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.6), 0 8px 30px rgba(0, 0, 0, 0.8);
+}
+
+body.zoom-huge .card-content-big h4 {
+  font-size: 1.35rem;
+}
+
+body.zoom-huge .card-content-big p {
+  font-size: 1.08rem;
+}
+
+body.zoom-huge .status-pill {
+  font-size: 0.95rem;
+  padding: 6px 14px;
+}
+
+body.zoom-huge .avatar-badge-preview {
+  width: 66px;
+  height: 66px;
+}
+
+body.zoom-huge .card-icon-big {
+  font-size: 2.6rem;
+}
+
+body.zoom-huge .trimmer-status-box {
+  padding: 16px;
+}
+
+body.zoom-huge .stat-label {
+  font-size: 1.0rem;
+}
+
+body.zoom-huge .stat-val {
+  font-size: 1.7rem;
+}
+
+body.zoom-huge .slider-value-bubble {
+  font-size: 1.25rem;
+  min-width: 74px;
+  padding: 8px 14px;
+}
+
+body.zoom-huge input[type="range"]::-webkit-slider-thumb {
+  width: 46px;
+  height: 46px;
+}
+
+body.zoom-huge input[type="range"]::-moz-range-thumb {
+  width: 46px;
+  height: 46px;
+}
+
+body.zoom-huge .trim-preset-chip {
+  min-height: 58px;
+  font-size: 1.15rem;
+}
+
+body.zoom-huge .toast {
+  font-size: 1.2rem;
+  padding: 16px 30px;
+}
+

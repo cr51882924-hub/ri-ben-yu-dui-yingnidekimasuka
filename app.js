@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewStage = document.getElementById('viewStage');
   const tabBtnControls = document.getElementById('tabBtnControls');
   const tabBtnStage = document.getElementById('tabBtnStage');
+  const tabControlsSub = document.getElementById('tabControlsSub');
+  const tabStageSub = document.getElementById('tabStageSub');
+  const zoomToggleBtn = document.getElementById('zoomToggleBtn');
+  const zoomBtnText = document.getElementById('zoomBtnText');
+  const zoomStatusBadge = document.getElementById('zoomStatusBadge');
   const jumpToStageBtn = document.getElementById('jumpToStageBtn');
   const backToControlsBtn = document.getElementById('backToControlsBtn');
 
