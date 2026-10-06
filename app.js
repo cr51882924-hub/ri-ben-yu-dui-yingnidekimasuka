@@ -415,6 +415,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } catch (e) {}
 
+  // App Reload Button (For home screen PWA & mobile cache refresh)
+  const appReloadBtn = document.getElementById('appReloadBtn');
+  if (appReloadBtn) {
+    appReloadBtn.addEventListener('click', () => {
+      triggerHaptic();
+      showToast('🔄 最新バージョンを読み込んでいます...');
+      setTimeout(() => {
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set('v', Date.now().toString());
+          window.location.replace(url.toString());
+        } catch (e) {
+          window.location.reload();
+        }
+      }, 250);
+    });
+  }
+
   // ==========================================
   // Playback Control
   // ==========================================
