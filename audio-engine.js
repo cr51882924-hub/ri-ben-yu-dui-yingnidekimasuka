@@ -100,23 +100,45 @@ class AudioEngine {
     this.userAudioMode = null;
 
     // Check if the user accidentally uploaded an image file
-    if (file.type && file.type.startsWith('image/')) {
+    if (file && file.type && file.type.startsWith('image/')) {
       return {
         success: false,
         error: '選択されたファイルは「画像（写真）」です。人物や楽器の写真は、一番上の【STEP 1: 写真を選択】からアップロードしてください。'
       };
     }
 
-    // Helper: read ArrayBuffer safely across browsers/WebViews
+    if (!file || file.size === 0) {
+      return {
+        success: false,
+        error: 'ファイルサイズが0バイトです。iCloud上のファイルの場合は一度端末にダウンロードしてからお試しください。'
+      };
+    }
+
+    // Helper: read ArrayBuffer safely across browsers/WebViews with 4s timeout
     const getArrayBuffer = () => {
-      if (typeof file.arrayBuffer === 'function') {
-        return file.arrayBuffer();
-      }
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error || new Error('FileReader failed'));
-        reader.readAsArrayBuffer(file);
+      return new Promise(async (resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('ArrayBuffer timeout')), 4000);
+        try {
+          if (typeof file.arrayBuffer === 'function') {
+            const buf = await file.arrayBuffer();
+            clearTimeout(timer);
+            resolve(buf);
+          } else {
+            const reader = new FileReader();
+            reader.onload = () => {
+              clearTimeout(timer);
+              resolve(reader.result);
+            };
+            reader.onerror = () => {
+              clearTimeout(timer);
+              reject(reader.error || new Error('FileReader failed'));
+            };
+            reader.readAsArrayBuffer(file);
+          }
+        } catch (err) {
+          clearTimeout(timer);
+          reject(err);
+        }
       });
     };
 
@@ -183,6 +205,17 @@ class AudioEngine {
           const el = document.createElement(tag);
           el.preload = 'auto';
           el.playsInline = true;
+
+          // Keep in DOM so mobile Safari doesn't detach/pause it
+          let host = document.getElementById('hiddenMediaHost');
+          if (!host) {
+            host = document.createElement('div');
+            host.id = 'hiddenMediaHost';
+            host.style.cssText = 'position:fixed;width:0;height:0;opacity:0;pointer-events:none;z-index:-999;';
+            document.body.appendChild(host);
+          }
+          host.appendChild(el);
+
           el.src = url;
 
           let resolved = false;

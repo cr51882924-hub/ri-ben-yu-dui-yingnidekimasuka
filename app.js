@@ -426,12 +426,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (appReloadBtn) {
     appReloadBtn.addEventListener('click', () => {
       triggerHaptic();
-      showToast('🔄 最新バージョンを読み込んでいます...');
+      showToast('🔄 最新バージョン (v5) を読み込んでいます...');
       setTimeout(() => {
         try {
           const url = new URL(window.location.href);
           url.searchParams.set('v', Date.now().toString());
-          window.location.replace(url.toString());
+          window.location.href = url.toString();
         } catch (e) {
           window.location.reload();
         }
@@ -804,7 +804,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   audioUploadBtn.addEventListener('click', () => {
     triggerHaptic();
-    audioFileInput.click();
+    try {
+      audioEngine.init();
+      if ('audioSession' in navigator) {
+        navigator.audioSession.type = 'playback';
+      }
+    } catch (e) {}
+    if (audioUploadBtn.tagName.toLowerCase() !== 'label') {
+      audioFileInput.click();
+    }
   });
   audioUploadBtn.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -818,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.onAudioDurationResolved = (newDur) => {
     if (newDur && newDur > 0) {
       trimDurationSeconds = Math.min(newDur, trimDurationSeconds);
-      updateTrimmerUI();
+      try { updateTrimmerUI(); } catch (e) {}
     }
   };
 
@@ -827,15 +835,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!file) return;
 
     try {
-      audioUploadHint.textContent = `読込中: ${file.name} (${Math.round(file.size / 1024)} KB)...`;
+      if (audioUploadHint) {
+        audioUploadHint.textContent = `読込中: ${file.name} (${Math.round(file.size / 1024)} KB)...`;
+      }
       const res = await audioEngine.loadUserFile(file);
       if (res && res.success) {
         const cleanName = file.name.replace(/\.[^/.]+$/, "");
-        controlSongTitle.textContent = cleanName;
-        stageSongTitle.textContent = cleanName;
+        if (controlSongTitle) controlSongTitle.textContent = cleanName;
+        if (stageSongTitle) stageSongTitle.textContent = cleanName;
         audioUploadBtn.classList.add('applied');
-        audioCardTitle.textContent = `✔ 読込完了: ${file.name}`;
-        audioUploadHint.textContent = `全体の長さ: ${formatTime(res.duration)}（下で秒数確認・使う区間を調整できます）`;
+        if (audioCardTitle) audioCardTitle.textContent = `✔ 読込完了: ${file.name}`;
+        if (audioUploadHint) audioUploadHint.textContent = `全体の長さ: ${formatTime(res.duration)}（下で秒数確認・使う区間を調整できます）`;
 
         songCards.forEach(s => {
           s.classList.remove('active');
@@ -848,12 +858,16 @@ document.addEventListener('DOMContentLoaded', () => {
           bpm: 120,
           lyrics: [{ time: 0, text: '♪ あなたの楽曲を再生中' }]
         };
-        stageBpmIndicator.textContent = `120 BPM`;
+        if (stageBpmIndicator) stageBpmIndicator.textContent = `120 BPM`;
 
         // Set trimmer defaults for user song
         trimStartSeconds = 0;
-        trimDurationSeconds = Math.min(res.duration, 30);
-        updateTrimmerUI();
+        trimDurationSeconds = Math.min(res.duration || 30, 30);
+        try {
+          updateTrimmerUI();
+        } catch (uiErr) {
+          console.warn('updateTrimmerUI error:', uiErr);
+        }
 
         // Safely try starting playback in full preview mode (browsers may restrict auto-play after async file picking)
         try {
@@ -869,13 +883,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         const errDetail = (res && res.error) ? res.error : '端末内の音楽または録音ファイルをお試しください';
-        audioUploadHint.innerHTML = `<span style="color:#ef4444;font-weight:700;">⚠ 読込エラー: ${errDetail}</span><br><small style="color:#cbd5e1;">※iCloud上のファイルは端末にダウンロードしてから選択するか、別の曲をお試しください</small>`;
+        if (audioUploadHint) {
+          audioUploadHint.innerHTML = `<span style="color:#ef4444;font-weight:700;">⚠ 読込エラー: ${errDetail}</span><br><small style="color:#cbd5e1;">※iCloud上のファイルは端末にダウンロードしてから選択するか、別の曲をお試しください</small>`;
+        }
         showToast(`エラー: ${errDetail}`);
       }
     } catch (err) {
       console.error('Audio load error:', err);
       const msg = (err && err.message) ? err.message : '端末の設定またはファイル形式をご確認ください';
-      audioUploadHint.innerHTML = `<span style="color:#ef4444;font-weight:700;">⚠ 読込エラー: ${msg}</span><br><small style="color:#cbd5e1;">※画面上部の【🔄 最新版に更新】を押すか、別の曲をお試しください</small>`;
+      if (audioUploadHint) {
+        audioUploadHint.innerHTML = `<span style="color:#ef4444;font-weight:700;">⚠ 読込エラー: ${msg}</span><br><small style="color:#cbd5e1;">※画面上部の【🔄 最新版に更新】を押すか、別の曲をお試しください</small>`;
+      }
       showToast('ファイルの読み込みに失敗しました');
     } finally {
       audioFileInput.value = '';
