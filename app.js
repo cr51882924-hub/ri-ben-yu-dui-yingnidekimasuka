@@ -808,12 +808,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Register late duration update callback
+  window.onAudioDurationResolved = (newDur) => {
+    if (newDur && newDur > 0) {
+      trimDurationSeconds = Math.min(newDur, trimDurationSeconds);
+      updateTrimmerUI();
+    }
+  };
+
   audioFileInput.addEventListener('change', async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
     try {
-      audioUploadHint.textContent = `読込中: ${file.name}...`;
+      audioUploadHint.textContent = `読込中: ${file.name} (${Math.round(file.size / 1024)} KB)...`;
       const res = await audioEngine.loadUserFile(file);
       if (res && res.success) {
         const cleanName = file.name.replace(/\.[^/.]+$/, "");
@@ -854,14 +862,15 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast(`🎉 楽曲「${cleanName}」を読み込みました！下の「▶ 曲全体を再生する」を押して試聴できます。`);
         }
       } else {
-        const errDetail = (res && res.error) ? res.error : '音声ファイルを確認してください';
-        audioUploadHint.textContent = `エラー: ${errDetail}`;
-        showToast('音声の読み込みに失敗しました。MP3やWAV、ボイスメモ(M4A)等をお試しください。');
+        const errDetail = (res && res.error) ? res.error : '端末内の音楽または録音ファイルをお試しください';
+        audioUploadHint.innerHTML = `<span style="color:#ef4444;font-weight:700;">⚠ 読込エラー: ${errDetail}</span><br><small style="color:#cbd5e1;">※iCloud上のファイルは端末にダウンロードしてから選択するか、別の曲をお試しください</small>`;
+        showToast(`エラー: ${errDetail}`);
       }
     } catch (err) {
       console.error('Audio load error:', err);
-      audioUploadHint.textContent = 'エラー: 音声ファイルの読み込みに失敗しました（別のファイルをお試しください）';
-      showToast('音声ファイルの読み込みに失敗しました');
+      const msg = (err && err.message) ? err.message : '端末の設定またはファイル形式をご確認ください';
+      audioUploadHint.innerHTML = `<span style="color:#ef4444;font-weight:700;">⚠ 読込エラー: ${msg}</span><br><small style="color:#cbd5e1;">※画面上部の【🔄 最新版に更新】を押すか、別の曲をお試しください</small>`;
+      showToast('ファイルの読み込みに失敗しました');
     } finally {
       audioFileInput.value = '';
     }
