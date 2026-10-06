@@ -108,18 +108,40 @@
           </div>
         </div>
 
-        <!-- Big Photo Upload Button -->
-        <div class="giant-action-card photo-upload-card" id="avatarUploadBtn" role="button" tabindex="0" aria-label="あなたが用意した人物の写真をアップロード">
+        <!-- Big Photo Upload Button (Native label for instant mobile response) -->
+        <label for="avatarFileInput" class="giant-action-card photo-upload-card" id="avatarUploadBtn" role="button" tabindex="0" aria-label="あなたが用意した人物の写真をアップロード">
           <div class="avatar-preview-wrap" id="avatarPreviewWrap">
             <span class="action-card-icon" id="avatarCardIcon">📷</span>
             <img id="avatarPreviewImg" class="avatar-preview-img hidden" alt="アップロードした写真">
           </div>
           <div class="action-card-text">
             <strong id="avatarCardTitle">あなたが用意した人物の写真をアップロード</strong>
-            <span id="avatarCardHint">タップしてスマホの写真ライブラリから選択</span>
+            <span id="avatarCardHint">タップしてスマホの写真ライブラリから選択（PNG, JPG等）</span>
+          </div>
+        </label>
+        <input type="file" id="avatarFileInput" accept="image/*" class="sr-only-input">
+
+        <!-- Custom Avatar Success & Action Banner (写真セット後の確認・切り替えバナー) -->
+        <div id="customAvatarBanner" class="custom-avatar-banner hidden">
+          <div class="custom-avatar-banner-head">
+            <span class="custom-avatar-check-badge">✔</span>
+            <div class="custom-avatar-banner-text">
+              <strong id="customAvatarStatusTitle">あなたの写真がMVの主役にセットされました！</strong>
+              <span id="customAvatarStatusSub">音楽のリズムに合わせてこの写真の人物が歌って動きます</span>
+            </div>
+          </div>
+          <div class="custom-avatar-btn-row">
+            <button id="viewStageFromAvatarBtn" class="avatar-action-btn primary-stage-btn" type="button">
+              <span>🎬 MV映像で歌う姿を見る</span>
+            </button>
+            <button id="changeAvatarBtn" class="avatar-action-btn secondary-btn" type="button">
+              <span>🔄 別の写真に変更</span>
+            </button>
+            <button id="resetToPresetBtn" class="avatar-action-btn text-link-btn" type="button">
+              <span>プリセットに戻す</span>
+            </button>
           </div>
         </div>
-        <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/gif,image/heic,image/heif,image/*" class="sr-only-input" tabindex="-1">
 
         <div class="sub-block-title">またはプリセットから選択：</div>
         <div class="giant-cards-list">
@@ -479,6 +501,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
   <script src="audio-engine.js"></script>
   <script src="presets.js"></script>
   <script src="character-renderer.js"></script>
