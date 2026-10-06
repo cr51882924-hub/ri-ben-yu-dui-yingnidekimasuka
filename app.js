@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const directDownloadBtn = document.getElementById('directDownloadBtn');
   const closeModalCrossBtn = document.getElementById('closeModalCrossBtn');
   const closeModalBottomBtn = document.getElementById('closeModalBottomBtn');
+  const modalDownloadLink = document.getElementById('modalDownloadLink');
 
   let currentSongConfig = GROOVE_PRESETS.songs.jpop;
 
