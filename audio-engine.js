@@ -142,7 +142,7 @@ class AudioEngine {
       });
     };
 
-    // Helper: decodeAudioData compatible with Promise & Callback with 3.5s timeout
+    // Helper: decodeAudioData compatible with Promise & Callback with 12s timeout
     const decodeAudioSafe = (ctx, buffer) => {
       return new Promise((resolve, reject) => {
         let finished = false;
@@ -151,7 +151,7 @@ class AudioEngine {
             finished = true;
             reject(new Error('decodeAudioData timeout'));
           }
-        }, 3500);
+        }, 12000);
 
         try {
           const bufCopy = buffer.slice(0);
@@ -228,7 +228,7 @@ class AudioEngine {
           };
 
           const check = () => {
-            if (el.duration && !isNaN(el.duration) && el.duration > 0) {
+            if (el.duration && !isNaN(el.duration) && el.duration > 0 && isFinite(el.duration)) {
               done(el.duration);
             }
           };
@@ -241,11 +241,13 @@ class AudioEngine {
           // Fast poll every 60ms
           const poll = setInterval(check, 60);
 
-          // If mobile browser delays metadata, resolve anyway with 30s estimate (never fail!)
+          // If mobile browser delays metadata, resolve anyway with file-size based estimate (never cap to 30s!)
           const timeout = setTimeout(() => {
-            const fallbackDur = (el.duration && !isNaN(el.duration) && el.duration > 0) ? el.duration : 30;
+            const hasDur = (el.duration && !isNaN(el.duration) && el.duration > 0 && isFinite(el.duration));
+            const estFromSize = (file && file.size) ? Math.max(180, Math.round(file.size / 16000)) : 240;
+            const fallbackDur = hasDur ? el.duration : estFromSize;
             done(fallbackDur);
-          }, 1500);
+          }, 6000);
 
           el.load();
         } catch (err) {
