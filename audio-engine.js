@@ -99,6 +99,14 @@ class AudioEngine {
     this.audioBuffer = null;
     this.userAudioMode = null;
 
+    // Check if the user accidentally uploaded an image file
+    if (file.type && file.type.startsWith('image/')) {
+      return {
+        success: false,
+        error: '選択されたファイルは「画像（写真）」です。人物や楽器の写真は、一番上の【STEP 1: 写真を選択】からアップロードしてください。'
+      };
+    }
+
     // Helper: read ArrayBuffer safely across browsers/WebViews
     const getArrayBuffer = () => {
       if (typeof file.arrayBuffer === 'function') {
@@ -155,53 +163,59 @@ class AudioEngine {
       });
     };
 
-    // Helper: HTML5 Audio element fallback (ideal for iOS Voice Memos, M4A, AAC, etc.)
-    const loadViaAudioElement = () => {
+    // Helper: HTML5 Media element fallback (audio or video tag for iOS Voice Memos, M4A, MOV, MP4, etc.)
+    const loadViaMediaElement = (tag = 'audio') => {
       return new Promise((resolve, reject) => {
         try {
           const url = URL.createObjectURL(file);
-          const audio = new Audio();
-          audio.preload = 'auto';
-          audio.src = url;
+          const el = document.createElement(tag);
+          el.preload = 'auto';
+          el.playsInline = true;
+          el.crossOrigin = 'anonymous';
+          el.style.display = 'none';
+          document.body.appendChild(el);
+          el.src = url;
 
           let done = false;
           const cleanup = () => {
             done = true;
-            audio.removeEventListener('loadedmetadata', onMeta);
-            audio.removeEventListener('canplay', onMeta);
-            audio.removeEventListener('error', onError);
+            el.removeEventListener('loadedmetadata', onMeta);
+            el.removeEventListener('canplay', onMeta);
+            el.removeEventListener('error', onError);
           };
 
           const onMeta = () => {
             if (done) return;
-            const dur = audio.duration;
+            const dur = el.duration;
             if (dur && !isNaN(dur) && dur > 0) {
               cleanup();
-              resolve({ audio, url, duration: dur });
+              resolve({ mediaEl: el, url, duration: dur });
             }
           };
 
           const onError = () => {
             if (done) return;
             cleanup();
-            reject(new Error('HTMLAudioElement failed to load file'));
+            try { document.body.removeChild(el); } catch (e) {}
+            reject(new Error(`${tag} element failed to load file`));
           };
 
           const timer = setTimeout(() => {
             if (!done) {
               cleanup();
-              if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
-                resolve({ audio, url, duration: audio.duration });
+              if (el.duration && !isNaN(el.duration) && el.duration > 0) {
+                resolve({ mediaEl: el, url, duration: el.duration });
               } else {
-                reject(new Error('Audio element load timed out'));
+                try { document.body.removeChild(el); } catch (e) {}
+                reject(new Error(`${tag} element load timed out`));
               }
             }
           }, 8000);
 
-          audio.addEventListener('loadedmetadata', onMeta);
-          audio.addEventListener('canplay', onMeta);
-          audio.addEventListener('error', onError);
-          audio.load();
+          el.addEventListener('loadedmetadata', onMeta);
+          el.addEventListener('canplay', onMeta);
+          el.addEventListener('error', onError);
+          el.load();
         } catch (err) {
           reject(err);
         }
@@ -223,14 +237,14 @@ class AudioEngine {
         }
       }
     } catch (decodeErr) {
-      console.warn('Web Audio decode failed, falling back to HTMLAudioElement:', decodeErr);
+      console.warn('Web Audio decode failed, falling back to media element:', decodeErr);
     }
 
     // Layer 2: Fallback to HTMLAudioElement
     if (!loaded) {
       try {
-        const res = await loadViaAudioElement();
-        this.audioElement = res.audio;
+        const res = await loadViaMediaElement('audio');
+        this.audioElement = res.mediaEl;
         this.userAudioUrl = res.url;
         this.duration = res.duration;
         this.userAudioMode = 'element';
@@ -243,8 +257,32 @@ class AudioEngine {
         this.mediaElementSource.connect(this.analyser);
         loaded = true;
       } catch (audioErr) {
-        console.error('All audio load strategies failed:', audioErr);
-        return { success: false, error: '音声ファイルの読み込みに失敗しました' };
+        console.warn('Audio tag failed, trying video tag fallback (e.g. for camera-recorded演奏動画):', audioErr);
+      }
+    }
+
+    // Layer 3: Fallback to HTMLVideoElement (for videos with audio tracks)
+    if (!loaded) {
+      try {
+        const res = await loadViaMediaElement('video');
+        this.audioElement = res.mediaEl;
+        this.userAudioUrl = res.url;
+        this.duration = res.duration;
+        this.userAudioMode = 'element';
+
+        if (this.mediaElementSource) {
+          try { this.mediaElementSource.disconnect(); } catch (e) {}
+          this.mediaElementSource = null;
+        }
+        this.mediaElementSource = this.ctx.createMediaElementSource(this.audioElement);
+        this.mediaElementSource.connect(this.analyser);
+        loaded = true;
+      } catch (videoErr) {
+        console.error('All media load strategies failed:', videoErr);
+        return {
+          success: false,
+          error: '音声ファイルの形式に対応できませんでした。MP3、WAV、M4A（ボイスメモ等）をお試しください。'
+        };
       }
     }
 
