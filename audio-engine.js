@@ -15,16 +15,16 @@ class AudioEngine {
 
     this.isPlaying = false;
     this.isMicActive = false;
-    this.currentTrackId = 'jpop';
+    this.currentTrackId = null;
 
     this.currentTime = 0;
-    this.duration = 30;
+    this.duration = 0;
     this.startTime = 0;
     this.pauseOffset = 0;
 
     // Trimming range (which part of song to use for MV)
     this.trimStart = 0;
-    this.trimEnd = 30;
+    this.trimEnd = 0;
 
     // Synthetic demo song loop nodes & timers
     this.synthInterval = null;
@@ -388,8 +388,13 @@ class AudioEngine {
     }
   }
 
+  hasAudioLoaded() {
+    return !!(this.audioBuffer || (this.audioElement && this.userAudioUrl));
+  }
+
   // Play specified trim range (loops inside the trim range)
   playTrim(startAt) {
+    if (!this.hasAudioLoaded()) return false;
     this.init();
     if (this.isPlaying) this.pause();
 
@@ -456,13 +461,13 @@ class AudioEngine {
         }
       };
       this.sourceNode.start(0, startPoint, playLength);
-    } else {
-      this.startSynthTrack();
     }
+    return true;
   }
 
   // Play the FULL song from a given second to the end (for finding chorus / checking seconds)
   playFull(startSecond = 0) {
+    if (!this.hasAudioLoaded()) return false;
     this.init();
     if (this.isPlaying) this.pause();
 
@@ -496,17 +501,17 @@ class AudioEngine {
         }
       };
       this.sourceNode.start(0, this.fullPlayOffset, playLength);
-    } else {
-      this.startSynthTrack();
     }
+    return true;
   }
 
   // Standard play defaults to trim mode or continues current mode
   play() {
+    if (!this.hasAudioLoaded()) return false;
     if (this.playMode === 'full') {
-      this.playFull(this.fullPlayOffset);
+      return this.playFull(this.fullPlayOffset);
     } else {
-      this.playTrim();
+      return this.playTrim();
     }
   }
 

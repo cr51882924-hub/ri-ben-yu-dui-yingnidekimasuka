@@ -146,57 +146,7 @@
             <button id="changeAvatarBtn" class="avatar-action-btn secondary-btn" type="button">
               <span>🔄 別の写真に変更</span>
             </button>
-            <button id="resetToPresetBtn" class="avatar-action-btn text-link-btn" type="button">
-              <span>プリセットに戻す</span>
-            </button>
           </div>
-        </div>
-
-        <div class="sub-block-title">またはプリセットから選択：</div>
-        <div class="giant-cards-list">
-          <button class="accessible-card active" data-avatar="anime-rock">
-            <span class="avatar-badge-preview preview-anime-rock"></span>
-            <div class="card-content-big">
-              <div class="card-head-row">
-                <h4>アスカ（女性ロックシンガー）</h4>
-                <span class="status-pill selected">✔ 選択中</span>
-              </div>
-              <p>赤髪ツインテールの情熱的なボーカル</p>
-            </div>
-          </button>
-
-          <button class="accessible-card" data-avatar="indie-boy">
-            <span class="avatar-badge-preview preview-indie-boy"></span>
-            <div class="card-content-big">
-              <div class="card-head-row">
-                <h4>レン（男性シンガーソングライター）</h4>
-                <span class="status-pill">タップで選択</span>
-              </div>
-              <p>弾き語りやシティポップが似合う男性ボーカル</p>
-            </div>
-          </button>
-
-          <button class="accessible-card" data-avatar="cyber-idol">
-            <span class="avatar-badge-preview preview-cyber-idol"></span>
-            <div class="card-content-big">
-              <div class="card-head-row">
-                <h4>ルナ（サイバーポップ）</h4>
-                <span class="status-pill">タップで選択</span>
-              </div>
-              <p>近未来の光るホログラムアイドル</p>
-            </div>
-          </button>
-
-          <button class="accessible-card" data-avatar="lofi-girl">
-            <span class="avatar-badge-preview preview-lofi-girl"></span>
-            <div class="card-content-big">
-              <div class="card-head-row">
-                <h4>ミオ（チル / Lo-Fi）</h4>
-                <span class="status-pill">タップで選択</span>
-              </div>
-              <p>ヘッドフォンをつけたリラックス系ボーカル</p>
-            </div>
-          </button>
         </div>
       </section>
 
@@ -229,42 +179,6 @@
             <span>マイクに向かって歌うとリアルタイムに口パクします</span>
           </div>
         </button>
-
-        <div class="sub-block-title">またはデモ曲で試す：</div>
-        <div class="giant-cards-list">
-          <button class="accessible-card active" data-song="jpop">
-            <span class="card-icon-big">🎵</span>
-            <div class="card-content-big">
-              <div class="card-head-row">
-                <h4>Shining Beat（J-POP）</h4>
-                <span class="status-pill selected">セット中</span>
-              </div>
-              <p>BPM 132 • 明るいギターと疾走感のあるアイドルポップ</p>
-            </div>
-          </button>
-
-          <button class="accessible-card" data-song="lofi">
-            <span class="card-icon-big">🎵</span>
-            <div class="card-content-big">
-              <div class="card-head-row">
-                <h4>Midnight Groove（チル）</h4>
-                <span class="status-pill">タップで選択</span>
-              </div>
-              <p>BPM 88 • 首を揺らす重厚なビートとローズピアノ</p>
-            </div>
-          </button>
-
-          <button class="accessible-card" data-song="rock">
-            <span class="card-icon-big">🎵</span>
-            <div class="card-content-big">
-              <div class="card-head-row">
-                <h4>Overdrive Ignition（ロック）</h4>
-                <span class="status-pill">タップで選択</span>
-              </div>
-              <p>BPM 148 • 歪んだギターリフと激しいビート</p>
-            </div>
-          </button>
-        </div>
       </section>
 
       <!-- ==========================================
@@ -571,7 +485,7 @@
         <button id="backToControlsBtn" class="stage-back-btn">
           <span>← 🎛️ 操作画面に戻る</span>
         </button>
-        <span class="stage-mode-indicator" id="stageBpmIndicator">132 BPM</span>
+        <span class="stage-mode-indicator" id="stageBpmIndicator">-- BPM</span>
       </div>
 
       <!-- Center Floating Lyrics -->
@@ -592,8 +506,8 @@
 
         <div class="stage-footer-row">
           <div class="stage-song-info">
-            <strong id="stageSongTitle">Shining Beat (J-POP)</strong>
-            <span id="stageSongTime">00:00 / 00:30</span>
+            <strong id="stageSongTitle">楽曲未設定</strong>
+            <span id="stageSongTime">00:00 / 00:00</span>
           </div>
 
           <div class="stage-footer-btns">
