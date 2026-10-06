@@ -1059,8 +1059,59 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
-  // Video Recording & Download Pipeline (Canvas + Web Audio -> WebM/MP4)
+  // Video Recording & Download Pipeline (Canvas + Web Audio -> MP4/WebM)
   // ==========================================
+  function triggerBlobDownload(blob, filename) {
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 20000);
+    } catch (err) {
+      console.warn('Auto download error:', err);
+    }
+  }
+
+  function openCompleteModal(videoUrl, filename, targetDuration) {
+    if (!videoCompleteModal) return;
+
+    if (completeVideoPreview) {
+      completeVideoPreview.src = videoUrl;
+      completeVideoPreview.load();
+    }
+
+    videoCompleteModal.classList.remove('hidden');
+    videoCompleteModal.classList.add('visible');
+    triggerHaptic();
+  }
+
+  function closeCompleteModal() {
+    triggerHaptic();
+    if (completeVideoPreview) {
+      completeVideoPreview.pause();
+    }
+    if (videoCompleteModal) {
+      videoCompleteModal.classList.remove('visible');
+      videoCompleteModal.classList.add('hidden');
+    }
+  }
+
+  function resetRecordingUI(targetDuration) {
+    isRecording = false;
+    clearInterval(recordTimer);
+    recordTimer = null;
+    mainRecordBtn.classList.remove('recording');
+    stageRecordBtn.classList.remove('recording');
+    finalRecordBtn.classList.remove('recording');
+
+    mainRecText.textContent = 'MVを録画・保存';
+    finalRecText.textContent = `● この長さ（${targetDuration}秒）でMVを録画して保存`;
+  }
+
   function startRecording() {
     if (isRecording) return;
 
@@ -1084,14 +1135,32 @@ document.addEventListener('DOMContentLoaded', () => {
       ];
       const combinedStream = new MediaStream(combinedTracks);
 
-      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-        ? 'video/webm;codecs=vp9,opus'
-        : 'video/webm';
+      // Prioritize MP4 for iOS Safari / Photos app compatibility
+      const mimeCandidates = [
+        { type: 'video/mp4;codecs=avc1,mp4a.40.2', ext: 'mp4' },
+        { type: 'video/mp4', ext: 'mp4' },
+        { type: 'video/webm;codecs=vp9,opus', ext: 'webm' },
+        { type: 'video/webm;codecs=vp8,opus', ext: 'webm' },
+        { type: 'video/webm', ext: 'webm' }
+      ];
 
-      mediaRecorder = new MediaRecorder(combinedStream, {
-        mimeType: mimeType,
-        videoBitsPerSecond: 4500000
-      });
+      let selectedMimeType = '';
+      let fileExt = 'mp4';
+
+      for (const cand of mimeCandidates) {
+        if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(cand.type)) {
+          selectedMimeType = cand.type;
+          fileExt = cand.ext;
+          break;
+        }
+      }
+
+      const recorderOptions = { videoBitsPerSecond: 4500000 };
+      if (selectedMimeType) {
+        recorderOptions.mimeType = selectedMimeType;
+      }
+
+      mediaRecorder = new MediaRecorder(combinedStream, recorderOptions);
 
       recordedChunks = [];
       mediaRecorder.ondataavailable = (e) => {
@@ -1101,25 +1170,39 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        audioEngine.pause();
+        updatePlayUI(false);
+        updateFullPlayerUI(false);
+        resetRecordingUI(targetDuration);
+
+        if (!recordedChunks || recordedChunks.length === 0) {
+          showToast('録画データが取得できませんでした');
+          return;
+        }
+
+        const blob = new Blob(recordedChunks, { type: selectedMimeType || 'video/mp4' });
+        if (lastRecordedUrl) {
+          URL.revokeObjectURL(lastRecordedUrl);
+        }
         const videoUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = videoUrl;
-        const songNameClean = (currentSongConfig.title || 'song').replace(/\s+/g, '_');
-        a.download = `GrooveSync_${songNameClean}_${targetDuration}s.webm`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(videoUrl);
+        const songNameClean = (currentSongConfig.title || 'song').replace(/[\s\/\\?%*:|"<>]+/g, '_');
+        const filename = `GrooveSync_${songNameClean}_${targetDuration}s.${fileExt}`;
 
-        isRecording = false;
-        mainRecordBtn.classList.remove('recording');
-        stageRecordBtn.classList.remove('recording');
-        finalRecordBtn.classList.remove('recording');
+        lastRecordedBlob = blob;
+        lastRecordedUrl = videoUrl;
+        lastRecordedFilename = filename;
+        try {
+          lastRecordedFile = new File([blob], filename, { type: selectedMimeType || 'video/mp4' });
+        } catch (e) {
+          lastRecordedFile = null;
+        }
 
-        mainRecText.textContent = 'MVを録画・保存';
-        finalRecText.textContent = `● この長さ（${targetDuration}秒）でMVを録画して保存`;
-        showToast('動画のダウンロードが完了しました！写真やファイルをご確認ください');
+        // Trigger automatic download
+        triggerBlobDownload(blob, filename);
+
+        // Open completion modal with video preview and Save to Photos / Share options
+        openCompleteModal(videoUrl, filename, targetDuration);
+        showToast('動画が完成しました！保存・プレビュー画面をご確認ください');
       };
 
       mediaRecorder.start(200);
@@ -1156,18 +1239,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function handleRecordToggle() {
     triggerHaptic();
+    const targetDuration = Math.round(trimDurationSeconds);
     if (isRecording) {
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
       }
-      clearInterval(recordTimer);
-      isRecording = false;
-      mainRecordBtn.classList.remove('recording');
-      stageRecordBtn.classList.remove('recording');
-      finalRecordBtn.classList.remove('recording');
-      mainRecText.textContent = 'MVを録画・保存';
-      finalRecText.textContent = `● この長さでMVを録画して保存`;
-      showToast('録画を停止しました');
+      resetRecordingUI(targetDuration);
+      showToast('録画を完了しました');
     } else {
       startRecording();
     }
@@ -1176,6 +1254,58 @@ document.addEventListener('DOMContentLoaded', () => {
   mainRecordBtn.addEventListener('click', handleRecordToggle);
   stageRecordBtn.addEventListener('click', handleRecordToggle);
   finalRecordBtn.addEventListener('click', handleRecordToggle);
+
+  // Modal actions
+  if (saveToPhotosBtn) {
+    saveToPhotosBtn.addEventListener('click', async () => {
+      triggerHaptic();
+      if (!lastRecordedBlob) {
+        showToast('録画データが見つかりません');
+        return;
+      }
+      const fileToShare = lastRecordedFile || new File([lastRecordedBlob], lastRecordedFilename, { type: lastRecordedBlob.type });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
+        try {
+          await navigator.share({
+            files: [fileToShare],
+            title: 'GrooveSync MV',
+            text: 'GrooveSyncで作成したMV動画です'
+          });
+          showToast('共有メニューを開きました。「ビデオを保存」を押すと写真アプリに入ります');
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            triggerBlobDownload(lastRecordedBlob, lastRecordedFilename);
+            showToast('ファイルとしてダウンロードしました');
+          }
+        }
+      } else {
+        triggerBlobDownload(lastRecordedBlob, lastRecordedFilename);
+        showToast('ダウンロードを開始しました。「ファイル」アプリをご確認ください');
+      }
+    });
+  }
+
+  if (directDownloadBtn) {
+    directDownloadBtn.addEventListener('click', () => {
+      triggerHaptic();
+      if (!lastRecordedBlob) {
+        showToast('録画データが見つかりません');
+        return;
+      }
+      triggerBlobDownload(lastRecordedBlob, lastRecordedFilename);
+      showToast('再ダウンロードを開始しました。「ファイル」アプリをご確認ください');
+    });
+  }
+
+  if (closeModalCrossBtn) closeModalCrossBtn.addEventListener('click', closeCompleteModal);
+  if (closeModalBottomBtn) closeModalBottomBtn.addEventListener('click', closeCompleteModal);
+  if (videoCompleteModal) {
+    videoCompleteModal.addEventListener('click', (e) => {
+      if (e.target === videoCompleteModal) {
+        closeCompleteModal();
+      }
+    });
+  }
 
   // Initialize Trimmer Readouts
   updateTrimmerUI();
