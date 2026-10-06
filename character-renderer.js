@@ -126,19 +126,15 @@ class CharacterRenderer {
     ctx.scale(this.cameraShake.zoom, this.cameraShake.zoom);
     ctx.translate(-w / 2 + this.cameraShake.x, -h / 2 + this.cameraShake.y);
 
-    // 1. Stage Background
-    this.drawStageBackground(w, h, beatPulse);
-
-    // 2. Stage Floor & Reflections
-    this.drawStageFloor(w, h, beatPulse);
-
-    // 3. Stage Lasers
-    if (this.showLasers) {
-      this.drawStageLasers(w, h, beatPulse);
+    // If NO photo uploaded yet: draw empty stage with instruction card
+    if (!this.customAvatarImg) {
+      this.drawEmptyStageState(w, h, beatPulse);
+      ctx.restore();
+      return;
     }
 
-    // 4. Character Performance (Human / Anime Singer)
-    this.drawCharacterPerformance(w, h, {
+    // Photo MV performance:
+    this.drawPhotoMVPerformance(w, h, {
       beatPulse,
       groove,
       mouthOpen,
@@ -146,14 +142,6 @@ class CharacterRenderer {
       dominantVowel,
       bpm
     });
-
-    // 5. Floating Particles
-    if (this.showParticles) {
-      this.drawParticles(w, h, beatPulse);
-    }
-
-    // 6. Vignette
-    this.drawVignette(w, h, beatPulse);
 
     ctx.restore();
   }
@@ -962,44 +950,250 @@ class CharacterRenderer {
     ctx.restore();
   }
 
-  // Draw custom avatar face overlay
-  drawCustomAvatarFace(char, params) {
+  // ==========================================
+  // Custom Photo MV & Empty Stage Methods
+  // ==========================================
+  roundRect(ctx, x, y, width, height, radius) {
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(x, y, width, height, radius);
+      return;
+    }
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + width - r, y);
+    ctx.arcTo(x + width, y, x + width, y + r, r);
+    ctx.lineTo(x + width, y + height - r);
+    ctx.arcTo(x + width, y + height, x + width - r, y + height, r);
+    ctx.lineTo(x + r, y + height);
+    ctx.arcTo(x, y + height, x, y + height - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+  }
+
+  // Draw Empty Stage State (when no photo is selected yet)
+  drawEmptyStageState(w, h, beatPulse) {
+    const ctx = this.ctx;
+
+    // Deep concert stage background & floor
+    this.drawStageBackground(w, h, beatPulse);
+    this.drawStageFloor(w, h, beatPulse);
+
+    if (this.showLasers) {
+      this.drawStageLasers(w, h, beatPulse);
+    }
+    if (this.showParticles) {
+      this.drawParticles(w, h, beatPulse);
+    }
+
+    // Central elegant placeholder card
+    ctx.save();
+    const cardW = Math.min(w * 0.86, 560);
+    const cardH = 340;
+    const cardX = (w - cardW) / 2;
+    const cardY = (h - cardH) / 2 - 20;
+
+    ctx.fillStyle = 'rgba(17, 24, 39, 0.88)';
+    ctx.shadowColor = 'rgba(139, 92, 246, 0.4)';
+    ctx.shadowBlur = 24;
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 2.5;
+
+    this.roundRect(ctx, cardX, cardY, cardW, cardH, 24);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.shadowColor = 'transparent';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Camera Icon
+    ctx.font = '64px sans-serif';
+    ctx.fillText('📷', w / 2, cardY + 75);
+
+    // Title
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px "Noto Sans JP", sans-serif';
+    ctx.fillText('写真がまだ選択されていません', w / 2, cardY + 160);
+
+    // Subtitle
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '20px "Noto Sans JP", sans-serif';
+    ctx.fillText('【STEP 1: 写真を取り込む】から', w / 2, cardY + 215);
+    ctx.fillText('人物やアーティストの写真を選択してください', w / 2, cardY + 250);
+
+    // Tag
+    ctx.fillStyle = '#a855f7';
+    ctx.font = 'bold 16px "Noto Sans JP", sans-serif';
+    ctx.fillText('あなたの写真が主役のMVになります', w / 2, cardY + 295);
+
+    ctx.restore();
+
+    this.drawVignette(w, h, beatPulse);
+  }
+
+  // Draw Photo MV Performance (Your uploaded photo is 100% the star!)
+  drawPhotoMVPerformance(w, h, params) {
     const ctx = this.ctx;
     const img = this.customAvatarImg;
     if (!img) return;
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(0, 0, 56, 0, Math.PI * 2);
-    ctx.clip();
+    const motion = this.motionPreset || { swayFreq: 1.0, swayAmp: 18, headbobAmp: 15 };
+    const bpm = params.bpm || 120;
+    const beatPulse = params.beatPulse || 0;
+    const mouthOpen = params.mouthOpen || 0;
+    const mouthWidth = params.mouthWidth || 0.5;
 
-    const sw = img.naturalWidth || img.width || 120;
-    const sh = img.naturalHeight || img.height || 120;
-    if (sw === sh) {
-      ctx.drawImage(img, -60, -60, 120, 120);
-    } else {
-      let sx = 0, sy = 0, sSize = Math.min(sw, sh);
-      if (sh > sw) {
-        sy = Math.min(sh - sw, Math.max(0, (sh - sw) * 0.22));
-      } else {
-        sx = (sw - sh) / 2;
-      }
-      ctx.drawImage(img, sx, sy, sSize, sSize, -60, -60, 120, 120);
-    }
+    // 1. Natural rhythm & sway matching chosen motion style
+    const swayRate = (bpm / 60) * Math.PI * (motion.swayFreq || 1.0);
+    const bodySwayX = Math.sin(this.time * swayRate) * (motion.swayAmp || 16) * 0.7;
+    const bodyBounceY = -Math.abs(Math.sin(this.time * swayRate * 2)) * 10 - (beatPulse * 16);
+    const bodyTilt = (bodySwayX / 300);
+    const headbob = Math.sin(this.time * swayRate * 2) * (motion.headbobAmp || 12) * 0.5;
+
+    // 2. Stage Background & Floor
+    this.drawStageBackground(w, h, beatPulse);
+    this.drawStageFloor(w, h, beatPulse);
+
+    // 3. Ambient background glow of the photo (Spotify / Apple Music Canvas style)
+    const imgW = img.width || 512;
+    const imgH = img.height || 512;
+    ctx.save();
+    ctx.globalAlpha = 0.28 + beatPulse * 0.12;
+    ctx.filter = 'blur(40px)';
+    const bgScale = Math.max(w / imgW, h / imgH) * 1.15;
+    const bgW = imgW * bgScale;
+    const bgH = imgH * bgScale;
+    ctx.drawImage(img, (w - bgW) / 2, (h - bgH) / 2, bgW, bgH);
     ctx.restore();
 
-    // Glowing border around avatar face
+    // 4. Stage Lasers behind the main photo
+    if (this.showLasers) {
+      this.drawStageLasers(w, h, beatPulse);
+    }
+
+    // 5. Main Photo Portrait
+    // Calculate portrait size preserving natural aspect ratio
+    const maxPortraitW = w * 0.84;
+    const maxPortraitH = h * 0.68;
+    const aspect = imgW / imgH;
+
+    let renderW, renderH;
+    if (aspect > maxPortraitW / maxPortraitH) {
+      renderW = maxPortraitW;
+      renderH = maxPortraitW / aspect;
+    } else {
+      renderH = maxPortraitH;
+      renderW = maxPortraitH * aspect;
+    }
+
+    const centerX = w / 2;
+    const centerY = h * 0.46;
+
     ctx.save();
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 3.5;
-    ctx.shadowColor = '#10b981';
-    ctx.shadowBlur = 8;
+    ctx.translate(centerX + bodySwayX, centerY + bodyBounceY + headbob);
+    ctx.rotate(bodyTilt);
+
+    // Beat pulse scale punch
+    const pulseScale = 1.0 + beatPulse * 0.04;
+    ctx.scale(pulseScale, pulseScale);
+
+    // Deep shadow below photo
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+    ctx.shadowBlur = 32;
+    ctx.shadowOffsetY = 16;
+
+    // Draw rounded photo frame
+    const radius = 24;
+    const drawX = -renderW / 2;
+    const drawY = -renderH / 2;
+
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(0, 0, 56, 0, Math.PI * 2);
+    this.roundRect(ctx, drawX, drawY, renderW, renderH, radius);
+    ctx.clip();
+    ctx.drawImage(img, drawX, drawY, renderW, renderH);
+    ctx.restore();
+
+    // Glowing rim-light around photo
+    ctx.save();
+    ctx.shadowColor = `rgba(168, 85, 247, ${0.4 + beatPulse * 0.5})`;
+    ctx.shadowBlur = 18 + beatPulse * 15;
+    ctx.strokeStyle = `rgba(255, 255, 255, ${0.35 + beatPulse * 0.4})`;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    this.roundRect(ctx, drawX, drawY, renderW, renderH, radius);
     ctx.stroke();
     ctx.restore();
 
-    this.drawExpressiveMouth(params);
+    // 6. Lip-Sync Singing Mouth on the Photo!
+    if (mouthOpen > 0.04) {
+      const mouthX = 0;
+      const mouthY = renderH * 0.16; // approx lower-middle of portrait
+      this.drawPhotoSingingMouth(ctx, mouthX, mouthY, params, renderW);
+    }
+
+    ctx.restore();
+
+    // 7. Floating Particles in front of photo
+    if (this.showParticles) {
+      this.drawParticles(w, h, beatPulse);
+    }
+
+    // 8. Cinematic Stage Lighting & Vignette
+    this.drawVignette(w, h, beatPulse);
+  }
+
+  // Draw organic singing mouth directly on user's photo
+  drawPhotoSingingMouth(ctx, x, y, params, portraitWidth) {
+    const open = Math.min(1, Math.max(0, params.mouthOpen || 0));
+    const vowel = params.dominantVowel || 'A';
+    const baseScale = portraitWidth / 440;
+
+    const mw = (28 + (params.mouthWidth || 0.5) * 20) * baseScale;
+    let mh = (open * 24 + 4) * baseScale;
+    if (vowel === 'A') mh *= 1.25;
+    if (vowel === 'O' || vowel === 'U') mh *= 1.1;
+
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Soft skin-toned shadow around mouth
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+    ctx.beginPath();
+    ctx.ellipse(0, 1, mw * 0.65, mh * 0.65 + 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Outer lip boundary
+    ctx.fillStyle = 'rgba(195, 70, 95, 0.88)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, mw * 0.55, mh * 0.55 + 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Inner mouth cavity
+    ctx.fillStyle = '#220810';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, mw * 0.46, mh * 0.46, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Teeth if open
+    if (open > 0.22) {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(0, -mh * 0.22, mw * 0.34, mh * 0.16, 0, 0, Math.PI);
+      ctx.fill();
+    }
+
+    // Tongue if wide open
+    if (open > 0.42) {
+      ctx.fillStyle = 'rgba(235, 115, 135, 0.9)';
+      ctx.beginPath();
+      ctx.ellipse(0, mh * 0.22, mw * 0.26, mh * 0.2, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 }
 

@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeModalBottomBtn = document.getElementById('closeModalBottomBtn');
   const modalDownloadLink = document.getElementById('modalDownloadLink');
 
-  let currentSongConfig = GROOVE_PRESETS.songs.jpop;
+  let currentSongConfig = null;
 
   // Haptic Feedback
   function triggerHaptic() {
