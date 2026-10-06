@@ -342,7 +342,7 @@ class AudioEngine {
     if (this.isPlaying && this.playMode === 'trim') {
       this.pause();
       this.pauseOffset = 0;
-      this.playTrim();
+      this.playTrim(0);
     }
   }
 
@@ -403,14 +403,44 @@ class AudioEngine {
     const playLength = Math.max(0.1, this.trimEnd - startPoint);
 
     this.startTime = this.ctx.currentTime - offset;
+    this.currentTime = startPoint;
 
     if (this.userAudioMode === 'element' && this.audioElement) {
-      try { this.audioElement.currentTime = startPoint; } catch (e) {}
-      this.audioElement.play().catch(e => console.warn('Audio play error:', e));
-      this.audioElement.ontimeupdate = () => {
+      const el = this.audioElement;
+
+      // 1. Initial seek attempt before play
+      try { el.currentTime = startPoint; } catch (e) {}
+
+      // 2. Play promise with immediate re-seek check
+      const playP = el.play();
+      if (playP && typeof playP.then === 'function') {
+        playP.then(() => {
+          if (Math.abs(el.currentTime - startPoint) > 0.3) {
+            try { el.currentTime = startPoint; } catch (e) {}
+          }
+        }).catch(e => console.warn('Audio play error:', e));
+      }
+
+      // 3. WebKit official playing event seek reinforcement
+      const onPlaying = () => {
         if (this.isPlaying && this.playMode === 'trim') {
-          if (this.audioElement.currentTime >= this.trimEnd - 0.1) {
-            try { this.audioElement.currentTime = this.trimStart; } catch (e) {}
+          if (Math.abs(el.currentTime - startPoint) > 0.3) {
+            try { el.currentTime = startPoint; } catch (e) {}
+          }
+        }
+      };
+      el.addEventListener('playing', onPlaying, { once: true });
+
+      // 4. Timeupdate loop constraint (guards against accidental 0s jump in Safari)
+      el.ontimeupdate = () => {
+        if (this.isPlaying && this.playMode === 'trim') {
+          // If iOS Safari reset playback to 0, immediately snap back to trimStart!
+          if (el.currentTime < this.trimStart - 0.5) {
+            try { el.currentTime = this.trimStart; } catch (e) {}
+            return;
+          }
+          if (el.currentTime >= this.trimEnd - 0.1) {
+            try { el.currentTime = this.trimStart; } catch (e) {}
           }
         }
       };
@@ -422,7 +452,7 @@ class AudioEngine {
         if (this.isPlaying && this.playMode === 'trim' && this.currentTime >= this.trimEnd - 0.25) {
           this.pause();
           this.pauseOffset = 0;
-          this.playTrim();
+          this.playTrim(0);
         }
       };
       this.sourceNode.start(0, startPoint, playLength);

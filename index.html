@@ -353,39 +353,79 @@
             </div>
           </div>
 
-          <!-- Quick Preset Duration Buttons -->
-          <div class="trim-presets-title">ワンタップで長さを選ぶ：</div>
-          <div class="trim-presets-row">
-            <button class="trim-preset-chip" data-dur="15">⚡ 15秒 (Shorts / TikTok)</button>
-            <button class="trim-preset-chip active" data-dur="30">🌟 30秒 (サビ切り出し)</button>
-            <button class="trim-preset-chip" data-dur="60">🎬 60秒 (1番丸ごと)</button>
-            <button class="trim-preset-chip" data-dur="full">🎵 楽曲の全体</button>
-          </div>
-
-          <!-- Start Position Slider -->
-          <div class="slider-block" style="margin-top: 18px;">
-            <div class="slider-label-row">
-              <span class="slider-name">① 曲のどこから始めるか（開始秒数）:</span>
-              <span id="startSliderVal" class="slider-val-badge">00:00</span>
+          <!-- ① 開始位置の分・秒 直接入力 ＆ 微調整 -->
+          <div class="trim-direct-input-card">
+            <div class="input-card-header">
+              <span class="input-card-title">① 曲のどこから始めるか（開始位置）</span>
+              <span class="input-card-badge" id="startPosBadge">00:00 からスタート</span>
             </div>
-            <input type="range" id="trimStartSlider" class="super-fat-slider" min="0" max="30" value="0" step="1">
-            <div class="slider-subtext">上のプレイヤーで秒数を確認して合わせるか、「いまの秒数を開始位置にセット」を押してください</div>
-          </div>
 
-          <!-- Duration Slider -->
-          <div class="slider-block" style="margin-top: 14px;">
-            <div class="slider-label-row">
-              <span class="slider-name">② 動画の長さ（何秒間にするか）:</span>
-              <span id="durationSliderVal" class="slider-val-badge">30秒</span>
+            <div class="min-sec-input-row">
+              <div class="time-input-group">
+                <input type="number" id="trimStartMinInput" class="time-num-input" min="0" max="59" value="0" inputmode="numeric" aria-label="開始位置（分）">
+                <span class="time-unit">分</span>
+              </div>
+              <span class="time-colon">:</span>
+              <div class="time-input-group">
+                <input type="number" id="trimStartSecInput" class="time-num-input" min="0" max="59" value="0" inputmode="numeric" aria-label="開始位置（秒）">
+                <span class="time-unit">秒</span>
+              </div>
             </div>
-            <input type="range" id="trimDurationSlider" class="super-fat-slider" min="5" max="60" value="30" step="1">
-            <div class="slider-subtext">5秒〜60秒（または楽曲全体）まで、お好みの長さに自由に調整できます</div>
+
+            <!-- 微調整ボタン（タップで1秒・10秒単位で移動） -->
+            <div class="stepper-buttons-row">
+              <button type="button" class="stepper-btn" id="startMinus10Btn">◀ -10秒</button>
+              <button type="button" class="stepper-btn" id="startMinus1Btn">◀ -1秒</button>
+              <button type="button" class="stepper-btn" id="startPlus1Btn">+1秒 ▶</button>
+              <button type="button" class="stepper-btn" id="startPlus10Btn">+10秒 ▶</button>
+            </div>
+
+            <input type="range" id="trimStartSlider" class="super-fat-slider" min="0" max="300" value="0" step="1" aria-label="開始秒数スライダー">
+            <div class="slider-subtext">数字を直接タップして入力するか、スライダーまたは「-10秒 / +10秒」ボタンで直感調整できます</div>
           </div>
 
-          <!-- Test Play Trimmed Section Button -->
-          <button id="previewTrimBtn" class="giant-btn giant-secondary-btn" style="margin-top: 18px;">
-            <span>🔁 選択した区間（サビ）だけをループ試聴する</span>
-          </button>
+          <!-- ② 動画の長さ（何秒間にするか）直接入力 ＆ ワンタップボタン -->
+          <div class="trim-direct-input-card" style="margin-top: 16px;">
+            <div class="input-card-header">
+              <span class="input-card-title">② 動画の長さ（何秒間にするか）</span>
+              <span class="input-card-badge" id="durationBadge">30秒間</span>
+            </div>
+
+            <div class="duration-input-row">
+              <div class="time-input-group">
+                <input type="number" id="trimDurationInput" class="time-num-input" min="5" max="300" value="30" inputmode="numeric" aria-label="動画の長さ（秒間）">
+                <span class="time-unit">秒間</span>
+              </div>
+              <div class="stepper-buttons-row inline-stepper">
+                <button type="button" class="stepper-btn" id="durMinus5Btn">◀ -5秒</button>
+                <button type="button" class="stepper-btn" id="durPlus5Btn">+5秒 ▶</button>
+              </div>
+            </div>
+
+            <!-- ワンタッププリセットボタン -->
+            <div class="trim-presets-title">ワンタップで選ぶ：</div>
+            <div class="trim-presets-row">
+              <button class="trim-preset-chip" data-dur="15">⚡ 15秒 (Shorts)</button>
+              <button class="trim-preset-chip active" data-dur="30">🌟 30秒 (サビ)</button>
+              <button class="trim-preset-chip" data-dur="40">🎯 40秒 (長めサビ)</button>
+              <button class="trim-preset-chip" data-dur="60">🎬 60秒 (1番)</button>
+              <button class="trim-preset-chip" data-dur="full">🎵 曲の最後まで</button>
+            </div>
+
+            <input type="range" id="trimDurationSlider" class="super-fat-slider" min="5" max="300" value="30" step="1" aria-label="動画の長さスライダー" style="margin-top: 14px;">
+          </div>
+
+          <!-- 決定された区間の確認 ＆ 試聴ボタン -->
+          <div class="trim-confirm-card" style="margin-top: 18px;">
+            <div class="confirm-title">🎯 設定されたリップシンク区間</div>
+            <div class="confirm-detail" id="trimConfirmDetail">
+              開始 <strong id="confirmStartTxt">00:00</strong> 〜 終了 <strong id="confirmEndTxt">00:30</strong> （合計 <strong id="confirmDurTxt">30秒間</strong>）
+            </div>
+            <button id="previewTrimBtn" class="giant-btn giant-play-inline-btn" type="button" style="margin-top: 14px; width: 100%;">
+              <span id="previewTrimIcon">▶</span>
+              <span id="previewTrimLabel">この区間（サビ）だけを試聴する</span>
+            </button>
+          </div>
         </div>
       </section>
 
