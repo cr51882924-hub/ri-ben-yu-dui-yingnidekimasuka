@@ -546,6 +546,14 @@
             <span class="rec-dot"></span>
             <span id="finalRecText">● この長さでMVを録画して保存</span>
           </button>
+
+          <!-- 録画後の保存場所ガイド -->
+          <div class="export-storage-hint">
+            <div class="hint-title">📱 録画完了後の保存場所について</div>
+            <p>0秒になると自動で録画が完了し、<strong>「保存・確認画面」</strong>がポップアップ表示されます。</p>
+            <p>※ 写真アプリ（カメラロール）に入れたい時は、完了画面の<strong>「写真に保存」</strong>を押して<strong>「ビデオを保存」</strong>を選んでください。</p>
+            <p>※ ダウンロードしたファイルはiPhoneの<strong>「ファイル」アプリ ＞「ダウンロード」フォルダ</strong>（またはSafariの ⬇️ アイコン）に保存されます。</p>
+          </div>
         </div>
       </section>
 
@@ -600,6 +608,74 @@
       </div>
     </div>
 
+    <!-- Video Complete & Save Modal (iPhone Accessible) -->
+    <div id="videoCompleteModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="completeModalTitle">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-sparkle-icon">🎉</span>
+            <h3 id="completeModalTitle" class="modal-title">MVの録画が完了しました！</h3>
+          </div>
+          <button id="closeModalCrossBtn" class="modal-close-icon" aria-label="閉じる">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Video preview player -->
+          <div class="modal-video-wrapper">
+            <video id="completeVideoPreview" controls playsinline preload="auto"></video>
+          </div>
+
+          <div class="modal-actions-list">
+            <!-- Save to Photos / Camera Roll Button -->
+            <button id="saveToPhotosBtn" class="giant-save-photos-btn" type="button">
+              <span class="btn-icon">📱</span>
+              <div class="btn-text-col">
+                <strong>写真（カメラロール）に保存・共有</strong>
+                <span>タップしてメニューの「ビデオを保存」を押すと写真アプリに入ります</span>
+              </div>
+            </button>
+
+            <!-- Direct File Download Button -->
+            <button id="directDownloadBtn" class="giant-download-file-btn" type="button">
+              <span class="btn-icon">⬇️</span>
+              <div class="btn-text-col">
+                <strong>ファイルとして再ダウンロード</strong>
+                <span>「ファイル」アプリの「ダウンロード」フォルダに保存</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Step-by-step guidance for iPhone -->
+          <div class="save-guidance-card">
+            <div class="guidance-head">
+              <span>📱</span>
+              <strong>iPhoneでの保存場所のご案内</strong>
+            </div>
+            <div class="guidance-step">
+              <span class="step-num">1</span>
+              <div>
+                <strong>「写真（カメラロール）」に入れたい時：</strong>
+                <p>上の【写真に保存・共有】ボタンを押し、出てきたメニューから<strong>「ビデオを保存」</strong>をタップしてください。</p>
+              </div>
+            </div>
+            <div class="guidance-step">
+              <span class="step-num">2</span>
+              <div>
+                <strong>すでにダウンロードされた動画を探す時：</strong>
+                <p>iPhoneの青いフォルダマーク<strong>「ファイル」アプリ ＞「ダウンロード」フォルダ</strong>に入っています。（またはSafariのURL欄の横にある <strong>⬇️ マーク</strong> をタップしてもすぐに見つかります）</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="closeModalBottomBtn" class="modal-btn-sub" type="button">
+            <span>操作画面に戻る</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Notification Toast -->
     <div id="toast" class="toast hidden">
       <span id="toastMsg">通知メッセージ</span>
@@ -608,9 +684,9 @@
 
   <!-- Scripts with cache busting query -->
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-  <script src="audio-engine.js?v=20261006_06"></script>
-  <script src="presets.js?v=20261006_06"></script>
-  <script src="character-renderer.js?v=20261006_06"></script>
-  <script src="app.js?v=20261006_06"></script>
+  <script src="audio-engine.js?v=20261006_07"></script>
+  <script src="presets.js?v=20261006_07"></script>
+  <script src="character-renderer.js?v=20261006_07"></script>
+  <script src="app.js?v=20261006_07"></script>
 </body>
 </html>
