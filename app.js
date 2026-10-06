@@ -44,6 +44,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportSummaryTitle = document.getElementById('exportSummaryTitle');
   const exportSummaryDesc = document.getElementById('exportSummaryDesc');
 
+  // Full Song Preview Player & Timeline Elements
+  const fullPlayerCurrentTime = document.getElementById('fullPlayerCurrentTime');
+  const fullPlayerTotalTime = document.getElementById('fullPlayerTotalTime');
+  const fullPlayerStatusBadge = document.getElementById('fullPlayerStatusBadge');
+  const timelineTrack = document.getElementById('timelineTrack');
+  const timelineSelectionRange = document.getElementById('timelineSelectionRange');
+  const timelinePlayhead = document.getElementById('timelinePlayhead');
+  const fullSongSeekSlider = document.getElementById('fullSongSeekSlider');
+  const timelineMidLabel = document.getElementById('timelineMidLabel');
+  const timelineEndLabel = document.getElementById('timelineEndLabel');
+  const fullPlayToggleBtn = document.getElementById('fullPlayToggleBtn');
+  const fullPlayIcon = document.getElementById('fullPlayIcon');
+  const fullPlayLabel = document.getElementById('fullPlayLabel');
+  const fullPlayRewindBtn = document.getElementById('fullPlayRewindBtn');
+  const setStartFromCurrentBtn = document.getElementById('setStartFromCurrentBtn');
+
   // Fullscreen Stage Player Elements
   const stagePlayBtn = document.getElementById('stagePlayBtn');
   const stagePlayIcon = document.getElementById('stagePlayIcon');
