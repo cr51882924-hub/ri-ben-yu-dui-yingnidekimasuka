@@ -448,6 +448,18 @@
       "created_at": "2026-10-06T18:26:40.535Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "d37d3702-35f8-4adf-a257-72df23fede72",
+      "role": "user",
+      "content": "動画を見ました。\n私がアップした写真の人物ではなく、最初にサンプルで見せられたロボットが小刻みに動いていて、ただ、私の曲が流れているだけでした。\n\nデフォルトでサンプルで入れてあるものは全て外してください。何も選択されていない状態にしてください。\n\nサンプルを選択する部分もない方がよいです。",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-06T18:34:15.874Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
