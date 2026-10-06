@@ -177,18 +177,48 @@ document.addEventListener('DOMContentLoaded', () => {
     audioEngine.setTrimRange(trimStartSeconds, endSeconds);
 
     // Readouts
-    trimStartReadout.textContent = formatTime(trimStartSeconds);
-    trimEndReadout.textContent = formatTime(endSeconds);
-    trimDurationReadout.textContent = `${Math.round(trimDurationSeconds)}秒間`;
+    if (trimStartReadout) trimStartReadout.textContent = formatTime(trimStartSeconds);
+    if (trimEndReadout) trimEndReadout.textContent = formatTime(endSeconds);
+    if (trimDurationReadout) trimDurationReadout.textContent = `${Math.round(trimDurationSeconds)}秒間`;
 
-    startSliderVal.textContent = formatTime(trimStartSeconds);
-    durationSliderVal.textContent = `${Math.round(trimDurationSeconds)}秒`;
+    if (startSliderVal) startSliderVal.textContent = formatTime(trimStartSeconds);
+    if (durationSliderVal) durationSliderVal.textContent = `${Math.round(trimDurationSeconds)}秒`;
 
-    trimStartSlider.value = trimStartSeconds;
-    trimStartSlider.max = Math.max(1, Math.floor(totalDuration - 1));
+    if (trimStartSlider) {
+      trimStartSlider.value = trimStartSeconds;
+      trimStartSlider.max = Math.max(1, Math.floor(totalDuration - 1));
+    }
 
-    trimDurationSlider.value = trimDurationSeconds;
-    trimDurationSlider.max = Math.max(1, Math.floor(totalDuration));
+    if (trimDurationSlider) {
+      trimDurationSlider.value = trimDurationSeconds;
+      trimDurationSlider.max = Math.max(1, Math.floor(totalDuration));
+    }
+
+    // Direct Min / Sec Inputs (avoid cursor jumping if currently focused)
+    if (trimStartMinInput && document.activeElement !== trimStartMinInput) {
+      trimStartMinInput.value = Math.floor(trimStartSeconds / 60);
+    }
+    if (trimStartSecInput && document.activeElement !== trimStartSecInput) {
+      trimStartSecInput.value = Math.floor(trimStartSeconds % 60);
+    }
+    if (trimDurationInput && document.activeElement !== trimDurationInput) {
+      trimDurationInput.value = Math.round(trimDurationSeconds);
+    }
+
+    if (startPosBadge) {
+      startPosBadge.textContent = `${formatTime(trimStartSeconds)} からスタート`;
+    }
+    if (durationBadge) {
+      durationBadge.textContent = `${Math.round(trimDurationSeconds)}秒間`;
+    }
+
+    if (confirmStartTxt) confirmStartTxt.textContent = formatTime(trimStartSeconds);
+    if (confirmEndTxt) confirmEndTxt.textContent = formatTime(endSeconds);
+    if (confirmDurTxt) confirmDurTxt.textContent = `${Math.round(trimDurationSeconds)}秒間`;
+
+    if (previewTrimLabel) {
+      previewTrimLabel.textContent = `この区間（${formatTime(trimStartSeconds)}〜${formatTime(endSeconds)}）を試聴する`;
+    }
 
     // Update Full Song Preview Timeline labels & range
     if (fullPlayerTotalTime) {
@@ -222,6 +252,77 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Helper to read min/sec direct input
+  function readMinSecInputs() {
+    const min = Math.max(0, parseInt(trimStartMinInput ? trimStartMinInput.value : 0, 10) || 0);
+    const sec = Math.max(0, parseInt(trimStartSecInput ? trimStartSecInput.value : 0, 10) || 0);
+    trimStartSeconds = min * 60 + sec;
+    updateTrimmerUI();
+  }
+
+  if (trimStartMinInput) {
+    trimStartMinInput.addEventListener('input', readMinSecInputs);
+    trimStartMinInput.addEventListener('change', readMinSecInputs);
+  }
+  if (trimStartSecInput) {
+    trimStartSecInput.addEventListener('input', readMinSecInputs);
+    trimStartSecInput.addEventListener('change', readMinSecInputs);
+  }
+
+  // Steppers for Start Time
+  if (startMinus10Btn) {
+    startMinus10Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimStartSeconds = Math.max(0, trimStartSeconds - 10);
+      updateTrimmerUI();
+    });
+  }
+  if (startMinus1Btn) {
+    startMinus1Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimStartSeconds = Math.max(0, trimStartSeconds - 1);
+      updateTrimmerUI();
+    });
+  }
+  if (startPlus1Btn) {
+    startPlus1Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimStartSeconds = trimStartSeconds + 1;
+      updateTrimmerUI();
+    });
+  }
+  if (startPlus10Btn) {
+    startPlus10Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimStartSeconds = trimStartSeconds + 10;
+      updateTrimmerUI();
+    });
+  }
+
+  // Duration input & steppers
+  if (trimDurationInput) {
+    const onDurChange = () => {
+      trimDurationSeconds = Math.max(5, parseFloat(trimDurationInput.value) || 30);
+      updateTrimmerUI();
+    };
+    trimDurationInput.addEventListener('input', onDurChange);
+    trimDurationInput.addEventListener('change', onDurChange);
+  }
+  if (durMinus5Btn) {
+    durMinus5Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimDurationSeconds = Math.max(5, trimDurationSeconds - 5);
+      updateTrimmerUI();
+    });
+  }
+  if (durPlus5Btn) {
+    durPlus5Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimDurationSeconds = trimDurationSeconds + 5;
+      updateTrimmerUI();
+    });
+  }
+
   // Trimmer Sliders
   trimStartSlider.addEventListener('input', (e) => {
     trimStartSeconds = parseFloat(e.target.value);
@@ -243,10 +344,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const dur = chip.dataset.dur;
       if (dur === '15') trimDurationSeconds = 15;
       else if (dur === '30') trimDurationSeconds = 30;
+      else if (dur === '40') trimDurationSeconds = 40;
       else if (dur === '60') trimDurationSeconds = 60;
       else if (dur === 'full') {
-        trimStartSeconds = 0;
-        trimDurationSeconds = audioEngine.duration;
+        trimDurationSeconds = Math.max(1, audioEngine.duration - trimStartSeconds);
       }
 
       updateTrimmerUI();
@@ -325,12 +426,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Test Play Trimmed Section
   previewTrimBtn.addEventListener('click', () => {
     triggerHaptic();
-    audioEngine.pause();
-    audioEngine.pauseOffset = 0;
-    audioEngine.playTrim();
-    updatePlayUI(true);
-    updateFullPlayerUI(false);
-    showToast(`選択した区間（${formatTime(trimStartSeconds)}〜）を再生中`);
+    if (audioEngine.isPlaying && audioEngine.playMode === 'trim') {
+      audioEngine.pause();
+      updatePlayUI(false);
+      if (previewTrimIcon) previewTrimIcon.textContent = '▶';
+    } else {
+      audioEngine.pause();
+      audioEngine.pauseOffset = 0;
+      audioEngine.playTrim(0);
+      updatePlayUI(true);
+      updateFullPlayerUI(false);
+      if (previewTrimIcon) previewTrimIcon.textContent = '⏸';
+      showToast(`▶ 設定区間（${formatTime(trimStartSeconds)} 〜 ${formatTime(trimStartSeconds + trimDurationSeconds)}）を試聴中`);
+    }
   });
 
   // ==========================================
@@ -444,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (appReloadBtn) {
     appReloadBtn.addEventListener('click', () => {
       triggerHaptic();
-      showToast('🔄 最新バージョン (v5) を読み込んでいます...');
+      showToast('🔄 最新バージョン (v6) を読み込んでいます...');
       setTimeout(() => {
         try {
           const url = new URL(window.location.href);
@@ -479,7 +587,8 @@ document.addEventListener('DOMContentLoaded', () => {
       updatePlayUI(false);
       updateFullPlayerUI(false);
     } else {
-      audioEngine.playTrim();
+      audioEngine.pauseOffset = 0;
+      audioEngine.playTrim(0);
       updatePlayUI(true);
       updateFullPlayerUI(false);
     }
