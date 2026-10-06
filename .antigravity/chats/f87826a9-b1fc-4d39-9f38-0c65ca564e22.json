@@ -124,6 +124,18 @@
       "created_at": "2026-10-05T10:36:52.758Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "438e3480-3615-4abe-b974-af95149b5567",
+      "role": "user",
+      "content": "早速なんですが、\n1番上にある操作画面を大きく表示すると言うボタンがありますが、押しても何も変化しません",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-06T10:51:37.999Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
