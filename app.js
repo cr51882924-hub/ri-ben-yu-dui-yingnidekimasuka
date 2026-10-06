@@ -427,51 +427,118 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
-  // User Photo Avatar Upload
+  // User Photo Avatar Upload & State Management
   // ==========================================
   const avatarCards = document.querySelectorAll('[data-avatar]');
+
+  function applyCustomAvatar(canvas, filename) {
+    characterRenderer.setCustomAvatar(canvas);
+
+    const previewDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    if (avatarPreviewImg) {
+      avatarPreviewImg.src = previewDataUrl;
+      avatarPreviewImg.classList.remove('hidden');
+    }
+    if (avatarCardIcon) {
+      avatarCardIcon.classList.add('hidden');
+    }
+
+    avatarUploadBtn.classList.add('applied');
+    avatarCardTitle.textContent = `✔ あなたの写真が適用されています`;
+    avatarCardHint.textContent = `${filename || '人物写真'} （タップで別の写真に変更）`;
+
+    if (customAvatarBanner) {
+      customAvatarBanner.classList.remove('hidden');
+      if (customAvatarStatusTitle) {
+        customAvatarStatusTitle.textContent = `あなたの写真（${filename || '写真'}）が主役にセットされました！`;
+      }
+    }
+
+    // Deactivate presets visually
+    avatarCards.forEach(c => {
+      c.classList.remove('active');
+      const pill = c.querySelector('.status-pill');
+      if (pill) {
+        pill.textContent = 'タップで選択';
+        pill.classList.remove('selected');
+      }
+    });
+  }
+
+  function resetToPreset(presetId = 'anime-rock') {
+    characterRenderer.setCharacter(presetId);
+    avatarUploadBtn.classList.remove('applied');
+    if (customAvatarBanner) {
+      customAvatarBanner.classList.add('hidden');
+    }
+
+    if (savedCustomAvatarCanvas) {
+      avatarCardTitle.textContent = '保存済みの人物写真を使う / 別の写真を選択';
+      avatarCardHint.textContent = `現在「${savedCustomAvatarName}」が保存されています（タップで再適用・変更）`;
+    } else {
+      avatarCardTitle.textContent = 'あなたが用意した人物の写真をアップロード';
+      avatarCardHint.textContent = 'タップしてスマホの写真ライブラリから選択（PNG, JPG等）';
+      if (avatarPreviewImg) avatarPreviewImg.classList.add('hidden');
+      if (avatarCardIcon) avatarCardIcon.classList.remove('hidden');
+    }
+
+    avatarCards.forEach(c => {
+      const isTarget = c.dataset.avatar === presetId;
+      c.classList.toggle('active', isTarget);
+      const pill = c.querySelector('.status-pill');
+      if (pill) {
+        pill.textContent = isTarget ? '✔ 選択中' : 'タップで選択';
+        pill.classList.toggle('selected', isTarget);
+      }
+    });
+  }
+
   avatarCards.forEach(card => {
     card.addEventListener('click', () => {
       triggerHaptic();
-      avatarCards.forEach(c => {
-        c.classList.remove('active');
-        const pill = c.querySelector('.status-pill');
-        if (pill) {
-          pill.textContent = 'タップで選択';
-          pill.classList.remove('selected');
-        }
-      });
-
-      card.classList.add('active');
-      const pill = card.querySelector('.status-pill');
-      if (pill) {
-        pill.textContent = '✔ 選択中';
-        pill.classList.add('selected');
-      }
-
-      // If user photo was active, remove applied style
-      avatarUploadBtn.classList.remove('applied');
-      if (avatarCardTitle) {
-        if (avatarPreviewImg && !avatarPreviewImg.classList.contains('hidden')) {
-          avatarCardTitle.textContent = '自分の写真に切り替える・再選択';
-          avatarCardHint.textContent = 'タップして写真を選択（保存された写真または新しい写真）';
-        } else {
-          avatarCardTitle.textContent = 'あなたが用意した人物の写真をアップロード';
-          avatarCardHint.textContent = 'タップしてスマホの写真ライブラリから選択';
-        }
-      }
-
       const charId = card.dataset.avatar;
-      characterRenderer.setCharacter(charId);
+      resetToPreset(charId);
       showToast(`アーティストを「${GROOVE_PRESETS.characters[charId]?.name || charId}」に設定`);
     });
   });
 
+  // Action buttons inside customAvatarBanner
+  if (viewStageFromAvatarBtn) {
+    viewStageFromAvatarBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerHaptic();
+      switchView('stage');
+    });
+  }
+
+  if (changeAvatarBtn) {
+    changeAvatarBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerHaptic();
+      avatarFileInput.click();
+    });
+  }
+
+  if (resetToPresetBtn) {
+    resetToPresetBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerHaptic();
+      resetToPreset('anime-rock');
+      showToast('プリセットキャラクター（アスカ）に戻しました');
+    });
+  }
+
   // Open file picker cleanly on click / tap
-  avatarUploadBtn.addEventListener('click', () => {
+  avatarUploadBtn.addEventListener('click', (e) => {
     triggerHaptic();
-    avatarFileInput.click();
+    // If user has a saved avatar and is currently on preset, re-apply saved avatar
+    if (savedCustomAvatarCanvas && characterRenderer.customAvatarImg !== savedCustomAvatarCanvas) {
+      e.preventDefault();
+      applyCustomAvatar(savedCustomAvatarCanvas, savedCustomAvatarName);
+      showToast(`保存されていた写真「${savedCustomAvatarName}」を再適用しました`);
+    }
   });
+
   avatarUploadBtn.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -484,51 +551,81 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
+    triggerHaptic();
     avatarCardTitle.textContent = `読込中: ${file.name}...`;
     avatarCardHint.textContent = '写真を最適化してMVにセットしています...';
+    showToast(`写真「${file.name}」を読み込んでいます...`);
+
+    let bitmap = null;
+    let tempUrl = null;
 
     try {
-      // 1. Decode image (URL.createObjectURL with FileReader fallback)
-      let imgElement = null;
-      let tempUrl = null;
+      let processFile = file;
 
-      try {
-        tempUrl = URL.createObjectURL(file);
-        const img = new Image();
-        await new Promise((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error('Object URL decode error'));
-          img.src = tempUrl;
-        });
-        imgElement = img;
-      } catch (objErr) {
-        console.warn('URL.createObjectURL failed, falling back to FileReader:', objErr);
-        const dataUrl = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = () => reject(new Error('FileReader error'));
-          reader.readAsDataURL(file);
-        });
-        const img = new Image();
-        await new Promise((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error('DataURL decode error'));
-          img.src = dataUrl;
-        });
-        imgElement = img;
-      } finally {
-        if (tempUrl) {
-          URL.revokeObjectURL(tempUrl);
+      // 1. HEIC conversion fallback if needed
+      const isHeic = file.type === 'image/heic' || file.type === 'image/heif' || /\.hei[cf]$/i.test(file.name);
+      if (isHeic && window.heic2any) {
+        avatarCardHint.textContent = 'HEIC形式の写真を最適化しています...';
+        try {
+          const converted = await window.heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+          processFile = Array.isArray(converted) ? converted[0] : converted;
+        } catch (convErr) {
+          console.warn('heic2any conversion fallback failed, trying direct decode:', convErr);
         }
       }
 
-      if (!imgElement) {
-        throw new Error('画像が取得できませんでした');
+      // 2. Decode image safely (createImageBitmap first, Image element fallback)
+      let sourceElement = null;
+      let sw = 0;
+      let sh = 0;
+
+      if (typeof window.createImageBitmap === 'function') {
+        try {
+          bitmap = await createImageBitmap(processFile);
+          sourceElement = bitmap;
+          sw = bitmap.width;
+          sh = bitmap.height;
+        } catch (bmErr) {
+          console.warn('createImageBitmap failed, falling back to Image element:', bmErr);
+        }
       }
 
-      // 2. Crop to square (focusing on head/face for vertical portraits) and downscale to 512x512
-      const sw = imgElement.naturalWidth || imgElement.width;
-      const sh = imgElement.naturalHeight || imgElement.height;
+      if (!sourceElement) {
+        const img = new Image();
+        try {
+          tempUrl = URL.createObjectURL(processFile);
+          await new Promise((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = () => reject(new Error('Object URL decode failed'));
+            img.src = tempUrl;
+          });
+          sourceElement = img;
+          sw = img.naturalWidth || img.width;
+          sh = img.naturalHeight || img.height;
+        } catch (objErr) {
+          console.warn('Object URL failed, trying FileReader dataUrl:', objErr);
+          const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('FileReader failed'));
+            reader.readAsDataURL(processFile);
+          });
+          await new Promise((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = () => reject(new Error('DataURL decode failed'));
+            img.src = dataUrl;
+          });
+          sourceElement = img;
+          sw = img.naturalWidth || img.width;
+          sh = img.naturalHeight || img.height;
+        }
+      }
+
+      if (!sourceElement || !sw || !sh) {
+        throw new Error('画像サイズが正しく取得できませんでした');
+      }
+
+      // 3. Render into 512x512 canvas with upper-center face crop for portraits
       const optCanvas = document.createElement('canvas');
       optCanvas.width = 512;
       optCanvas.height = 512;
@@ -536,54 +633,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let sx = 0, sy = 0, sSize = sw;
       if (sh > sw) {
-        // Portrait: upper center focus for head/face
+        // Vertical portrait: focus slightly upper than center (face position)
         sSize = sw;
         sx = 0;
         sy = Math.min(sh - sw, Math.max(0, (sh - sw) * 0.22));
       } else {
-        // Landscape / square: center horizontally
+        // Landscape or square: center horizontally
         sSize = sh;
         sx = (sw - sh) / 2;
         sy = 0;
       }
 
-      ctx.drawImage(imgElement, sx, sy, sSize, sSize, 0, 0, 512, 512);
+      ctx.drawImage(sourceElement, sx, sy, sSize, sSize, 0, 0, 512, 512);
 
-      // 3. Set custom avatar in character renderer
-      characterRenderer.setCustomAvatar(optCanvas);
+      // Save and apply
+      savedCustomAvatarCanvas = optCanvas;
+      savedCustomAvatarName = file.name;
+      applyCustomAvatar(optCanvas, file.name);
 
-      // 4. Update UI thumbnail preview
-      const previewDataUrl = optCanvas.toDataURL('image/jpeg', 0.88);
-      if (avatarPreviewImg) {
-        avatarPreviewImg.src = previewDataUrl;
-        avatarPreviewImg.classList.remove('hidden');
-      }
-      if (avatarCardIcon) {
-        avatarCardIcon.classList.add('hidden');
-      }
-
-      avatarUploadBtn.classList.add('applied');
-      avatarCardTitle.textContent = `✔ あなたの写真が適用されました！`;
-      avatarCardHint.textContent = `${file.name} （タップで別の写真に変更）`;
-
-      // Deactivate presets
-      avatarCards.forEach(c => {
-        c.classList.remove('active');
-        const pill = c.querySelector('.status-pill');
-        if (pill) {
-          pill.textContent = 'タップで選択';
-          pill.classList.remove('selected');
-        }
-      });
-
-      showToast('人物写真をMVに適用しました！「MV映像」で確認できます');
+      showToast('🎉 人物写真のセットが完了しました！「MV映像」で確認できます');
     } catch (err) {
       console.error('Image load error:', err);
       avatarCardTitle.textContent = '写真の読み込みに失敗しました';
       avatarCardHint.textContent = 'JPGまたはPNG形式の写真をお試しください（タップして再選択）';
       showToast('写真の読み込みに失敗しました。別の写真をお試しください。');
     } finally {
-      // Clear input value so re-selecting the same file fires change event
+      if (bitmap && typeof bitmap.close === 'function') {
+        bitmap.close();
+      }
+      if (tempUrl) {
+        URL.revokeObjectURL(tempUrl);
+      }
       avatarFileInput.value = '';
     }
   });
