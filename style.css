@@ -1672,3 +1672,161 @@ body.zoom-huge .toast {
   padding: 16px 30px;
 }
 
+/* ==========================================================================
+   STEP 3: Direct Minute / Second Input & Ultra-Legible Trimmer Controls
+   ========================================================================== */
+.trim-direct-input-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid rgba(56, 189, 248, 0.45);
+  border-radius: var(--radius-sm);
+  padding: 16px 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.input-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.input-card-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.input-card-badge {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.2);
+  border: 1.5px solid #38bdf8;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.min-sec-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.time-input-group {
+  display: inline-flex;
+  align-items: center;
+  background: #000000;
+  border: 2.5px solid #38bdf8;
+  border-radius: 10px;
+  padding: 4px 12px;
+  transition: all 0.2s ease;
+}
+
+.time-input-group:focus-within {
+  border-color: #fde047;
+  box-shadow: 0 0 14px rgba(253, 224, 71, 0.5);
+}
+
+.time-num-input {
+  width: 70px;
+  height: 52px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  outline: none;
+}
+
+.time-unit {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #38bdf8;
+  margin-left: 4px;
+}
+
+.time-colon {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #94a3b8;
+}
+
+.stepper-buttons-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.stepper-buttons-row.inline-stepper {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.stepper-btn {
+  min-height: 48px;
+  background: #1e293b;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepper-btn:active {
+  background: #38bdf8;
+  color: #090d16;
+  border-color: #38bdf8;
+  transform: scale(0.95);
+}
+
+.duration-input-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.trim-confirm-card {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(168, 85, 247, 0.25));
+  border: 2.5px solid #38bdf8;
+  border-radius: var(--radius-sm);
+  padding: 18px 16px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);
+}
+
+.confirm-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #a5f3fc;
+  margin-bottom: 8px;
+}
+
+.confirm-detail {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.5;
+}
+
+.confirm-detail strong {
+  color: #fde047;
+  font-size: 1.6rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+
