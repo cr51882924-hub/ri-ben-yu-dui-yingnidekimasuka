@@ -177,7 +177,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // Trimmer Sync & Update Function
   // ==========================================
   function updateTrimmerUI() {
-    const totalDuration = Math.max(1, audioEngine.duration || 30);
+    const totalDuration = audioEngine.duration || 0;
+    if (totalDuration <= 0) {
+      if (trimStartReadout) trimStartReadout.textContent = '00:00';
+      if (trimEndReadout) trimEndReadout.textContent = '00:00';
+      if (trimDurationReadout) trimDurationReadout.textContent = '--秒間';
+      if (startSliderVal) startSliderVal.textContent = '00:00';
+      if (durationSliderVal) durationSliderVal.textContent = '--秒';
+      if (startPosBadge) startPosBadge.textContent = '楽曲を取り込むと設定できます';
+      if (durationBadge) durationBadge.textContent = '未設定';
+      if (confirmStartTxt) confirmStartTxt.textContent = '00:00';
+      if (confirmEndTxt) confirmEndTxt.textContent = '00:00';
+      if (confirmDurTxt) confirmDurTxt.textContent = '--秒間';
+      if (previewTrimLabel) previewTrimLabel.textContent = '楽曲を取り込むと試聴できます';
+      if (fullPlayerCurrentTime) fullPlayerCurrentTime.textContent = '00:00';
+      if (fullPlayerTotalTime) fullPlayerTotalTime.textContent = '00:00';
+      if (timelineMidLabel) timelineMidLabel.textContent = '00:00';
+      if (timelineEndLabel) timelineEndLabel.textContent = '00:00';
+      return;
+    }
 
     // Constrain start
     trimStartSeconds = Math.max(0, Math.min(trimStartSeconds, totalDuration - 0.5));
