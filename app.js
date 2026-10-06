@@ -439,80 +439,206 @@ document.addEventListener('DOMContentLoaded', () => {
         pill.classList.add('selected');
       }
 
+      // If user photo was active, remove applied style
+      avatarUploadBtn.classList.remove('applied');
+      if (avatarCardTitle) {
+        if (avatarPreviewImg && !avatarPreviewImg.classList.contains('hidden')) {
+          avatarCardTitle.textContent = '自分の写真に切り替える・再選択';
+          avatarCardHint.textContent = 'タップして写真を選択（保存された写真または新しい写真）';
+        } else {
+          avatarCardTitle.textContent = 'あなたが用意した人物の写真をアップロード';
+          avatarCardHint.textContent = 'タップしてスマホの写真ライブラリから選択';
+        }
+      }
+
       const charId = card.dataset.avatar;
       characterRenderer.setCharacter(charId);
       showToast(`アーティストを「${GROOVE_PRESETS.characters[charId]?.name || charId}」に設定`);
     });
   });
 
-  avatarUploadBtn.addEventListener('click', () => avatarFileInput.click());
-  avatarFileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        characterRenderer.setCustomAvatar(img);
-        avatarCardTitle.textContent = `✔ 適用中: ${file.name}`;
-        avatarCardHint.textContent = 'あなたの写真アバターでリップシンク動画を生成します';
+  // Open file picker cleanly on click / tap
+  avatarUploadBtn.addEventListener('click', () => {
+    triggerHaptic();
+    avatarFileInput.click();
+  });
+  avatarUploadBtn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      triggerHaptic();
+      avatarFileInput.click();
+    }
+  });
 
-        avatarCards.forEach(c => {
-          c.classList.remove('active');
-          const pill = c.querySelector('.status-pill');
-          if (pill) {
-            pill.textContent = 'タップで選択';
-            pill.classList.remove('selected');
-          }
+  avatarFileInput.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    avatarCardTitle.textContent = `読込中: ${file.name}...`;
+    avatarCardHint.textContent = '写真を最適化してMVにセットしています...';
+
+    try {
+      // 1. Decode image (URL.createObjectURL with FileReader fallback)
+      let imgElement = null;
+      let tempUrl = null;
+
+      try {
+        tempUrl = URL.createObjectURL(file);
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('Object URL decode error'));
+          img.src = tempUrl;
         });
-        showToast('ご自身の人物写真をセットしました！');
-      };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
+        imgElement = img;
+      } catch (objErr) {
+        console.warn('URL.createObjectURL failed, falling back to FileReader:', objErr);
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('FileReader error'));
+          reader.readAsDataURL(file);
+        });
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('DataURL decode error'));
+          img.src = dataUrl;
+        });
+        imgElement = img;
+      } finally {
+        if (tempUrl) {
+          URL.revokeObjectURL(tempUrl);
+        }
+      }
+
+      if (!imgElement) {
+        throw new Error('画像が取得できませんでした');
+      }
+
+      // 2. Crop to square (focusing on head/face for vertical portraits) and downscale to 512x512
+      const sw = imgElement.naturalWidth || imgElement.width;
+      const sh = imgElement.naturalHeight || imgElement.height;
+      const optCanvas = document.createElement('canvas');
+      optCanvas.width = 512;
+      optCanvas.height = 512;
+      const ctx = optCanvas.getContext('2d');
+
+      let sx = 0, sy = 0, sSize = sw;
+      if (sh > sw) {
+        // Portrait: upper center focus for head/face
+        sSize = sw;
+        sx = 0;
+        sy = Math.min(sh - sw, Math.max(0, (sh - sw) * 0.22));
+      } else {
+        // Landscape / square: center horizontally
+        sSize = sh;
+        sx = (sw - sh) / 2;
+        sy = 0;
+      }
+
+      ctx.drawImage(imgElement, sx, sy, sSize, sSize, 0, 0, 512, 512);
+
+      // 3. Set custom avatar in character renderer
+      characterRenderer.setCustomAvatar(optCanvas);
+
+      // 4. Update UI thumbnail preview
+      const previewDataUrl = optCanvas.toDataURL('image/jpeg', 0.88);
+      if (avatarPreviewImg) {
+        avatarPreviewImg.src = previewDataUrl;
+        avatarPreviewImg.classList.remove('hidden');
+      }
+      if (avatarCardIcon) {
+        avatarCardIcon.classList.add('hidden');
+      }
+
+      avatarUploadBtn.classList.add('applied');
+      avatarCardTitle.textContent = `✔ あなたの写真が適用されました！`;
+      avatarCardHint.textContent = `${file.name} （タップで別の写真に変更）`;
+
+      // Deactivate presets
+      avatarCards.forEach(c => {
+        c.classList.remove('active');
+        const pill = c.querySelector('.status-pill');
+        if (pill) {
+          pill.textContent = 'タップで選択';
+          pill.classList.remove('selected');
+        }
+      });
+
+      showToast('人物写真をMVに適用しました！「MV映像」で確認できます');
+    } catch (err) {
+      console.error('Image load error:', err);
+      avatarCardTitle.textContent = '写真の読み込みに失敗しました';
+      avatarCardHint.textContent = 'JPGまたはPNG形式の写真をお試しください（タップして再選択）';
+      showToast('写真の読み込みに失敗しました。別の写真をお試しください。');
+    } finally {
+      // Clear input value so re-selecting the same file fires change event
+      avatarFileInput.value = '';
+    }
   });
 
   // ==========================================
   // User Audio File Upload (Trimming enabled)
   // ==========================================
-  audioUploadBtn.addEventListener('click', () => audioFileInput.click());
+  audioUploadBtn.addEventListener('click', () => {
+    triggerHaptic();
+    audioFileInput.click();
+  });
+  audioUploadBtn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      triggerHaptic();
+      audioFileInput.click();
+    }
+  });
+
   audioFileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files && e.target.files[0];
     if (!file) return;
 
-    audioUploadHint.textContent = `読込中: ${file.name}...`;
-    const res = await audioEngine.loadUserFile(file);
-    if (res.success) {
-      const cleanName = file.name.replace(/\.[^/.]+$/, "");
-      controlSongTitle.textContent = cleanName;
-      stageSongTitle.textContent = cleanName;
-      audioCardTitle.textContent = `✔ 読込完了: ${file.name}`;
-      audioUploadHint.textContent = `全体の長さ: ${formatTime(res.duration)}（下で使う区間を調整できます）`;
+    try {
+      audioUploadHint.textContent = `読込中: ${file.name}...`;
+      const res = await audioEngine.loadUserFile(file);
+      if (res.success) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, "");
+        controlSongTitle.textContent = cleanName;
+        stageSongTitle.textContent = cleanName;
+        audioUploadBtn.classList.add('applied');
+        audioCardTitle.textContent = `✔ 読込完了: ${file.name}`;
+        audioUploadHint.textContent = `全体の長さ: ${formatTime(res.duration)}（下で使う区間を調整できます）`;
 
-      songCards.forEach(s => {
-        s.classList.remove('active');
-        const pill = s.querySelector('.status-pill');
-        if (pill) pill.textContent = 'タップで選択';
-      });
+        songCards.forEach(s => {
+          s.classList.remove('active');
+          const pill = s.querySelector('.status-pill');
+          if (pill) pill.textContent = 'タップで選択';
+        });
 
-      currentSongConfig = {
-        title: cleanName,
-        bpm: 120,
-        lyrics: [{ time: 0, text: '♪ あなたの楽曲を再生中' }]
-      };
-      stageBpmIndicator.textContent = `120 BPM`;
+        currentSongConfig = {
+          title: cleanName,
+          bpm: 120,
+          lyrics: [{ time: 0, text: '♪ あなたの楽曲を再生中' }]
+        };
+        stageBpmIndicator.textContent = `120 BPM`;
 
-      // Set trimmer defaults for user song
-      trimStartSeconds = 0;
-      trimDurationSeconds = Math.min(res.duration, 30);
-      updateTrimmerUI();
+        // Set trimmer defaults for user song
+        trimStartSeconds = 0;
+        trimDurationSeconds = Math.min(res.duration, 30);
+        updateTrimmerUI();
 
-      audioEngine.play();
-      updatePlayUI(true);
-      showToast(`制作楽曲「${cleanName}」を読み込みました！長さをお選びください。`);
-    } else {
-      audioUploadHint.textContent = 'エラー: 音声ファイルを確認してください';
+        audioEngine.play();
+        updatePlayUI(true);
+        showToast(`制作楽曲「${cleanName}」を読み込みました！長さをお選びください。`);
+      } else {
+        audioUploadHint.textContent = 'エラー: 音声ファイルを確認してください';
+        showToast('音声の読み込みに失敗しました');
+      }
+    } catch (err) {
+      console.error('Audio load error:', err);
+      audioUploadHint.textContent = 'エラー: 音声ファイルの読み込みに失敗しました';
       showToast('音声の読み込みに失敗しました');
+    } finally {
+      audioFileInput.value = '';
     }
   });
 
