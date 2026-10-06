@@ -404,6 +404,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (fullPlayToggleBtn) {
     fullPlayToggleBtn.addEventListener('click', () => {
       triggerHaptic();
+      if (!audioEngine.hasAudioLoaded()) {
+        showToast('まず STEP 2 であなたの楽曲ファイルをアップロードしてください');
+        return;
+      }
       if (audioEngine.isPlaying && audioEngine.playMode === 'full') {
         audioEngine.pause();
         updatePlayUI(false);
@@ -423,6 +427,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (fullPlayRewindBtn) {
     fullPlayRewindBtn.addEventListener('click', () => {
       triggerHaptic();
+      if (!audioEngine.hasAudioLoaded()) {
+        showToast('まず STEP 2 であなたの楽曲ファイルをアップロードしてください');
+        return;
+      }
       audioEngine.seekFull(0);
       audioEngine.playFull(0);
       updatePlayUI(true);
@@ -457,6 +465,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Test Play Trimmed Section
   previewTrimBtn.addEventListener('click', () => {
     triggerHaptic();
+    if (!audioEngine.hasAudioLoaded()) {
+      showToast('まず STEP 2 であなたの楽曲ファイルをアップロードしてください');
+      return;
+    }
     if (audioEngine.isPlaying && audioEngine.playMode === 'trim') {
       audioEngine.pause();
       updatePlayUI(false);
@@ -516,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
       void tabBtnStage.offsetWidth;
       tabBtnStage.classList.add('pulse-anim');
 
-      if (!audioEngine.isPlaying) {
+      if (!audioEngine.isPlaying && audioEngine.hasAudioLoaded()) {
         audioEngine.play();
         updatePlayUI(true);
       }
@@ -613,6 +625,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function togglePlay() {
     triggerHaptic();
+    if (!audioEngine.hasAudioLoaded()) {
+      showToast('まず STEP 2 であなたの楽曲ファイルをアップロードしてください');
+      return;
+    }
     if (audioEngine.isPlaying) {
       audioEngine.pause();
       updatePlayUI(false);
@@ -667,59 +683,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
-  // Demo Songs Selection
-  // ==========================================
-  const songCards = document.querySelectorAll('[data-song]');
-  songCards.forEach(card => {
-    card.addEventListener('click', () => {
-      triggerHaptic();
-      songCards.forEach(s => {
-        s.classList.remove('active');
-        const pill = s.querySelector('.status-pill');
-        if (pill) pill.textContent = 'タップで選択';
-      });
-
-      card.classList.add('active');
-      const pill = card.querySelector('.status-pill');
-      if (pill) pill.textContent = 'セット中';
-
-      const songId = card.dataset.song;
-      const song = GROOVE_PRESETS.songs[songId];
-      if (!song) return;
-
-      currentSongConfig = song;
-      audioEngine.selectDemoTrack(songId);
-
-      controlSongTitle.textContent = `${song.title} (${song.genre})`;
-      stageSongTitle.textContent = `${song.title} (${song.genre})`;
-      stageBpmIndicator.textContent = `${song.bpm} BPM`;
-
-      // Reset audio upload button state
-      audioUploadBtn.classList.remove('applied');
-      audioCardTitle.textContent = 'あなたが制作した楽曲ファイルをアップロード';
-      audioUploadHint.textContent = 'MP3, WAV, AAC, M4A 形式に対応（ここをタップ）';
-
-      // Reset trimmer
-      trimStartSeconds = 0;
-      trimDurationSeconds = 30;
-      updateTrimmerUI();
-
-      if (song.recommendedMotion) {
-        const targetMotionCard = document.querySelector(`[data-motion="${song.recommendedMotion}"]`);
-        if (targetMotionCard) targetMotionCard.click();
-      }
-
-      audioEngine.play();
-      updatePlayUI(true);
-      showToast(`「${song.title}」をセットしました`);
-    });
-  });
-
-  // ==========================================
   // User Photo Avatar Upload & State Management
   // ==========================================
-  const avatarCards = document.querySelectorAll('[data-avatar]');
-
   function applyCustomAvatar(canvas, filename) {
     characterRenderer.setCustomAvatar(canvas);
 
@@ -739,57 +704,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (customAvatarBanner) {
       customAvatarBanner.classList.remove('hidden');
       if (customAvatarStatusTitle) {
-        customAvatarStatusTitle.textContent = `あなたの写真（${filename || '写真'}）が主役にセットされました！`;
+        customAvatarStatusTitle.textContent = `あなたの写真がMVの主役にセットされました！`;
+      }
+      if (customAvatarStatusSub) {
+        customAvatarStatusSub.textContent = `この写真がリズムに合わせて動くオリジナルのMVです`;
       }
     }
-
-    // Deactivate presets visually
-    avatarCards.forEach(c => {
-      c.classList.remove('active');
-      const pill = c.querySelector('.status-pill');
-      if (pill) {
-        pill.textContent = 'タップで選択';
-        pill.classList.remove('selected');
-      }
-    });
   }
-
-  function resetToPreset(presetId = 'anime-rock') {
-    characterRenderer.setCharacter(presetId);
-    avatarUploadBtn.classList.remove('applied');
-    if (customAvatarBanner) {
-      customAvatarBanner.classList.add('hidden');
-    }
-
-    if (savedCustomAvatarCanvas) {
-      avatarCardTitle.textContent = '保存済みの人物写真を使う / 別の写真を選択';
-      avatarCardHint.textContent = `現在「${savedCustomAvatarName}」が保存されています（タップで再適用・変更）`;
-    } else {
-      avatarCardTitle.textContent = 'あなたが用意した人物の写真をアップロード';
-      avatarCardHint.textContent = 'タップしてスマホの写真ライブラリから選択（PNG, JPG等）';
-      if (avatarPreviewImg) avatarPreviewImg.classList.add('hidden');
-      if (avatarCardIcon) avatarCardIcon.classList.remove('hidden');
-    }
-
-    avatarCards.forEach(c => {
-      const isTarget = c.dataset.avatar === presetId;
-      c.classList.toggle('active', isTarget);
-      const pill = c.querySelector('.status-pill');
-      if (pill) {
-        pill.textContent = isTarget ? '✔ 選択中' : 'タップで選択';
-        pill.classList.toggle('selected', isTarget);
-      }
-    });
-  }
-
-  avatarCards.forEach(card => {
-    card.addEventListener('click', () => {
-      triggerHaptic();
-      const charId = card.dataset.avatar;
-      resetToPreset(charId);
-      showToast(`アーティストを「${GROOVE_PRESETS.characters[charId]?.name || charId}」に設定`);
-    });
-  });
 
   // Action buttons inside customAvatarBanner
   if (viewStageFromAvatarBtn) {
@@ -805,15 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation();
       triggerHaptic();
       avatarFileInput.click();
-    });
-  }
-
-  if (resetToPresetBtn) {
-    resetToPresetBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      triggerHaptic();
-      resetToPreset('anime-rock');
-      showToast('プリセットキャラクター（アスカ）に戻しました');
     });
   }
 
@@ -914,33 +826,32 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error('画像サイズが正しく取得できませんでした');
       }
 
-      // 3. Render into 512x512 canvas with upper-center face crop for portraits
-      const optCanvas = document.createElement('canvas');
-      optCanvas.width = 512;
-      optCanvas.height = 512;
-      const ctx = optCanvas.getContext('2d');
-
-      let sx = 0, sy = 0, sSize = sw;
-      if (sh > sw) {
-        // Vertical portrait: focus slightly upper than center (face position)
-        sSize = sw;
-        sx = 0;
-        sy = Math.min(sh - sw, Math.max(0, (sh - sw) * 0.22));
-      } else {
-        // Landscape or square: center horizontally
-        sSize = sh;
-        sx = (sw - sh) / 2;
-        sy = 0;
+      // 3. Render into high-quality canvas preserving full photo aspect ratio
+      const maxDim = 1280;
+      let targetW = sw;
+      let targetH = sh;
+      if (sw > maxDim || sh > maxDim) {
+        if (sw > sh) {
+          targetW = maxDim;
+          targetH = Math.round((sh * maxDim) / sw);
+        } else {
+          targetH = maxDim;
+          targetW = Math.round((sw * maxDim) / sh);
+        }
       }
 
-      ctx.drawImage(sourceElement, sx, sy, sSize, sSize, 0, 0, 512, 512);
+      const optCanvas = document.createElement('canvas');
+      optCanvas.width = targetW;
+      optCanvas.height = targetH;
+      const ctx = optCanvas.getContext('2d');
+      ctx.drawImage(sourceElement, 0, 0, targetW, targetH);
 
       // Save and apply
       savedCustomAvatarCanvas = optCanvas;
       savedCustomAvatarName = file.name;
       applyCustomAvatar(optCanvas, file.name);
 
-      showToast('🎉 人物写真のセットが完了しました！「MV映像」で確認できます');
+      showToast('🎉 あなたの写真をセットしました！MVの主役として表示されます');
     } catch (err) {
       console.error('Image load error:', err);
       avatarCardTitle.textContent = '写真の読み込みに失敗しました';
@@ -1004,12 +915,6 @@ document.addEventListener('DOMContentLoaded', () => {
         audioUploadBtn.classList.add('applied');
         if (audioCardTitle) audioCardTitle.textContent = `✔ 読込完了: ${file.name}`;
         if (audioUploadHint) audioUploadHint.textContent = `全体の長さ: ${formatTime(res.duration)}（下で秒数確認・使う区間を調整できます）`;
-
-        songCards.forEach(s => {
-          s.classList.remove('active');
-          const pill = s.querySelector('.status-pill');
-          if (pill) pill.textContent = 'タップで選択';
-        });
 
         currentSongConfig = {
           title: cleanName,
@@ -1139,6 +1044,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function startRecording() {
     if (isRecording) return;
 
+    if (!characterRenderer.customAvatarImg) {
+      showToast('まず STEP 1 であなたの写真をアップロードしてください');
+      return;
+    }
+    if (!audioEngine.hasAudioLoaded()) {
+      showToast('まず STEP 2 であなたの楽曲ファイルをアップロードしてください');
+      return;
+    }
+
     // Use current adjusted duration!
     const targetDuration = Math.round(trimDurationSeconds);
 
@@ -1252,7 +1166,8 @@ document.addEventListener('DOMContentLoaded', () => {
           try { URL.revokeObjectURL(lastRecordedUrl); } catch (e) {}
         }
         const videoUrl = URL.createObjectURL(blob);
-        const songNameClean = (currentSongConfig.title || 'song').replace(/[\s\/\\?%*:|"<>]+/g, '_');
+        const songTitle = (currentSongConfig && currentSongConfig.title) ? currentSongConfig.title : 'MySong';
+        const songNameClean = songTitle.replace(/[\s\/\\?%*:|"<>]+/g, '_');
         const filename = `GrooveSync_${songNameClean}_${targetDuration}s.${fileExt}`;
 
         lastRecordedBlob = blob;
@@ -1435,7 +1350,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      if (currentSongConfig.lyrics) {
+      if (currentSongConfig && currentSongConfig.lyrics) {
         let activeLyric = currentSongConfig.lyrics[0].text;
         for (const lyric of currentSongConfig.lyrics) {
           if (cur >= lyric.time) {
@@ -1443,6 +1358,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
         lyricsText.textContent = activeLyric;
+      } else {
+        lyricsText.textContent = audioEngine.isPlaying ? '♪ 歌唱中...' : '音源を取り込むとリップシンクが連動します';
       }
     } else {
       if (fullPlayerStatusBadge && fullPlayerStatusBadge.classList.contains('playing')) {
