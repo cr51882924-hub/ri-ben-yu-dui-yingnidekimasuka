@@ -1085,6 +1085,11 @@ document.addEventListener('DOMContentLoaded', () => {
       completeVideoPreview.load();
     }
 
+    if (modalDownloadLink) {
+      modalDownloadLink.href = videoUrl;
+      modalDownloadLink.download = filename;
+    }
+
     videoCompleteModal.classList.remove('hidden');
     videoCompleteModal.classList.add('visible');
     triggerHaptic();
@@ -1127,14 +1132,43 @@ document.addEventListener('DOMContentLoaded', () => {
     updateFullPlayerUI(false);
 
     try {
-      const canvasStream = stageCanvas.captureStream(30);
-      const audioStream = audioEngine.recDestination.stream;
+      const getCanvasStream = () => {
+        if (typeof stageCanvas.captureStream === 'function') {
+          return stageCanvas.captureStream(30);
+        }
+        if (typeof stageCanvas.webkitCaptureStream === 'function') {
+          return stageCanvas.webkitCaptureStream(30);
+        }
+        return null;
+      };
 
-      const combinedTracks = [
-        ...canvasStream.getVideoTracks(),
-        ...audioStream.getAudioTracks()
-      ];
-      const combinedStream = new MediaStream(combinedTracks);
+      const canvasStream = getCanvasStream();
+      if (!canvasStream) {
+        showToast('お使いの環境では画面録画がサポートされていません');
+        return;
+      }
+
+      // Safely attach audio track to stream
+      let streamToRecord = canvasStream;
+      try {
+        if (audioEngine && audioEngine.recDestination && audioEngine.recDestination.stream) {
+          const audioTracks = audioEngine.recDestination.stream.getAudioTracks();
+          if (audioTracks && audioTracks.length > 0) {
+            try {
+              canvasStream.addTrack(audioTracks[0]);
+              streamToRecord = canvasStream;
+            } catch (addTrackErr) {
+              streamToRecord = new MediaStream([
+                ...canvasStream.getVideoTracks(),
+                audioTracks[0]
+              ]);
+            }
+          }
+        }
+      } catch (mergeErr) {
+        console.warn('Audio merge skipped, recording video stream:', mergeErr);
+        streamToRecord = canvasStream;
+      }
 
       // Prioritize MP4 for iOS Safari / Photos app compatibility
       const mimeCandidates = [
@@ -1148,20 +1182,33 @@ document.addEventListener('DOMContentLoaded', () => {
       let selectedMimeType = '';
       let fileExt = 'mp4';
 
-      for (const cand of mimeCandidates) {
-        if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(cand.type)) {
-          selectedMimeType = cand.type;
-          fileExt = cand.ext;
-          break;
+      if (typeof MediaRecorder !== 'undefined' && typeof MediaRecorder.isTypeSupported === 'function') {
+        for (const cand of mimeCandidates) {
+          if (MediaRecorder.isTypeSupported(cand.type)) {
+            selectedMimeType = cand.type;
+            fileExt = cand.ext;
+            break;
+          }
         }
       }
 
-      const recorderOptions = { videoBitsPerSecond: 4500000 };
-      if (selectedMimeType) {
-        recorderOptions.mimeType = selectedMimeType;
+      // Resilient MediaRecorder initialization
+      try {
+        const recorderOptions = selectedMimeType ? { mimeType: selectedMimeType } : {};
+        mediaRecorder = new MediaRecorder(streamToRecord, recorderOptions);
+      } catch (recErr1) {
+        console.warn('MediaRecorder with mimeType failed, trying default options:', recErr1);
+        try {
+          mediaRecorder = new MediaRecorder(streamToRecord);
+          selectedMimeType = mediaRecorder.mimeType || 'video/mp4';
+          fileExt = selectedMimeType.includes('webm') ? 'webm' : 'mp4';
+        } catch (recErr2) {
+          console.warn('MediaRecorder with audio failed, falling back to video only:', recErr2);
+          mediaRecorder = new MediaRecorder(canvasStream);
+          selectedMimeType = mediaRecorder.mimeType || 'video/mp4';
+          fileExt = selectedMimeType.includes('webm') ? 'webm' : 'mp4';
+        }
       }
-
-      mediaRecorder = new MediaRecorder(combinedStream, recorderOptions);
 
       recordedChunks = [];
       mediaRecorder.ondataavailable = (e) => {
@@ -1177,13 +1224,14 @@ document.addEventListener('DOMContentLoaded', () => {
         resetRecordingUI(targetDuration);
 
         if (!recordedChunks || recordedChunks.length === 0) {
-          showToast('録画データが取得できませんでした');
+          showToast('録画データが空でした。もう一度お試しください');
           return;
         }
 
-        const blob = new Blob(recordedChunks, { type: selectedMimeType || 'video/mp4' });
+        const mime = selectedMimeType || (fileExt === 'mp4' ? 'video/mp4' : 'video/webm');
+        const blob = new Blob(recordedChunks, { type: mime });
         if (lastRecordedUrl) {
-          URL.revokeObjectURL(lastRecordedUrl);
+          try { URL.revokeObjectURL(lastRecordedUrl); } catch (e) {}
         }
         const videoUrl = URL.createObjectURL(blob);
         const songNameClean = (currentSongConfig.title || 'song').replace(/[\s\/\\?%*:|"<>]+/g, '_');
@@ -1193,20 +1241,18 @@ document.addEventListener('DOMContentLoaded', () => {
         lastRecordedUrl = videoUrl;
         lastRecordedFilename = filename;
         try {
-          lastRecordedFile = new File([blob], filename, { type: selectedMimeType || 'video/mp4' });
+          lastRecordedFile = new File([blob], filename, { type: mime });
         } catch (e) {
           lastRecordedFile = null;
         }
 
-        // Trigger automatic download
-        triggerBlobDownload(blob, filename);
-
-        // Open completion modal with video preview and Save to Photos / Share options
+        // Open completion modal directly with video preview and photo saving
         openCompleteModal(videoUrl, filename, targetDuration);
         showToast('動画が完成しました！保存・プレビュー画面をご確認ください');
       };
 
-      mediaRecorder.start(200);
+      // Start recording (without timeslice on iOS to avoid container corruption)
+      mediaRecorder.start();
       isRecording = true;
       mainRecordBtn.classList.add('recording');
       stageRecordBtn.classList.add('recording');
@@ -1225,7 +1271,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (elapsed >= targetDuration) {
           clearInterval(recordTimer);
-          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          if (mediaRecorder && mediaRecorder.state === 'recording') {
+            try {
+              if (typeof mediaRecorder.requestData === 'function') {
+                mediaRecorder.requestData();
+              }
+            } catch (reqErr) {}
             mediaRecorder.stop();
           }
         }
@@ -1242,7 +1293,12 @@ document.addEventListener('DOMContentLoaded', () => {
     triggerHaptic();
     const targetDuration = Math.round(trimDurationSeconds);
     if (isRecording) {
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        try {
+          if (typeof mediaRecorder.requestData === 'function') {
+            mediaRecorder.requestData();
+          }
+        } catch (reqErr) {}
         mediaRecorder.stop();
       }
       resetRecordingUI(targetDuration);
@@ -1264,25 +1320,28 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('録画データが見つかりません');
         return;
       }
-      const fileToShare = lastRecordedFile || new File([lastRecordedBlob], lastRecordedFilename, { type: lastRecordedBlob.type });
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
+      const mime = lastRecordedBlob.type || 'video/mp4';
+      const fileToShare = lastRecordedFile || new File([lastRecordedBlob], lastRecordedFilename, { type: mime });
+
+      // iOS Safari native share sheet: ONLY pass files array for maximum compatibility with Photos app
+      const shareData = { files: [fileToShare] };
+
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         try {
-          await navigator.share({
-            files: [fileToShare],
-            title: 'GrooveSync MV',
-            text: 'GrooveSyncで作成したMV動画です'
-          });
+          await navigator.share(shareData);
           showToast('共有メニューを開きました。「ビデオを保存」を押すと写真アプリに入ります');
+          return;
         } catch (err) {
-          if (err.name !== 'AbortError') {
-            triggerBlobDownload(lastRecordedBlob, lastRecordedFilename);
-            showToast('ファイルとしてダウンロードしました');
+          if (err.name === 'AbortError') {
+            return;
           }
+          console.warn('navigator.share failed, falling back to download:', err);
         }
-      } else {
-        triggerBlobDownload(lastRecordedBlob, lastRecordedFilename);
-        showToast('ダウンロードを開始しました。「ファイル」アプリをご確認ください');
       }
+
+      // Fallback
+      triggerBlobDownload(lastRecordedBlob, lastRecordedFilename);
+      showToast('ダウンロードを開始しました。Safariの ⬇️ または「ファイル」アプリをご確認ください');
     });
   }
 
@@ -1294,7 +1353,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       triggerBlobDownload(lastRecordedBlob, lastRecordedFilename);
-      showToast('再ダウンロードを開始しました。「ファイル」アプリをご確認ください');
+      showToast('ダウンロードを開始しました。Safariの ⬇️ または「ファイル」アプリをご確認ください');
     });
   }
 
