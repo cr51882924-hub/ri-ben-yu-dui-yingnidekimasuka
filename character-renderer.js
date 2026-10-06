@@ -966,19 +966,38 @@ class CharacterRenderer {
   drawCustomAvatarFace(char, params) {
     const ctx = this.ctx;
     const img = this.customAvatarImg;
+    if (!img) return;
 
     ctx.save();
     ctx.beginPath();
     ctx.arc(0, 0, 56, 0, Math.PI * 2);
     ctx.clip();
-    ctx.drawImage(img, -60, -60, 120, 120);
+
+    const sw = img.naturalWidth || img.width || 120;
+    const sh = img.naturalHeight || img.height || 120;
+    if (sw === sh) {
+      ctx.drawImage(img, -60, -60, 120, 120);
+    } else {
+      let sx = 0, sy = 0, sSize = Math.min(sw, sh);
+      if (sh > sw) {
+        sy = Math.min(sh - sw, Math.max(0, (sh - sw) * 0.22));
+      } else {
+        sx = (sw - sh) / 2;
+      }
+      ctx.drawImage(img, sx, sy, sSize, sSize, -60, -60, 120, 120);
+    }
     ctx.restore();
 
-    ctx.strokeStyle = '#8b5cf6';
+    // Glowing border around avatar face
+    ctx.save();
+    ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 3.5;
+    ctx.shadowColor = '#10b981';
+    ctx.shadowBlur = 8;
     ctx.beginPath();
     ctx.arc(0, 0, 56, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.restore();
 
     this.drawExpressiveMouth(params);
   }
