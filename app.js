@@ -741,7 +741,31 @@ document.addEventListener('DOMContentLoaded', () => {
     viewStageFromAvatarBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       triggerHaptic();
-      switchView('stage');
+
+      // If user hasn't uploaded audio yet, automatically use official vocal demo song!
+      if (!audioEngine.hasAudioLoaded() || audioEngine.isDemoTrack) {
+        audioEngine.loadDemoTrack('jpop');
+        currentSongConfig = (typeof GROOVE_PRESETS !== 'undefined' && GROOVE_PRESETS.songs) ? GROOVE_PRESETS.songs.jpop : null;
+        if (controlSongTitle) controlSongTitle.textContent = 'Shining Beat (サンプル歌唱で確認中)';
+        if (stageSongTitle) stageSongTitle.textContent = 'Shining Beat (サンプル歌唱で確認中)';
+        trimStartSeconds = 0;
+        trimDurationSeconds = 30;
+        updateTrimmerUI();
+
+        switchView('stage');
+        audioEngine.stop();
+        audioEngine.playTrim(0);
+        updatePlayUI(true);
+        showToast('🎵 あなたの写真が歌う姿を確認するため、サンプル歌声で再生を開始しました！');
+      } else {
+        // User has already uploaded custom audio
+        switchView('stage');
+        if (!audioEngine.isPlaying) {
+          audioEngine.playTrim();
+          updatePlayUI(true);
+        }
+        showToast('🎬 あなたの楽曲でリップシンク再生を開始しました！');
+      }
     });
   }
 
@@ -763,7 +787,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (characterRenderer) {
       characterRenderer.setMouthPosY(clamped / 100);
+      characterRenderer.startLipsyncTest(1.5);
     }
+  }
+
+  if (testLipsyncBtn) {
+    testLipsyncBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerHaptic();
+      if (characterRenderer) {
+        characterRenderer.startLipsyncTest(3.0);
+      }
+      showToast('👄 口の母音開閉テストを開始しました（あ・い・う・え・お）');
+    });
   }
 
   if (mouthPosSlider) {
@@ -775,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
     mouthPosUpBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       triggerHaptic();
-      const cur = mouthPosSlider ? parseInt(mouthPosSlider.value, 10) : 45;
+      const cur = mouthPosSlider ? parseInt(mouthPosSlider.value, 10) : 44;
       updateMouthPosUI(cur - 3);
     });
   }
@@ -783,8 +819,73 @@ document.addEventListener('DOMContentLoaded', () => {
     mouthPosDownBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       triggerHaptic();
-      const cur = mouthPosSlider ? parseInt(mouthPosSlider.value, 10) : 45;
+      const cur = mouthPosSlider ? parseInt(mouthPosSlider.value, 10) : 44;
       updateMouthPosUI(cur + 3);
+    });
+  }
+
+  // ==========================================
+  // Official Sample MV Demonstration Player
+  // ==========================================
+  let sampleVocalistImg = null;
+  function preloadSampleImage() {
+    if (!sampleVocalistImg) {
+      sampleVocalistImg = new Image();
+      sampleVocalistImg.src = 'sample-vocalist.jpg';
+    }
+  }
+  preloadSampleImage();
+
+  async function playOfficialSampleMV() {
+    triggerHaptic();
+    showToast('✨ 公式お手本サンプルMV（完璧なリップシンク歌唱）を読み込んでいます...');
+
+    if (!sampleVocalistImg || !sampleVocalistImg.complete) {
+      sampleVocalistImg = new Image();
+      await new Promise((resolve) => {
+        sampleVocalistImg.onload = resolve;
+        sampleVocalistImg.onerror = resolve;
+        sampleVocalistImg.src = 'sample-vocalist.jpg';
+      });
+    }
+
+    // Set sample artist avatar
+    characterRenderer.setCustomAvatar(sampleVocalistImg);
+    characterRenderer.setMouthPosY(0.44);
+
+    // Set demo vocal song
+    audioEngine.loadDemoTrack('jpop');
+    currentSongConfig = (typeof GROOVE_PRESETS !== 'undefined' && GROOVE_PRESETS.songs) ? GROOVE_PRESETS.songs.jpop : null;
+
+    // Update UI labels
+    if (controlSongTitle) controlSongTitle.textContent = 'Shining Beat (公式お手本サンプル楽曲)';
+    if (stageSongTitle) stageSongTitle.textContent = 'Shining Beat (公式お手本サンプル楽曲)';
+    if (controlTrimRangeBadge) controlTrimRangeBadge.textContent = '再生区間: 00:00 〜 00:30 (30秒間)';
+    trimStartSeconds = 0;
+    trimDurationSeconds = 30;
+    updateTrimmerUI();
+
+    // Switch to fullscreen stage view and start singing!
+    switchView('stage');
+    audioEngine.stop();
+    audioEngine.playTrim(0);
+    updatePlayUI(true);
+
+    showToast('🎬 【公式お手本サンプル】歌声に合わせた母音リップシンクをお楽しみください！');
+  }
+
+  if (officialSampleBtn) {
+    officialSampleBtn.addEventListener('click', playOfficialSampleMV);
+  }
+  if (stageSampleDemoBtn) {
+    stageSampleDemoBtn.addEventListener('click', playOfficialSampleMV);
+  }
+
+  if (stageCanvas) {
+    stageCanvas.addEventListener('click', (e) => {
+      if (!characterRenderer.customAvatarImg) {
+        playOfficialSampleMV();
+      }
     });
   }
 
