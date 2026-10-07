@@ -496,6 +496,18 @@
       "created_at": "2026-10-07T06:44:17.568Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "84e179b0-02e5-4445-8c00-1b59025b75c6",
+      "role": "user",
+      "content": "最後、録画をしました。55秒です。0秒になったあとに、\n\n録画データが空で、録画ができませんでした。\n\nと表示されました。\n\n念の為2回やりましたが、いずれもそのようになります。",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-07T06:54:08.054Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
