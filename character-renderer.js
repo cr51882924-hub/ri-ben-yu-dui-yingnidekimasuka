@@ -485,107 +485,9 @@ class CharacterRenderer {
   }
 
   // ==========================================
-  // HIGH-FIDELITY LIP-SYNC & JAW ARTICULATION
-  // Responds organically to vocal loudness and vowel visemes (A, I, U, E, O)
-  // ==========================================
+  // Photo Display without glitched cuts or fake cartoon overlays
   drawPhotoSingingMouth(ctx, img, drawX, drawY, renderW, renderH, mouthX, mouthY, params) {
-    const open = Math.min(1.0, Math.max(0, params.mouthOpen || 0));
-    if (open < 0.035) return; // Keep original natural mouth when silent
-
-    const vowel = params.dominantVowel || 'A';
-    const faceScale = renderW / 400;
-
-    let mw = (26 + (params.mouthWidth || 0.5) * 22) * faceScale;
-    let mh = (open * 22 + 4) * faceScale;
-
-    // Distinct realistic shape by vowel viseme
-    if (vowel === 'A') {
-      mh *= 1.35;
-      mw *= 1.05;
-    } else if (vowel === 'O') {
-      mh *= 1.25;
-      mw *= 0.85;
-    } else if (vowel === 'U') {
-      mh *= 0.95;
-      mw *= 0.72;
-    } else if (vowel === 'I') {
-      mh *= 0.75;
-      mw *= 1.40;
-    } else if (vowel === 'E') {
-      mh *= 0.90;
-      mw *= 1.30;
-    }
-
-    ctx.save();
-    ctx.translate(mouthX, mouthY);
-
-    // A. ORGANIC JAW / CHIN DESCENT
-    // Slips the lower jaw and chin downwards realistically during open vowels
-    const chinShift = open * 8.5 * faceScale;
-    if (chinShift > 1.2 && img) {
-      ctx.save();
-      ctx.beginPath();
-      // Clip lower jaw rectangle
-      ctx.rect(-renderW * 0.35, mh * 0.22, renderW * 0.7, renderH * (1 - (this.mouthPosYRatio || 0.44)));
-      ctx.clip();
-      ctx.translate(0, chinShift);
-      ctx.drawImage(img, drawX, drawY, renderW, renderH);
-      ctx.restore();
-    }
-
-    // B. NATURAL SKIN-BLENDED ORAL CAVITY & LIP CONTOURS
-    // Feathered skin shadow around the mouth opening
-    const shadowGrad = ctx.createRadialGradient(0, 0, mw * 0.35, 0, 0, mw * 0.90);
-    shadowGrad.addColorStop(0, 'rgba(35, 12, 18, 0.85)');
-    shadowGrad.addColorStop(0.70, 'rgba(80, 25, 38, 0.35)');
-    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = shadowGrad;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, mw * 0.75, mh * 0.75 + 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Deep oral cavity (Dark inside of mouth)
-    ctx.fillStyle = '#180509';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, mw * 0.55, mh * 0.55 + 1.2, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Upper Teeth row (naturally visible on open vowels and especially 'I' / 'E')
-    if (open > 0.12 || vowel === 'I' || vowel === 'E') {
-      ctx.fillStyle = '#f8fafc';
-      ctx.beginPath();
-      const toothH = (vowel === 'I' || vowel === 'E') ? mh * 0.24 : mh * 0.18;
-      ctx.ellipse(0, -mh * 0.26, mw * 0.42, toothH, 0, 0, Math.PI);
-      ctx.fill();
-
-      // Subtle dental shading
-      ctx.strokeStyle = 'rgba(160, 130, 140, 0.25)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, -mh * 0.36);
-      ctx.lineTo(0, -mh * 0.10);
-      ctx.stroke();
-    }
-
-    // Tongue (visible on wide open vowels 'A', 'O', 'E')
-    if (open > 0.32 && (vowel === 'A' || vowel === 'O' || vowel === 'E')) {
-      const tongueGrad = ctx.createLinearGradient(0, mh * 0.1, 0, mh * 0.55);
-      tongueGrad.addColorStop(0, '#f472b6');
-      tongueGrad.addColorStop(1, '#be185d');
-      ctx.fillStyle = tongueGrad;
-      ctx.beginPath();
-      ctx.ellipse(0, mh * 0.28, mw * 0.34, mh * 0.22, 0, Math.PI, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Natural Soft Lip Contours
-    ctx.strokeStyle = 'rgba(219, 39, 119, 0.42)';
-    ctx.lineWidth = 2.0 * faceScale;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, mw * 0.56, mh * 0.56 + 1.5, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.restore();
+    // Intentionally omitted: Prevents clipping/slicing the human portrait or drawing cartoon shapes over photos
   }
 
   // ==========================================
@@ -633,31 +535,14 @@ class CharacterRenderer {
 
     // Title
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 26px "Noto Sans JP", sans-serif';
-    ctx.fillText('写真がまだ選択されていません', w / 2, cardY + 140);
+    ctx.font = 'bold 24px "Noto Sans JP", sans-serif';
+    ctx.fillText('写真が選択されていません', w / 2, cardY + 130);
 
     // Subtitle
     ctx.fillStyle = '#cbd5e1';
-    ctx.font = '18px "Noto Sans JP", sans-serif';
-    ctx.fillText('「操作画面」からあなたの写真を取り込むか、', w / 2, cardY + 190);
-    ctx.fillText('下のお手本サンプルをお試しください', w / 2, cardY + 222);
-
-    // Sample Launch Button graphic
-    const btnW = cardW * 0.78;
-    const btnH = 50;
-    const btnX = (w - btnW) / 2;
-    const btnY = cardY + 260;
-
-    const btnGrad = ctx.createLinearGradient(btnX, 0, btnX + btnW, 0);
-    btnGrad.addColorStop(0, '#ec4899');
-    btnGrad.addColorStop(1, '#8b5cf6');
-    ctx.fillStyle = btnGrad;
-    this.roundRect(ctx, btnX, btnY, btnW, btnH, 25);
-    ctx.fill();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 17px "Noto Sans JP", sans-serif';
-    ctx.fillText('🎬 お手本サンプルMVを再生する', w / 2, btnY + 25);
+    ctx.font = '16px "Noto Sans JP", sans-serif';
+    ctx.fillText('「← 操作画面に戻る」をタップして、', w / 2, cardY + 185);
+    ctx.fillText('人物の写真をアップロードしてください。', w / 2, cardY + 220);
 
     ctx.restore();
 
