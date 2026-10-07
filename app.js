@@ -1000,45 +1000,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  let modalAudioSyncAttached = false;
-  function setupModalAudioSync() {
-    if (!completeVideoPreview || modalAudioSyncAttached) return;
-    modalAudioSyncAttached = true;
-
-    completeVideoPreview.addEventListener('play', () => {
-      if (audioEngine && audioEngine.hasAudioLoaded()) {
-        const offsetSec = completeVideoPreview.currentTime || 0;
-        audioEngine.pause();
-        audioEngine.playTrim(offsetSec);
-      }
-    });
-
-    completeVideoPreview.addEventListener('pause', () => {
-      if (audioEngine && audioEngine.isPlaying) {
-        audioEngine.pause();
-      }
-    });
-
-    completeVideoPreview.addEventListener('seeked', () => {
-      if (audioEngine && audioEngine.hasAudioLoaded()) {
-        const offsetSec = completeVideoPreview.currentTime || 0;
-        if (!completeVideoPreview.paused) {
-          audioEngine.playTrim(offsetSec);
-        } else {
-          audioEngine.pauseOffset = offsetSec;
-        }
-      }
-    });
-
-    completeVideoPreview.addEventListener('ended', () => {
-      if (audioEngine && audioEngine.isPlaying) {
-        audioEngine.pause();
-      }
-    });
-  }
-
   function openCompleteModal(videoUrl, filename, targetDuration) {
     if (!videoCompleteModal) return;
+
+    // Stop background audio so video's own recorded audio plays cleanly without echo
+    if (audioEngine && audioEngine.isPlaying) {
+      audioEngine.pause();
+    }
+    updatePlayUI(false);
+    updateFullPlayerUI(false);
 
     if (completeVideoPreview) {
       completeVideoPreview.src = videoUrl;
@@ -1050,7 +1020,6 @@ document.addEventListener('DOMContentLoaded', () => {
       modalDownloadLink.download = filename;
     }
 
-    setupModalAudioSync();
     videoCompleteModal.classList.remove('hidden');
     videoCompleteModal.classList.add('visible');
     triggerHaptic();
