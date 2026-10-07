@@ -56,6 +56,21 @@
     <!-- =============================================================== -->
     <main id="viewControls" class="main-view active-view">
 
+      <!-- Official Lip-Sync Sample MV Card (使う前に完成度を確認できる公式サンプル) -->
+      <section class="official-sample-card">
+        <div class="sample-card-badge">✨ お手本サンプル（完成MV）</div>
+        <div class="sample-card-body">
+          <img src="sample-vocalist.jpg" alt="公式サンプルボーカル" class="sample-card-thumb">
+          <div class="sample-card-content">
+            <h3 class="sample-card-title">【公式お手本】高精度リップシンクMVデモ</h3>
+            <p class="sample-card-desc">使う前にまずご確認ください！プロのアーティスト写真と歌声が完璧に一体となったリップシンクMVをワンタップで体験できます。</p>
+            <button id="officialSampleBtn" class="giant-btn sample-launch-btn" type="button">
+              <span>🎬 お手本サンプルMVを再生する</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- Step-by-Step Arrow Flow Guide Banner (矢印フロー解説) -->
       <section class="flow-guide-card">
         <span class="flow-badge">💡 リップシンクMV制作の簡単ステップ</span>
@@ -143,19 +158,24 @@
           <div class="mouth-adjust-panel">
             <div class="mouth-adjust-header">
               <span>👄 リップシンク（歌う口の位置）:</span>
-              <strong id="mouthPosVal">45% (顔の口元)</strong>
+              <strong id="mouthPosVal">44% (顔の口元)</strong>
             </div>
             <div class="mouth-adjust-row">
               <button id="mouthPosUpBtn" type="button" class="mouth-step-btn">▲ 上へ</button>
-              <input id="mouthPosSlider" type="range" min="20" max="80" value="45" step="1" class="mouth-slider" aria-label="口の位置調整スライダー">
+              <input id="mouthPosSlider" type="range" min="20" max="80" value="44" step="1" class="mouth-slider" aria-label="口の位置調整スライダー">
               <button id="mouthPosDownBtn" type="button" class="mouth-step-btn">▼ 下へ</button>
             </div>
-            <p style="font-size:0.82rem; color:#94a3b8; margin:0;">※ 写真の人物の口の高さに合わせて上下に合わせられます</p>
+            <div class="mouth-test-row">
+              <button id="testLipsyncBtn" type="button" class="mouth-test-btn">
+                <span>🔊 口の動きをテスト（母音変化）</span>
+              </button>
+              <p class="mouth-adjust-hint">※ 写真の人物の口の高さに合わせて上下に合わせられます</p>
+            </div>
           </div>
 
           <div class="custom-avatar-btn-row">
             <button id="viewStageFromAvatarBtn" class="avatar-action-btn primary-stage-btn" type="button">
-              <span>🎬 MV映像で歌う姿を見る</span>
+              <span>🎬 MV映像で歌う姿を見る（リップシンク確認）</span>
             </button>
             <button id="changeAvatarBtn" class="avatar-action-btn secondary-btn" type="button">
               <span>🔄 別の写真に変更</span>
@@ -494,10 +514,13 @@
     <div id="viewStage" class="stage-view-fullscreen hidden">
       <canvas id="stageCanvas" width="720" height="1280"></canvas>
 
-      <!-- Top Overlay: Return to Controls button -->
+      <!-- Top Overlay: Return to Controls button & Sample Demo button -->
       <div class="stage-fullscreen-header">
         <button id="backToControlsBtn" class="stage-back-btn">
           <span>← 🎛️ 操作画面に戻る</span>
+        </button>
+        <button id="stageSampleDemoBtn" class="stage-sample-btn" type="button">
+          <span>✨ お手本サンプル再生</span>
         </button>
         <span class="stage-mode-indicator" id="stageBpmIndicator">-- BPM</span>
       </div>
