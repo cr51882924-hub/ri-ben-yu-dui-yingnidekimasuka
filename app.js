@@ -735,6 +735,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Mouth / Lip-Sync position adjustments
+  function updateMouthPosUI(val) {
+    const clamped = Math.max(20, Math.min(80, val));
+    if (mouthPosSlider) mouthPosSlider.value = clamped;
+    if (mouthPosVal) {
+      const label = clamped <= 35 ? '高め' : clamped >= 55 ? '低め' : '標準・口元';
+      mouthPosVal.textContent = `${clamped}% (${label})`;
+    }
+    if (characterRenderer) {
+      characterRenderer.setMouthPosY(clamped / 100);
+    }
+  }
+
+  if (mouthPosSlider) {
+    mouthPosSlider.addEventListener('input', (e) => {
+      updateMouthPosUI(parseInt(e.target.value, 10));
+    });
+  }
+  if (mouthPosUpBtn) {
+    mouthPosUpBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerHaptic();
+      const cur = mouthPosSlider ? parseInt(mouthPosSlider.value, 10) : 45;
+      updateMouthPosUI(cur - 3);
+    });
+  }
+  if (mouthPosDownBtn) {
+    mouthPosDownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerHaptic();
+      const cur = mouthPosSlider ? parseInt(mouthPosSlider.value, 10) : 45;
+      updateMouthPosUI(cur + 3);
+    });
+  }
+
   // Open file picker cleanly on click / tap
   avatarUploadBtn.addEventListener('click', (e) => {
     triggerHaptic();
