@@ -1524,7 +1524,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Initialize Trimmer Readouts
+  // Initialize Trimmer Readouts & Demo Standby
+  currentSongConfig = (typeof GROOVE_PRESETS !== 'undefined' && GROOVE_PRESETS.songs) ? GROOVE_PRESETS.songs.jpop : null;
+  audioEngine.loadDemoTrack('jpop');
+  if (controlSongTitle) controlSongTitle.textContent = 'Shining Beat (公式お手本サンプル楽曲)';
+  if (stageSongTitle) stageSongTitle.textContent = 'Shining Beat (公式お手本サンプル楽曲)';
+  if (controlTrimRangeBadge) controlTrimRangeBadge.textContent = '再生区間: 00:00 〜 00:30 (30秒間)';
+  trimStartSeconds = 0;
+  trimDurationSeconds = 30;
   updateTrimmerUI();
 
   // ==========================================
