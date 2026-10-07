@@ -139,6 +139,20 @@
               <span id="customAvatarStatusSub">音楽のリズムに合わせてこの写真の人物が歌って動きます</span>
             </div>
           </div>
+          <!-- Mouth / Lip-Sync Position Adjuster -->
+          <div class="mouth-adjust-panel">
+            <div class="mouth-adjust-header">
+              <span>👄 リップシンク（歌う口の位置）:</span>
+              <strong id="mouthPosVal">45% (顔の口元)</strong>
+            </div>
+            <div class="mouth-adjust-row">
+              <button id="mouthPosUpBtn" type="button" class="mouth-step-btn">▲ 上へ</button>
+              <input id="mouthPosSlider" type="range" min="20" max="80" value="45" step="1" class="mouth-slider" aria-label="口の位置調整スライダー">
+              <button id="mouthPosDownBtn" type="button" class="mouth-step-btn">▼ 下へ</button>
+            </div>
+            <p style="font-size:0.82rem; color:#94a3b8; margin:0;">※ 写真の人物の口の高さに合わせて上下に合わせられます</p>
+          </div>
+
           <div class="custom-avatar-btn-row">
             <button id="viewStageFromAvatarBtn" class="avatar-action-btn primary-stage-btn" type="button">
               <span>🎬 MV映像で歌う姿を見る</span>

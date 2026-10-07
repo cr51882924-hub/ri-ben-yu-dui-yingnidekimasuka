@@ -1044,44 +1044,42 @@ class CharacterRenderer {
     const img = this.customAvatarImg;
     if (!img) return;
 
-    const motion = this.motionPreset || { swayFreq: 1.0, swayAmp: 18, headbobAmp: 15 };
     const bpm = params.bpm || 120;
     const beatPulse = params.beatPulse || 0;
     const mouthOpen = params.mouthOpen || 0;
-    const mouthWidth = params.mouthWidth || 0.5;
 
-    // 1. Natural rhythm & sway matching chosen motion style
-    const swayRate = (bpm / 60) * Math.PI * (motion.swayFreq || 1.0);
-    const bodySwayX = Math.sin(this.time * swayRate) * (motion.swayAmp || 16) * 0.7;
-    const bodyBounceY = -Math.abs(Math.sin(this.time * swayRate * 2)) * 10 - (beatPulse * 16);
-    const bodyTilt = (bodySwayX / 300);
-    const headbob = Math.sin(this.time * swayRate * 2) * (motion.headbobAmp || 12) * 0.5;
+    // 1. Organic Singer Motion (Smooth, gentle rhythm — NO jerky robot bounce!)
+    const swayRate = (bpm / 60) * Math.PI * 0.85;
+    const bodySwayX = Math.sin(this.time * swayRate) * 8.0;
+    // Gentle breathing & musical groove
+    const breathScale = 1.0 + Math.sin(this.time * 1.6) * 0.012 + (beatPulse * 0.02);
+    const smoothNodY = Math.sin(this.time * swayRate * 2) * 4.5 + (beatPulse * 3.5);
+    const bodyTilt = (bodySwayX / 450);
 
-    // 2. Stage Background & Floor
+    // 2. Stage Lighting & Background
     this.drawStageBackground(w, h, beatPulse);
     this.drawStageFloor(w, h, beatPulse);
 
-    // 3. Ambient background glow of the photo (Spotify / Apple Music Canvas style)
+    // 3. Ambient atmospheric glow behind the artist
     const imgW = img.width || 512;
     const imgH = img.height || 512;
     ctx.save();
-    ctx.globalAlpha = 0.28 + beatPulse * 0.12;
-    ctx.filter = 'blur(40px)';
+    ctx.globalAlpha = 0.22 + beatPulse * 0.12;
+    ctx.filter = 'blur(45px)';
     const bgScale = Math.max(w / imgW, h / imgH) * 1.15;
     const bgW = imgW * bgScale;
     const bgH = imgH * bgScale;
     ctx.drawImage(img, (w - bgW) / 2, (h - bgH) / 2, bgW, bgH);
     ctx.restore();
 
-    // 4. Stage Lasers behind the main photo
+    // 4. Stage Lasers behind the artist
     if (this.showLasers) {
       this.drawStageLasers(w, h, beatPulse);
     }
 
-    // 5. Main Photo Portrait
-    // Calculate portrait size preserving natural aspect ratio
-    const maxPortraitW = w * 0.84;
-    const maxPortraitH = h * 0.68;
+    // 5. Main Photo Portrait: Cinematic Seamless Integration (NO HARD SQUARE BORDER!)
+    const maxPortraitW = w * 0.88;
+    const maxPortraitH = h * 0.72;
     const aspect = imgW / imgH;
 
     let renderW, renderH;
@@ -1094,109 +1092,145 @@ class CharacterRenderer {
     }
 
     const centerX = w / 2;
-    const centerY = h * 0.46;
+    const centerY = h * 0.45;
 
     ctx.save();
-    ctx.translate(centerX + bodySwayX, centerY + bodyBounceY + headbob);
+    ctx.translate(centerX + bodySwayX, centerY + smoothNodY);
     ctx.rotate(bodyTilt);
+    ctx.scale(breathScale, breathScale);
 
-    // Beat pulse scale punch
-    const pulseScale = 1.0 + beatPulse * 0.04;
-    ctx.scale(pulseScale, pulseScale);
-
-    // Deep shadow below photo
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
-    ctx.shadowBlur = 32;
-    ctx.shadowOffsetY = 16;
-
-    // Draw rounded photo frame
-    const radius = 24;
     const drawX = -renderW / 2;
     const drawY = -renderH / 2;
 
+    // Draw photo with soft vignette blend (blends seamlessly into dark stage, no paper-card look)
     ctx.save();
-    ctx.beginPath();
-    this.roundRect(ctx, drawX, drawY, renderW, renderH, radius);
-    ctx.clip();
     ctx.drawImage(img, drawX, drawY, renderW, renderH);
+
+    // Soft feathered vignette so the photo boundaries dissolve naturally into stage lighting
+    const edgeGrad = ctx.createRadialGradient(0, 0, Math.min(renderW, renderH) * 0.36, 0, 0, Math.max(renderW, renderH) * 0.56);
+    edgeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    edgeGrad.addColorStop(0.75, 'rgba(10, 15, 30, 0.4)');
+    edgeGrad.addColorStop(1, 'rgba(2, 6, 23, 0.95)');
+    ctx.fillStyle = edgeGrad;
+    ctx.fillRect(drawX - 2, drawY - 2, renderW + 4, renderH + 4);
     ctx.restore();
 
-    // Glowing rim-light around photo
-    ctx.save();
-    ctx.shadowColor = `rgba(168, 85, 247, ${0.4 + beatPulse * 0.5})`;
-    ctx.shadowBlur = 18 + beatPulse * 15;
-    ctx.strokeStyle = `rgba(255, 255, 255, ${0.35 + beatPulse * 0.4})`;
-    ctx.lineWidth = 3.5;
-    ctx.beginPath();
-    this.roundRect(ctx, drawX, drawY, renderW, renderH, radius);
-    ctx.stroke();
-    ctx.restore();
+    // 6. REALISTIC LIP-SYNC & JAW MOVEMENT (歌声に合わせて人物の口・顎が開閉)
+    const mouthY = drawY + renderH * (this.mouthPosYRatio || 0.45);
+    const mouthX = 0;
 
-    // 6. Lip-Sync Singing Mouth on the Photo!
-    if (mouthOpen > 0.04) {
-      const mouthX = 0;
-      const mouthY = renderH * 0.16; // approx lower-middle of portrait
-      this.drawPhotoSingingMouth(ctx, mouthX, mouthY, params, renderW);
+    this.drawPhotoSingingMouth(ctx, img, drawX, drawY, renderW, renderH, mouthX, mouthY, params);
+
+    // 7. Subtle Natural Blink (around 32% from top)
+    if (this.isBlinking) {
+      const eyeY = drawY + renderH * ((this.mouthPosYRatio || 0.45) * 0.72);
+      ctx.save();
+      ctx.fillStyle = 'rgba(20, 20, 35, 0.6)';
+      ctx.beginPath();
+      ctx.ellipse(mouthX - renderW * 0.14, eyeY, renderW * 0.08, 3.5, 0, 0, Math.PI * 2);
+      ctx.ellipse(mouthX + renderW * 0.14, eyeY, renderW * 0.08, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
 
     ctx.restore();
 
-    // 7. Floating Particles in front of photo
+    // 8. Floating Stage Particles
     if (this.showParticles) {
       this.drawParticles(w, h, beatPulse);
     }
 
-    // 8. Cinematic Stage Lighting & Vignette
+    // 9. Stage Atmosphere & Vignette
     this.drawVignette(w, h, beatPulse);
   }
 
-  // Draw organic singing mouth directly on user's photo
-  drawPhotoSingingMouth(ctx, x, y, params, portraitWidth) {
-    const open = Math.min(1, Math.max(0, params.mouthOpen || 0));
-    const vowel = params.dominantVowel || 'A';
-    const baseScale = portraitWidth / 440;
+  // Draw organic singing mouth directly on user's photo with jaw descent and vowel visemes
+  drawPhotoSingingMouth(ctx, img, drawX, drawY, renderW, renderH, mouthX, mouthY, params) {
+    const open = Math.min(1.0, Math.max(0, params.mouthOpen || 0));
+    if (open < 0.03) return; // Keep original natural photo when not singing
 
-    const mw = (28 + (params.mouthWidth || 0.5) * 20) * baseScale;
-    let mh = (open * 24 + 4) * baseScale;
-    if (vowel === 'A') mh *= 1.25;
-    if (vowel === 'O' || vowel === 'U') mh *= 1.1;
+    const vowel = params.dominantVowel || 'A';
+    const faceScale = renderW / 400;
+
+    let mw = (26 + (params.mouthWidth || 0.5) * 22) * faceScale;
+    let mh = (open * 22 + 4) * faceScale;
+
+    if (vowel === 'A') {
+      mh *= 1.35;
+      mw *= 1.05;
+    } else if (vowel === 'O' || vowel === 'U') {
+      mh *= 1.15;
+      mw *= 0.8;
+    } else if (vowel === 'I' || vowel === 'E') {
+      mh *= 0.85;
+      mw *= 1.35;
+    }
 
     ctx.save();
-    ctx.translate(x, y);
+    ctx.translate(mouthX, mouthY);
 
-    // Soft skin-toned shadow around mouth
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
-    ctx.beginPath();
-    ctx.ellipse(0, 1, mw * 0.65, mh * 0.65 + 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Outer lip boundary
-    ctx.fillStyle = 'rgba(195, 70, 95, 0.88)';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, mw * 0.55, mh * 0.55 + 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Inner mouth cavity
-    ctx.fillStyle = '#220810';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, mw * 0.46, mh * 0.46, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Teeth if open
-    if (open > 0.22) {
-      ctx.fillStyle = '#ffffff';
+    // A. JAW / CHIN DESCENT (下唇・顎を下に少し引き下げるモーション)
+    const chinShift = open * 7 * faceScale;
+    if (chinShift > 1.2 && img) {
+      ctx.save();
       ctx.beginPath();
-      ctx.ellipse(0, -mh * 0.22, mw * 0.34, mh * 0.16, 0, 0, Math.PI);
+      ctx.rect(-renderW * 0.35, mh * 0.25, renderW * 0.7, renderH * (1 - (this.mouthPosYRatio || 0.45)));
+      ctx.clip();
+      ctx.translate(0, chinShift);
+      ctx.drawImage(img, drawX, drawY, renderW, renderH);
+      ctx.restore();
+    }
+
+    // B. NATURAL ORAL CAVITY & LIP-SYNC (自然な口腔と唇)
+    // Soft feathered outer shadow that blends with photo skin tone
+    const shadowGrad = ctx.createRadialGradient(0, 0, mw * 0.3, 0, 0, mw * 0.85);
+    shadowGrad.addColorStop(0, 'rgba(40, 10, 18, 0.85)');
+    shadowGrad.addColorStop(0.7, 'rgba(90, 30, 45, 0.4)');
+    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = shadowGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, mw * 0.75, mh * 0.75 + 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Deep oral cavity (Dark inside of mouth)
+    ctx.fillStyle = '#1c070c';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, mw * 0.55, mh * 0.55 + 1, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Upper teeth (visible when open)
+    if (open > 0.15) {
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.ellipse(0, -mh * 0.28, mw * 0.42, mh * 0.18, 0, 0, Math.PI);
+      ctx.fill();
+
+      // Tooth separation line
+      ctx.strokeStyle = 'rgba(150, 120, 130, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, -mh * 0.38);
+      ctx.lineTo(0, -mh * 0.12);
+      ctx.stroke();
+    }
+
+    // Tongue (visible on wide open / vowels)
+    if (open > 0.35) {
+      const tongueGrad = ctx.createLinearGradient(0, mh * 0.1, 0, mh * 0.55);
+      tongueGrad.addColorStop(0, '#f472b6');
+      tongueGrad.addColorStop(1, '#db2777');
+      ctx.fillStyle = tongueGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, mh * 0.3, mw * 0.32, mh * 0.22, 0, Math.PI, Math.PI * 2);
       ctx.fill();
     }
 
-    // Tongue if wide open
-    if (open > 0.42) {
-      ctx.fillStyle = 'rgba(235, 115, 135, 0.9)';
-      ctx.beginPath();
-      ctx.ellipse(0, mh * 0.22, mw * 0.26, mh * 0.2, 0, Math.PI, Math.PI * 2);
-      ctx.fill();
-    }
+    // Natural Lip Contours (ソフトな唇のフチ)
+    ctx.strokeStyle = 'rgba(219, 39, 119, 0.45)';
+    ctx.lineWidth = 2.2 * faceScale;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, mw * 0.56, mh * 0.56 + 1.5, 0, 0, Math.PI * 2);
+    ctx.stroke();
 
     ctx.restore();
   }

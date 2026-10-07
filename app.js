@@ -103,6 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const avatarCardIcon = document.getElementById('avatarCardIcon');
   const avatarPreviewImg = document.getElementById('avatarPreviewImg');
 
+  // Mouth / Lip-Sync Adjuster Elements
+  const mouthPosVal = document.getElementById('mouthPosVal');
+  const mouthPosSlider = document.getElementById('mouthPosSlider');
+  const mouthPosUpBtn = document.getElementById('mouthPosUpBtn');
+  const mouthPosDownBtn = document.getElementById('mouthPosDownBtn');
+
   // Custom Avatar Banner Elements
   const customAvatarBanner = document.getElementById('customAvatarBanner');
   const customAvatarStatusTitle = document.getElementById('customAvatarStatusTitle');
