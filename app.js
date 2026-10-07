@@ -1000,6 +1000,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  let modalAudioSyncAttached = false;
+  function setupModalAudioSync() {
+    if (!completeVideoPreview || modalAudioSyncAttached) return;
+    modalAudioSyncAttached = true;
+
+    completeVideoPreview.addEventListener('play', () => {
+      if (audioEngine && audioEngine.hasAudioLoaded()) {
+        const offsetSec = completeVideoPreview.currentTime || 0;
+        audioEngine.pause();
+        audioEngine.playTrim(offsetSec);
+      }
+    });
+
+    completeVideoPreview.addEventListener('pause', () => {
+      if (audioEngine && audioEngine.isPlaying) {
+        audioEngine.pause();
+      }
+    });
+
+    completeVideoPreview.addEventListener('seeked', () => {
+      if (audioEngine && audioEngine.hasAudioLoaded()) {
+        const offsetSec = completeVideoPreview.currentTime || 0;
+        if (!completeVideoPreview.paused) {
+          audioEngine.playTrim(offsetSec);
+        } else {
+          audioEngine.pauseOffset = offsetSec;
+        }
+      }
+    });
+
+    completeVideoPreview.addEventListener('ended', () => {
+      if (audioEngine && audioEngine.isPlaying) {
+        audioEngine.pause();
+      }
+    });
+  }
+
   function openCompleteModal(videoUrl, filename, targetDuration) {
     if (!videoCompleteModal) return;
 
@@ -1013,6 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalDownloadLink.download = filename;
     }
 
+    setupModalAudioSync();
     videoCompleteModal.classList.remove('hidden');
     videoCompleteModal.classList.add('visible');
     triggerHaptic();
@@ -1022,6 +1060,9 @@ document.addEventListener('DOMContentLoaded', () => {
     triggerHaptic();
     if (completeVideoPreview) {
       completeVideoPreview.pause();
+    }
+    if (audioEngine && audioEngine.isPlaying) {
+      audioEngine.pause();
     }
     if (videoCompleteModal) {
       videoCompleteModal.classList.remove('visible');
@@ -1033,6 +1074,10 @@ document.addEventListener('DOMContentLoaded', () => {
     isRecording = false;
     clearInterval(recordTimer);
     recordTimer = null;
+    if (healthCheckTimer) {
+      clearTimeout(healthCheckTimer);
+      healthCheckTimer = null;
+    }
     mainRecordBtn.classList.remove('recording');
     stageRecordBtn.classList.remove('recording');
     finalRecordBtn.classList.remove('recording');
@@ -1040,6 +1085,8 @@ document.addEventListener('DOMContentLoaded', () => {
     mainRecText.textContent = 'MVを録画・保存';
     finalRecText.textContent = `● この長さ（${targetDuration}秒）でMVを録画して保存`;
   }
+
+  let healthCheckTimer = null;
 
   function startRecording() {
     if (isRecording) return;
@@ -1053,7 +1100,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Use current adjusted duration!
     const targetDuration = Math.round(trimDurationSeconds);
 
     // Make sure audio is playing from start of trim
@@ -1065,11 +1111,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const getCanvasStream = () => {
+        // Use 25fps for maximum stability on mobile WebKit/iOS
         if (typeof stageCanvas.captureStream === 'function') {
-          return stageCanvas.captureStream(30);
+          return stageCanvas.captureStream(25);
         }
         if (typeof stageCanvas.webkitCaptureStream === 'function') {
-          return stageCanvas.webkitCaptureStream(30);
+          return stageCanvas.webkitCaptureStream(25);
         }
         return null;
       };
@@ -1080,32 +1127,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Safely attach audio track to stream
-      let streamToRecord = canvasStream;
-      try {
-        if (audioEngine && audioEngine.recDestination && audioEngine.recDestination.stream) {
-          const audioTracks = audioEngine.recDestination.stream.getAudioTracks();
-          if (audioTracks && audioTracks.length > 0) {
-            try {
-              canvasStream.addTrack(audioTracks[0]);
-              streamToRecord = canvasStream;
-            } catch (addTrackErr) {
-              streamToRecord = new MediaStream([
-                ...canvasStream.getVideoTracks(),
-                audioTracks[0]
-              ]);
-            }
-          }
-        }
-      } catch (mergeErr) {
-        console.warn('Audio merge skipped, recording video stream:', mergeErr);
-        streamToRecord = canvasStream;
-      }
-
-      // Prioritize MP4 for iOS Safari / Photos app compatibility
+      // Check MIME type support with priority to standard video/mp4 (cleanest on iOS)
       const mimeCandidates = [
-        { type: 'video/mp4;codecs=avc1,mp4a.40.2', ext: 'mp4' },
         { type: 'video/mp4', ext: 'mp4' },
+        { type: 'video/mp4;codecs=avc1', ext: 'mp4' },
         { type: 'video/webm;codecs=vp9,opus', ext: 'webm' },
         { type: 'video/webm;codecs=vp8,opus', ext: 'webm' },
         { type: 'video/webm', ext: 'webm' }
@@ -1124,43 +1149,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // Resilient MediaRecorder initialization
+      const canvasTracks = canvasStream.getVideoTracks();
+      let audioTracks = [];
       try {
-        const recorderOptions = selectedMimeType ? { mimeType: selectedMimeType } : {};
-        mediaRecorder = new MediaRecorder(streamToRecord, recorderOptions);
-      } catch (recErr1) {
-        console.warn('MediaRecorder with mimeType failed, trying default options:', recErr1);
-        try {
-          mediaRecorder = new MediaRecorder(streamToRecord);
-          selectedMimeType = mediaRecorder.mimeType || 'video/mp4';
-          fileExt = selectedMimeType.includes('webm') ? 'webm' : 'mp4';
-        } catch (recErr2) {
-          console.warn('MediaRecorder with audio failed, falling back to video only:', recErr2);
-          mediaRecorder = new MediaRecorder(canvasStream);
-          selectedMimeType = mediaRecorder.mimeType || 'video/mp4';
-          fileExt = selectedMimeType.includes('webm') ? 'webm' : 'mp4';
+        if (audioEngine && audioEngine.recDestination && audioEngine.recDestination.stream) {
+          audioTracks = audioEngine.recDestination.stream.getAudioTracks();
         }
+      } catch (e) {
+        audioTracks = [];
       }
 
+      // Primary stream: attempt canvas + audio track
+      let primaryStream;
+      if (canvasTracks.length > 0 && audioTracks.length > 0) {
+        try {
+          primaryStream = new MediaStream([canvasTracks[0], audioTracks[0]]);
+        } catch (e) {
+          primaryStream = canvasStream;
+        }
+      } else {
+        primaryStream = canvasStream;
+      }
+
+      function createRecorder(stream) {
+        let rec = null;
+        let mime = selectedMimeType;
+        try {
+          rec = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+        } catch (err1) {
+          console.warn('MediaRecorder with mimeType failed, falling back to default options:', err1);
+          try {
+            rec = new MediaRecorder(stream);
+            mime = rec.mimeType || 'video/mp4';
+          } catch (err2) {
+            console.warn('MediaRecorder failed on stream, falling back to canvasStream:', err2);
+            rec = new MediaRecorder(canvasStream);
+            mime = rec.mimeType || 'video/mp4';
+          }
+        }
+        return { recorder: rec, mimeType: mime };
+      }
+
+      let { recorder: currentRecorder, mimeType: activeMime } = createRecorder(primaryStream);
+      mediaRecorder = currentRecorder;
+
       recordedChunks = [];
-      mediaRecorder.ondataavailable = (e) => {
+      let totalRecordedBytes = 0;
+
+      const handleDataAvailable = (e) => {
         if (e.data && e.data.size > 0) {
           recordedChunks.push(e.data);
+          totalRecordedBytes += e.data.size;
         }
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.ondataavailable = handleDataAvailable;
+
+      const finalizeRecording = () => {
         audioEngine.pause();
         updatePlayUI(false);
         updateFullPlayerUI(false);
         resetRecordingUI(targetDuration);
 
-        if (!recordedChunks || recordedChunks.length === 0) {
+        if (!recordedChunks || recordedChunks.length === 0 || totalRecordedBytes === 0) {
           showToast('録画データが空でした。もう一度お試しください');
           return;
         }
 
-        const mime = selectedMimeType || (fileExt === 'mp4' ? 'video/mp4' : 'video/webm');
+        const mime = activeMime || selectedMimeType || (fileExt === 'mp4' ? 'video/mp4' : 'video/webm');
         const blob = new Blob(recordedChunks, { type: mime });
         if (lastRecordedUrl) {
           try { URL.revokeObjectURL(lastRecordedUrl); } catch (e) {}
@@ -1179,13 +1235,17 @@ document.addEventListener('DOMContentLoaded', () => {
           lastRecordedFile = null;
         }
 
-        // Open completion modal directly with video preview and photo saving
         openCompleteModal(videoUrl, filename, targetDuration);
         showToast('動画が完成しました！保存・プレビュー画面をご確認ください');
       };
 
-      // Start recording (without timeslice on iOS to avoid container corruption)
-      mediaRecorder.start();
+      mediaRecorder.onstop = () => {
+        // Wait 350ms to ensure WebKit completely dispatches the final ondataavailable chunk
+        setTimeout(finalizeRecording, 350);
+      };
+
+      // Start recording with 500ms timeslice to flush buffer frequently
+      mediaRecorder.start(500);
       isRecording = true;
       mainRecordBtn.classList.add('recording');
       stageRecordBtn.classList.add('recording');
@@ -1194,6 +1254,37 @@ document.addEventListener('DOMContentLoaded', () => {
       let elapsed = 0;
       mainRecText.textContent = `録画中... (${targetDuration}秒)`;
       finalRecText.textContent = `録画中... 残り ${targetDuration} 秒`;
+
+      // Early Safety Health Check (at 1.6s)
+      // Detects iOS WebKit canvas+audio 0-byte issue and seamlessly recovers before wasting time
+      if (healthCheckTimer) clearTimeout(healthCheckTimer);
+      healthCheckTimer = setTimeout(() => {
+        if (!isRecording) return;
+        if (totalRecordedBytes === 0 && primaryStream !== canvasStream) {
+          console.warn('Primary stream produced 0 bytes (iOS WebKit audio track issue). Seamlessly switching to pure canvas stream.');
+          try {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+              mediaRecorder.ondataavailable = null;
+              mediaRecorder.onstop = null;
+              mediaRecorder.stop();
+            }
+          } catch (e) {}
+
+          const fallback = createRecorder(canvasStream);
+          mediaRecorder = fallback.recorder;
+          activeMime = fallback.mimeType;
+          recordedChunks = [];
+          totalRecordedBytes = 0;
+
+          mediaRecorder.ondataavailable = handleDataAvailable;
+          mediaRecorder.onstop = () => {
+            setTimeout(finalizeRecording, 350);
+          };
+
+          mediaRecorder.start(500);
+          console.log('Fallback canvas recorder running successfully');
+        }
+      }, 1600);
 
       clearInterval(recordTimer);
       recordTimer = setInterval(() => {
@@ -1204,18 +1295,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (elapsed >= targetDuration) {
           clearInterval(recordTimer);
+          if (healthCheckTimer) {
+            clearTimeout(healthCheckTimer);
+            healthCheckTimer = null;
+          }
           if (mediaRecorder && mediaRecorder.state === 'recording') {
             try {
-              if (typeof mediaRecorder.requestData === 'function') {
-                mediaRecorder.requestData();
-              }
-            } catch (reqErr) {}
-            mediaRecorder.stop();
+              mediaRecorder.stop();
+            } catch (stopErr) {
+              console.warn('mediaRecorder stop error:', stopErr);
+            }
           }
         }
       }, 1000);
 
-      showToast(`指定した区間のMV録画を開始しました（${targetDuration}秒間）`);
+      showToast(`MV録画を開始しました（${targetDuration}秒間）`);
     } catch (err) {
       console.error('Recording error:', err);
       showToast('録画機能の起動に失敗しました');
@@ -1226,13 +1320,14 @@ document.addEventListener('DOMContentLoaded', () => {
     triggerHaptic();
     const targetDuration = Math.round(trimDurationSeconds);
     if (isRecording) {
+      if (healthCheckTimer) {
+        clearTimeout(healthCheckTimer);
+        healthCheckTimer = null;
+      }
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         try {
-          if (typeof mediaRecorder.requestData === 'function') {
-            mediaRecorder.requestData();
-          }
+          mediaRecorder.stop();
         } catch (reqErr) {}
-        mediaRecorder.stop();
       }
       resetRecordingUI(targetDuration);
       showToast('録画を完了しました');
