@@ -243,9 +243,21 @@ const STAGE_THEMES = {
   }
 };
 
+const OFFICIAL_SAMPLE = {
+  id: 'official-vocalist',
+  name: 'ミレイ (実力派女性シンガー)',
+  imagePath: 'sample-vocalist.jpg',
+  mouthPosYRatio: 0.44,
+  song: 'jpop',
+  title: 'Shining Beat',
+  desc: 'クリアな歌声と母音連動の本格リップシンクMVサンプル'
+};
+
 window.GROOVE_PRESETS = {
+  sample: OFFICIAL_SAMPLE,
   motions: MOTION_PRESETS,
   characters: CHARACTER_PRESETS,
   songs: DEMO_SONGS,
   stages: STAGE_THEMES
 };
+

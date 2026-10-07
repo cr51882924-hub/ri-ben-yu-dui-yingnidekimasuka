@@ -1,6 +1,7 @@
 /**
  * GrooveSync MV - Web Audio & Beat/Viseme Analysis Engine
  * Supports user audio trimming (start point, end point, custom duration)
+ * and rich vocal formant synthesis for official demo songs.
  */
 
 class AudioEngine {
@@ -15,18 +16,19 @@ class AudioEngine {
 
     this.isPlaying = false;
     this.isMicActive = false;
-    this.currentTrackId = null;
+    this.currentTrackId = 'jpop';
 
     this.currentTime = 0;
-    this.duration = 0;
+    this.duration = 30;
     this.startTime = 0;
     this.pauseOffset = 0;
 
     // Trimming range (which part of song to use for MV)
     this.trimStart = 0;
-    this.trimEnd = 0;
+    this.trimEnd = 30;
 
-    // Synthetic demo song loop nodes & timers
+    // Demo song synthesizer state
+    this.isDemoTrack = false; // set to true when official demo song is active
     this.synthInterval = null;
     this.synthNotesTimer = null;
 
@@ -84,6 +86,9 @@ class AudioEngine {
     this.init();
     this.stop();
 
+    // Disable demo track when user uploads their own file
+    this.isDemoTrack = false;
+
     // Clean up previous custom audio instances
     if (this.audioElement) {
       try {
@@ -103,7 +108,7 @@ class AudioEngine {
     if (file && file.type && file.type.startsWith('image/')) {
       return {
         success: false,
-        error: '選択されたファイルは「画像（写真）」です。人物や楽器の写真は、一番上の【STEP 1: 写真を選択】からアップロードしてください。'
+        error: '選択されたファイルは「画像（写真）」です。人物やアーティストの写真は、一番上の【STEP 1: 人物・写真を設定する】からアップロードしてください。'
       };
     }
 
@@ -114,7 +119,7 @@ class AudioEngine {
       };
     }
 
-    // Helper: read ArrayBuffer safely across browsers/WebViews with 4s timeout
+    // Helper: read ArrayBuffer safely
     const getArrayBuffer = () => {
       return new Promise(async (resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('ArrayBuffer timeout')), 4000);
@@ -142,21 +147,20 @@ class AudioEngine {
       });
     };
 
-    // Helper: decodeAudioData compatible with Promise & Callback with 12s timeout
+    // Helper: decodeAudioData compatible with Promise & Callback
     const decodeAudioSafe = (ctx, buffer) => {
       return new Promise((resolve, reject) => {
         let finished = false;
         const timer = setTimeout(() => {
           if (!finished) {
             finished = true;
-            reject(new Error('decodeAudioData timeout'));
+            reject(new Error('Audio decode timeout (12s)'));
           }
         }, 12000);
 
         try {
-          const bufCopy = buffer.slice(0);
-          const p = ctx.decodeAudioData(
-            bufCopy,
+          const res = ctx.decodeAudioData(
+            buffer,
             (decoded) => {
               if (!finished) {
                 finished = true;
@@ -168,12 +172,12 @@ class AudioEngine {
               if (!finished) {
                 finished = true;
                 clearTimeout(timer);
-                reject(err || new Error('decodeAudioData error'));
+                reject(err || new Error('decodeAudioData callback failed'));
               }
             }
           );
-          if (p && typeof p.then === 'function') {
-            p.then((decoded) => {
+          if (res && typeof res.then === 'function') {
+            res.then((decoded) => {
               if (!finished) {
                 finished = true;
                 clearTimeout(timer);
@@ -187,212 +191,182 @@ class AudioEngine {
               }
             });
           }
-        } catch (e) {
+        } catch (err) {
           if (!finished) {
             finished = true;
             clearTimeout(timer);
-            reject(e);
+            reject(err);
           }
         }
       });
     };
 
-    // Helper: HTML5 Audio/Video fallback (Guaranteed to load, never hangs)
-    const loadViaMediaElement = (tag = 'audio') => {
-      return new Promise((resolve) => {
-        try {
-          const url = URL.createObjectURL(file);
-          const el = document.createElement(tag);
-          el.preload = 'auto';
-          el.playsInline = true;
-
-          // Keep in DOM so mobile Safari doesn't detach/pause it
-          let host = document.getElementById('hiddenMediaHost');
-          if (!host) {
-            host = document.createElement('div');
-            host.id = 'hiddenMediaHost';
-            host.style.cssText = 'position:fixed;width:0;height:0;opacity:0;pointer-events:none;z-index:-999;';
-            document.body.appendChild(host);
-          }
-          host.appendChild(el);
-
-          el.src = url;
-
-          let resolved = false;
-          const done = (dur) => {
-            if (resolved) return;
-            resolved = true;
-            clearInterval(poll);
-            clearTimeout(timeout);
-            resolve({ mediaEl: el, url, duration: dur });
-          };
-
-          const check = () => {
-            if (el.duration && !isNaN(el.duration) && el.duration > 0 && isFinite(el.duration)) {
-              done(el.duration);
-            }
-          };
-
-          el.addEventListener('loadedmetadata', check);
-          el.addEventListener('durationchange', check);
-          el.addEventListener('canplay', check);
-          el.addEventListener('loadeddata', check);
-
-          // Fast poll every 60ms
-          const poll = setInterval(check, 60);
-
-          // If mobile browser delays metadata, resolve anyway with file-size based estimate (never cap to 30s!)
-          const timeout = setTimeout(() => {
-            const hasDur = (el.duration && !isNaN(el.duration) && el.duration > 0 && isFinite(el.duration));
-            const estFromSize = (file && file.size) ? Math.max(180, Math.round(file.size / 16000)) : 240;
-            const fallbackDur = hasDur ? el.duration : estFromSize;
-            done(fallbackDur);
-          }, 6000);
-
-          el.load();
-        } catch (err) {
-          console.warn('loadViaMediaElement exception:', err);
-          resolve(null);
-        }
-      });
-    };
-
-    let loaded = false;
-
-    // Layer 1: Try Web Audio decode (fast & best for waveform splicing)
+    // LAYER 1: Fast direct AudioBuffer decoding
     try {
-      const arrayBuffer = await getArrayBuffer();
-      if (arrayBuffer && arrayBuffer.byteLength > 0) {
-        const decoded = await decodeAudioSafe(this.ctx, arrayBuffer);
-        if (decoded && decoded.duration > 0) {
-          this.audioBuffer = decoded;
-          this.duration = decoded.duration;
-          this.userAudioMode = 'buffer';
-          loaded = true;
-        }
-      }
-    } catch (decodeErr) {
-      console.warn('Web Audio decode skipped, falling back to media element:', decodeErr);
+      const buffer = await getArrayBuffer();
+      const decoded = await decodeAudioSafe(this.ctx, buffer);
+      this.audioBuffer = decoded;
+      this.duration = decoded.duration;
+      this.userAudioMode = 'buffer';
+
+      this.trimStart = 0;
+      this.trimEnd = Math.min(30, this.duration);
+      this.bpm = this.estimateBpm(decoded);
+
+      return {
+        success: true,
+        duration: this.duration,
+        bpm: this.bpm,
+        mode: 'buffer'
+      };
+    } catch (bufferErr) {
+      console.warn('AudioBuffer direct decode failed, falling back to HTMLAudioElement:', bufferErr);
     }
 
-    // Layer 2: Fallback to HTMLMediaElement (Never fails on iOS/Android)
-    if (!loaded) {
-      const res = (await loadViaMediaElement('audio')) || (await loadViaMediaElement('video'));
-      if (res && res.mediaEl) {
-        this.audioElement = res.mediaEl;
-        this.userAudioUrl = res.url;
-        this.duration = res.duration || 30;
-        this.userAudioMode = 'element';
+    // LAYER 2: HTMLAudioElement fallback
+    try {
+      this.userAudioUrl = URL.createObjectURL(file);
+      const audio = new Audio();
+      audio.preload = 'auto';
+      audio.crossOrigin = 'anonymous';
+      audio.src = this.userAudioUrl;
 
-        // Listen for late duration updates from browser
-        this.audioElement.addEventListener('durationchange', () => {
-          if (this.audioElement.duration && !isNaN(this.audioElement.duration) && this.audioElement.duration > 0) {
-            this.duration = this.audioElement.duration;
-            if (typeof window.onAudioDurationResolved === 'function') {
-              window.onAudioDurationResolved(this.duration);
-            }
+      const dur = await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
+            resolve(audio.duration);
+          } else {
+            reject(new Error('HTMLAudioElement metadata timeout'));
           }
-        });
+        }, 4000);
 
-        // Safely connect to Web Audio analyser if browser permits
-        try {
-          if (this.mediaElementSource) {
-            try { this.mediaElementSource.disconnect(); } catch (e) {}
-            this.mediaElementSource = null;
+        audio.onloadedmetadata = () => {
+          clearTimeout(timer);
+          if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
+            resolve(audio.duration);
+          } else {
+            resolve(30);
           }
-          this.mediaElementSource = this.ctx.createMediaElementSource(this.audioElement);
-          this.mediaElementSource.connect(this.analyser);
-        } catch (mediaSrcErr) {
-          console.warn('createMediaElementSource skipped (using native audio output):', mediaSrcErr);
-          // Even if createMediaElementSource fails, audioElement plays audio directly through speaker!
+        };
+        audio.onerror = () => {
+          clearTimeout(timer);
+          reject(new Error('Audio element error'));
+        };
+      });
+
+      this.audioElement = audio;
+      this.duration = dur;
+      this.userAudioMode = 'element';
+
+      try {
+        if (!this.mediaElementSource) {
+          this.mediaElementSource = this.ctx.createMediaElementSource(audio);
         }
-        loaded = true;
+        this.mediaElementSource.connect(this.analyser);
+      } catch (nodeErr) {
+        console.warn('createMediaElementSource warning:', nodeErr);
       }
-    }
 
-    if (!loaded) {
+      this.trimStart = 0;
+      this.trimEnd = Math.min(30, this.duration);
+      this.bpm = 124;
+
+      return {
+        success: true,
+        duration: this.duration,
+        bpm: this.bpm,
+        mode: 'element'
+      };
+    } catch (elementErr) {
+      console.error('All audio loading layers failed:', elementErr);
       return {
         success: false,
-        error: 'ファイルの読み込みに失敗しました。ファイルが端末内に保存されているかご確認ください。'
+        error: '音声の読み込みに失敗しました。MP3またはM4A形式の音楽ファイルをお試しください。'
       };
     }
+  }
 
-    this.currentTrackId = 'custom';
-    this.bpm = 120;
+  // Load official demo song (Shining Beat / J-POP Vocal)
+  loadDemoTrack(trackId = 'jpop') {
+    this.init();
+    this.stop();
+
+    this.isDemoTrack = true;
+    this.currentTrackId = trackId;
+    this.duration = 30;
     this.trimStart = 0;
-    this.trimEnd = Math.min(this.duration, 30);
-    this.pauseOffset = 0;
-    this.fullPlayOffset = 0;
-    this.currentTime = 0;
-    this.playMode = 'full'; // Default to full mode on upload so user can check entire song
+    this.trimEnd = 30;
+    this.bpm = 132;
+    this.userAudioMode = null;
+    this.audioBuffer = null;
+    if (this.audioElement) {
+      try { this.audioElement.pause(); } catch (e) {}
+      this.audioElement = null;
+    }
 
     return {
       success: true,
-      name: file.name,
-      duration: this.duration,
-      trimStart: this.trimStart,
-      trimEnd: this.trimEnd
+      duration: 30,
+      bpm: 132,
+      isDemo: true
     };
   }
 
-  // Set trimming range (start second, end second)
-  setTrimRange(start, end) {
-    this.trimStart = Math.max(0, Math.min(start, this.duration - 0.5));
-    this.trimEnd = Math.max(this.trimStart + 0.5, Math.min(end, this.duration));
-    if (this.isPlaying && this.playMode === 'trim') {
-      this.pause();
-      this.pauseOffset = 0;
-      this.playTrim(0);
+  // Simple BPM heuristic estimator
+  estimateBpm(buffer) {
+    try {
+      const channelData = buffer.getChannelData(0);
+      const sampleRate = buffer.sampleRate;
+      const step = Math.floor(sampleRate / 100);
+      const peaks = [];
+
+      for (let i = 0; i < Math.min(channelData.length, sampleRate * 30); i += step) {
+        let max = 0;
+        for (let j = 0; j < step; j++) {
+          const val = Math.abs(channelData[i + j] || 0);
+          if (val > max) max = val;
+        }
+        if (max > 0.65) {
+          peaks.push(i / sampleRate);
+        }
+      }
+
+      if (peaks.length < 8) return 126;
+
+      const intervals = [];
+      for (let i = 1; i < peaks.length; i++) {
+        const diff = peaks[i] - peaks[i - 1];
+        if (diff > 0.35 && diff < 0.85) {
+          intervals.push(diff);
+        }
+      }
+
+      if (intervals.length === 0) return 128;
+      const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      let estBpm = Math.round(60 / avgInterval);
+      while (estBpm < 85) estBpm *= 2;
+      while (estBpm > 175) estBpm = Math.round(estBpm / 2);
+      return estBpm;
+    } catch (e) {
+      return 128;
     }
+  }
+
+  // Set trim range
+  setTrimRange(startSeconds, endSeconds) {
+    this.trimStart = Math.max(0, startSeconds);
+    this.trimEnd = Math.max(this.trimStart + 0.5, Math.min(endSeconds, this.duration || 30));
   }
 
   getTrimDuration() {
     return Math.max(0.5, this.trimEnd - this.trimStart);
   }
 
-  // Select built-in demo track
-  selectDemoTrack(id) {
-    this.stop();
-    this.currentTrackId = id;
-    if (this.audioElement) {
-      try {
-        this.audioElement.pause();
-        this.audioElement.src = '';
-      } catch (e) {}
-      this.audioElement = null;
-    }
-    if (this.userAudioUrl) {
-      try { URL.revokeObjectURL(this.userAudioUrl); } catch (e) {}
-      this.userAudioUrl = null;
-    }
-    this.audioBuffer = null;
-    this.userAudioMode = null;
-    this.trimStart = 0;
-    this.playMode = 'trim';
-    if (id === 'jpop') {
-      this.bpm = 132;
-      this.duration = 30;
-      this.trimEnd = 30;
-    } else if (id === 'lofi') {
-      this.bpm = 88;
-      this.duration = 30;
-      this.trimEnd = 30;
-    } else if (id === 'rock') {
-      this.bpm = 148;
-      this.duration = 30;
-      this.trimEnd = 30;
-    } else if (id === 'cyber') {
-      this.bpm = 128;
-      this.duration = 30;
-      this.trimEnd = 30;
-    }
-  }
-
   hasAudioLoaded() {
-    return !!(this.audioBuffer || (this.audioElement && this.userAudioUrl));
+    return !!(this.audioBuffer || (this.audioElement && this.userAudioUrl) || this.isDemoTrack);
   }
 
-  // Play specified trim range (loops inside the trim range)
+  // Play specified trim range
   playTrim(startAt) {
     if (!this.hasAudioLoaded()) return false;
     this.init();
@@ -410,13 +384,16 @@ class AudioEngine {
     this.startTime = this.ctx.currentTime - offset;
     this.currentTime = startPoint;
 
+    // If demo track: play rich synthesized vocal song
+    if (this.isDemoTrack) {
+      this.startSynthTrack();
+      return true;
+    }
+
     if (this.userAudioMode === 'element' && this.audioElement) {
       const el = this.audioElement;
-
-      // 1. Initial seek attempt before play
       try { el.currentTime = startPoint; } catch (e) {}
 
-      // 2. Play promise with immediate re-seek check
       const playP = el.play();
       if (playP && typeof playP.then === 'function') {
         playP.then(() => {
@@ -426,20 +403,8 @@ class AudioEngine {
         }).catch(e => console.warn('Audio play error:', e));
       }
 
-      // 3. WebKit official playing event seek reinforcement
-      const onPlaying = () => {
-        if (this.isPlaying && this.playMode === 'trim') {
-          if (Math.abs(el.currentTime - startPoint) > 0.3) {
-            try { el.currentTime = startPoint; } catch (e) {}
-          }
-        }
-      };
-      el.addEventListener('playing', onPlaying, { once: true });
-
-      // 4. Timeupdate loop constraint (guards against accidental 0s jump in Safari)
       el.ontimeupdate = () => {
         if (this.isPlaying && this.playMode === 'trim') {
-          // If iOS Safari reset playback to 0, immediately snap back to trimStart!
           if (el.currentTime < this.trimStart - 0.5) {
             try { el.currentTime = this.trimStart; } catch (e) {}
             return;
@@ -465,7 +430,7 @@ class AudioEngine {
     return true;
   }
 
-  // Play the FULL song from a given second to the end (for finding chorus / checking seconds)
+  // Play full song from given second to end
   playFull(startSecond = 0) {
     if (!this.hasAudioLoaded()) return false;
     this.init();
@@ -478,6 +443,11 @@ class AudioEngine {
     this.currentTime = this.fullPlayOffset;
 
     const playLength = Math.max(0.1, this.duration - this.fullPlayOffset);
+
+    if (this.isDemoTrack) {
+      this.startSynthTrack();
+      return true;
+    }
 
     if (this.userAudioMode === 'element' && this.audioElement) {
       try { this.audioElement.currentTime = this.fullPlayOffset; } catch (e) {}
@@ -505,7 +475,6 @@ class AudioEngine {
     return true;
   }
 
-  // Standard play defaults to trim mode or continues current mode
   play() {
     if (!this.hasAudioLoaded()) return false;
     if (this.playMode === 'full') {
@@ -518,6 +487,11 @@ class AudioEngine {
   pause() {
     if (!this.isPlaying) return;
     this.isPlaying = false;
+
+    if (this.isDemoTrack) {
+      this.stopSynthTrack();
+      return;
+    }
 
     if (this.playMode === 'full') {
       if (this.userAudioMode === 'element' && this.audioElement) {
@@ -622,7 +596,11 @@ class AudioEngine {
     this.analyser.getByteTimeDomainData(this.timeData);
 
     if (this.isPlaying) {
-      if (this.playMode === 'full') {
+      if (this.isDemoTrack) {
+        const trimLen = this.getTrimDuration();
+        const elapsed = (this.ctx.currentTime - this.startTime) % trimLen;
+        this.currentTime = this.trimStart + elapsed;
+      } else if (this.playMode === 'full') {
         if (this.userAudioMode === 'element' && this.audioElement) {
           this.currentTime = this.audioElement.currentTime;
         } else if (this.audioBuffer) {
@@ -646,8 +624,9 @@ class AudioEngine {
       }
     }
 
-    // Split frequency spectrum into bands
+    // Frequency spectrum bands
     const binCount = this.analyser.frequencyBinCount;
+
     // Sub-bass (kick & beat): ~20Hz - 150Hz
     let bassSum = 0;
     const bassEnd = Math.floor(binCount * 0.08);
@@ -678,13 +657,13 @@ class AudioEngine {
     const highAvg = (highSum / (binCount - form2End)) / 255;
 
     // Total vocal loudness
-    const vocalLoudness = (form1Avg * 0.45 + form2Avg * 0.45 + highAvg * 0.1) * sensitivity;
+    const vocalLoudness = (form1Avg * 0.48 + form2Avg * 0.45 + highAvg * 0.07) * sensitivity;
 
     // Beat pulse detection (kick thump)
-    if (bassAvg > 0.55 && bassAvg > this.beatPulse) {
-      this.beatPulse = Math.min(1.0, bassAvg * 1.3);
+    if (bassAvg > 0.52 && bassAvg > this.beatPulse) {
+      this.beatPulse = Math.min(1.0, bassAvg * 1.35);
     } else {
-      this.beatPulse *= 0.88; // decay
+      this.beatPulse *= 0.88; // natural decay
     }
 
     // Groove level (smooth body sway)
@@ -692,11 +671,11 @@ class AudioEngine {
     this.grooveLevel += (targetGroove - this.grooveLevel) * 0.15;
 
     // Viseme calculation (A, I, U, E, O)
-    const rawA = Math.max(0, form1Avg * 1.2 + form2Avg * 0.6 - 0.2);
-    const rawI = Math.max(0, form2Avg * 1.6 - form1Avg * 0.5);
-    const rawU = Math.max(0, midLowAvg * 1.2 - form2Avg * 0.8);
-    const rawE = Math.max(0, form2Avg * 1.1 + form1Avg * 0.5 - 0.15);
-    const rawO = Math.max(0, form1Avg * 1.4 - form2Avg * 0.4);
+    const rawA = Math.max(0, form1Avg * 1.3 + form2Avg * 0.5 - 0.15);
+    const rawI = Math.max(0, form2Avg * 1.7 - form1Avg * 0.5);
+    const rawU = Math.max(0, midLowAvg * 1.25 - form2Avg * 0.75);
+    const rawE = Math.max(0, form2Avg * 1.15 + form1Avg * 0.5 - 0.12);
+    const rawO = Math.max(0, form1Avg * 1.45 - form2Avg * 0.35);
 
     const sum = rawA + rawI + rawU + rawE + rawO + 0.001;
     this.visemes.A = (rawA / sum) * vocalLoudness;
@@ -713,12 +692,12 @@ class AudioEngine {
         dominant = char;
       }
     }
-    if (vocalLoudness > 0.08) {
+    if (vocalLoudness > 0.06) {
       this.currentChar = dominant;
     }
 
-    const targetOpen = Math.min(1.0, Math.max(0, (vocalLoudness - 0.05) * 1.8));
-    this.mouthOpen += (targetOpen - this.mouthOpen) * 0.35;
+    const targetOpen = Math.min(1.0, Math.max(0, (vocalLoudness - 0.04) * 1.9));
+    this.mouthOpen += (targetOpen - this.mouthOpen) * 0.38;
 
     let targetWidth = 0.5;
     if (dominant === 'I' || dominant === 'E') targetWidth = 0.85;
@@ -727,19 +706,24 @@ class AudioEngine {
     this.mouthWidth += (targetWidth - this.mouthWidth) * 0.25;
   }
 
+  // ==========================================
+  // Demo Song Synthesizer with Vocal Formants
+  // ==========================================
   startSynthTrack() {
     this.stopSynthTrack();
 
-    const bpm = this.bpm;
+    const bpm = this.bpm || 132;
     const beatInterval = 60 / bpm;
     const sixteenth = beatInterval / 4;
 
-    let step = Math.floor((this.pauseOffset % this.duration) / sixteenth);
+    this.startTime = this.ctx.currentTime - (this.pauseOffset % this.getTrimDuration());
+
+    let step = Math.floor((this.pauseOffset % this.getTrimDuration()) / sixteenth);
 
     const scheduleNext = () => {
       if (!this.isPlaying) return;
 
-      const time = this.ctx.currentTime + 0.05;
+      const time = this.ctx.currentTime + 0.04;
       const currentStep = step % 64;
 
       this.triggerStepAudio(this.currentTrackId, currentStep, time);
@@ -758,6 +742,7 @@ class AudioEngine {
     }
   }
 
+  // Synthesize instruments and organic vocal singing voice
   triggerStepAudio(genre, step, time) {
     if (!this.ctx) return;
 
@@ -765,41 +750,41 @@ class AudioEngine {
     const isSnare = (genre === 'lofi') ? (step % 16 === 8) : (step % 16 === 8 || (genre === 'rock' && (step % 8 === 4)));
     const isHiHat = (step % 2 === 0);
 
-    // Kick
+    // 1. Kick Drum (Deep punch)
     if (isKick) {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      osc.frequency.setValueAtTime(genre === 'cyber' ? 140 : 120, time);
-      osc.frequency.exponentialRampToValueAtTime(32, time + 0.12);
-      gain.gain.setValueAtTime(0.7, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+      osc.frequency.setValueAtTime(140, time);
+      osc.frequency.exponentialRampToValueAtTime(36, time + 0.12);
+      gain.gain.setValueAtTime(0.75, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.20);
       osc.connect(gain);
       gain.connect(this.analyser);
       osc.start(time);
       osc.stop(time + 0.22);
     }
 
-    // Snare
+    // 2. Snare Drum
     if (isSnare) {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(180, time);
-      gain.gain.setValueAtTime(0.35, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+      osc.frequency.setValueAtTime(190, time);
+      gain.gain.setValueAtTime(0.40, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
       osc.connect(gain);
       gain.connect(this.analyser);
       osc.start(time);
       osc.stop(time + 0.18);
     }
 
-    // HiHat
+    // 3. Hi-Hat
     if (isHiHat) {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'highpass';
       osc.frequency.setValueAtTime(8000, time);
-      gain.gain.setValueAtTime(0.08, time);
+      gain.gain.setValueAtTime(0.07, time);
       gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
       osc.connect(gain);
       gain.connect(this.analyser);
@@ -807,104 +792,77 @@ class AudioEngine {
       osc.stop(time + 0.05);
     }
 
-    // Melody & Chords
-    if (genre === 'jpop') {
-      const chordScale = [261.63, 329.63, 392.00, 523.25, 440.00];
-      if (step % 4 === 0) {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        const chordNote = chordScale[(Math.floor(step / 16)) % chordScale.length];
-        osc.frequency.setValueAtTime(chordNote, time);
-        gain.gain.setValueAtTime(0.2, time);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
-        osc.connect(gain);
-        gain.connect(this.analyser);
-        osc.start(time);
-        osc.stop(time + 0.2);
-      }
-      if (step % 2 === 0 && (step % 8 !== 7)) {
-        const vocOsc = this.ctx.createOscillator();
-        const vocGain = this.ctx.createGain();
-        vocOsc.type = 'sine';
-        const melody = [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 659.25, 783.99];
-        const note = melody[(step / 2) % melody.length];
-        vocOsc.frequency.setValueAtTime(note, time);
-        vocGain.gain.setValueAtTime(0.28, time);
-        vocGain.gain.exponentialRampToValueAtTime(0.01, time + 0.14);
-        vocOsc.connect(vocGain);
-        vocGain.connect(this.analyser);
-        vocOsc.start(time);
-        vocOsc.stop(time + 0.15);
-      }
-    } else if (genre === 'rock') {
-      if (step % 2 === 0) {
-        const gOsc = this.ctx.createOscillator();
-        const gGain = this.ctx.createGain();
-        gOsc.type = 'sawtooth';
-        const rockChords = [110, 146.83, 164.81, 130.81];
-        const chord = rockChords[Math.floor(step / 16) % rockChords.length];
-        gOsc.frequency.setValueAtTime(chord * (step % 4 === 0 ? 1 : 1.5), time);
-        gGain.gain.setValueAtTime(0.3, time);
-        gGain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
-        gOsc.connect(gGain);
-        gGain.connect(this.analyser);
-        gOsc.start(time);
-        gOsc.stop(time + 0.15);
-      }
-      if (step % 4 === 0) {
-        const vOsc = this.ctx.createOscillator();
-        const vGain = this.ctx.createGain();
-        vOsc.type = 'triangle';
-        const beltNotes = [440, 493.88, 523.25, 659.25];
-        vOsc.frequency.setValueAtTime(beltNotes[Math.floor(step / 8) % beltNotes.length], time);
-        vGain.gain.setValueAtTime(0.35, time);
-        vGain.gain.exponentialRampToValueAtTime(0.01, time + 0.28);
-        vOsc.connect(vGain);
-        vGain.connect(this.analyser);
-        vOsc.start(time);
-        vOsc.stop(time + 0.3);
-      }
-    } else if (genre === 'lofi') {
-      if (step % 8 === 0) {
-        const pOsc = this.ctx.createOscillator();
-        const pGain = this.ctx.createGain();
-        pOsc.type = 'sine';
-        const lofiChords = [220, 293.66, 329.63, 261.63];
-        pOsc.frequency.setValueAtTime(lofiChords[Math.floor(step / 16) % lofiChords.length], time);
-        pGain.gain.setValueAtTime(0.25, time);
-        pGain.gain.exponentialRampToValueAtTime(0.001, time + 0.7);
-        pOsc.connect(pGain);
-        pGain.connect(this.analyser);
-        pOsc.start(time);
-        pOsc.stop(time + 0.75);
-      }
-      if (step % 4 === 2) {
-        const humOsc = this.ctx.createOscillator();
-        const humGain = this.ctx.createGain();
-        humOsc.type = 'sine';
-        humOsc.frequency.setValueAtTime(329.63, time);
-        humGain.gain.setValueAtTime(0.18, time);
-        humGain.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
-        humOsc.connect(humGain);
-        humGain.connect(this.analyser);
-        humOsc.start(time);
-        humOsc.stop(time + 0.26);
-      }
-    } else if (genre === 'cyber') {
-      if (step % 2 === 0) {
-        const sOsc = this.ctx.createOscillator();
-        const sGain = this.ctx.createGain();
-        sOsc.type = 'sawtooth';
-        const edmNotes = [523.25, 587.33, 659.25, 783.99, 880.00];
-        sOsc.frequency.setValueAtTime(edmNotes[Math.floor(step / 2) % edmNotes.length], time);
-        sGain.gain.setValueAtTime(0.24, time);
-        sGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
-        sOsc.connect(sGain);
-        sGain.connect(this.analyser);
-        sOsc.start(time);
-        sOsc.stop(time + 0.12);
-      }
+    // 4. Accompaniment Chords (Piano / Guitar / Synth)
+    const chordScale = [261.63, 329.63, 392.00, 523.25, 440.00];
+    if (step % 4 === 0) {
+      const chordOsc = this.ctx.createOscillator();
+      const chordGain = this.ctx.createGain();
+      chordOsc.type = 'sawtooth';
+      const chordNote = chordScale[(Math.floor(step / 16)) % chordScale.length];
+      chordOsc.frequency.setValueAtTime(chordNote, time);
+
+      // Lowpass filter for smooth warm backing chord
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1200, time);
+
+      chordGain.gain.setValueAtTime(0.18, time);
+      chordGain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+
+      chordOsc.connect(filter);
+      filter.connect(chordGain);
+      chordGain.connect(this.analyser);
+      chordOsc.start(time);
+      chordOsc.stop(time + 0.24);
+    }
+
+    // 5. LEAD VOCAL SINGING VOICE (with realistic Japanese vowel formants!)
+    // Generates genuine singing vocal harmonics that the analyser decodes into realistic visemes
+    if (step % 2 === 0 && (step % 8 !== 7)) {
+      const melodyNotes = [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 659.25, 783.99];
+      const melodyIdx = Math.floor(step / 2) % melodyNotes.length;
+      const note = melodyNotes[melodyIdx];
+
+      // Japanese vowel formant frequencies (F1 / F2 in Hz)
+      const vowelFormants = [
+        { char: 'A', f1: 820, f2: 1300 }, // あ
+        { char: 'I', f1: 310, f2: 2350 }, // い
+        { char: 'U', f1: 340, f2: 860 },  // う
+        { char: 'E', f1: 540, f2: 1980 }, // え
+        { char: 'O', f1: 510, f2: 960 }   // お
+      ];
+      const vowel = vowelFormants[melodyIdx % vowelFormants.length];
+
+      // Sawtooth vocal cord oscillator (rich in vocal harmonics)
+      const vocOsc = this.ctx.createOscillator();
+      vocOsc.type = 'sawtooth';
+      vocOsc.frequency.setValueAtTime(note, time);
+
+      // Formant Filter 1 (F1: Throat cavity)
+      const f1Filter = this.ctx.createBiquadFilter();
+      f1Filter.type = 'bandpass';
+      f1Filter.frequency.setValueAtTime(vowel.f1, time);
+      f1Filter.Q.setValueAtTime(4.2, time);
+
+      // Formant Filter 2 (F2: Oral cavity / vowel definition)
+      const f2Filter = this.ctx.createBiquadFilter();
+      f2Filter.type = 'bandpass';
+      f2Filter.frequency.setValueAtTime(vowel.f2, time);
+      f2Filter.Q.setValueAtTime(5.5, time);
+
+      const vocGain = this.ctx.createGain();
+      vocGain.gain.setValueAtTime(0.36, time);
+      vocGain.gain.exponentialRampToValueAtTime(0.015, time + 0.16);
+
+      // Connect vocal chain: Osc -> Parallel Filters -> Gain -> Analyser
+      vocOsc.connect(f1Filter);
+      vocOsc.connect(f2Filter);
+      f1Filter.connect(vocGain);
+      f2Filter.connect(vocGain);
+      vocGain.connect(this.analyser);
+
+      vocOsc.start(time);
+      vocOsc.stop(time + 0.18);
     }
   }
 }
