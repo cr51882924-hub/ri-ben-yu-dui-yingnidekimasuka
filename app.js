@@ -108,6 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const mouthPosSlider = document.getElementById('mouthPosSlider');
   const mouthPosUpBtn = document.getElementById('mouthPosUpBtn');
   const mouthPosDownBtn = document.getElementById('mouthPosDownBtn');
+  const testLipsyncBtn = document.getElementById('testLipsyncBtn');
+
+  // Official Sample MV Elements
+  const officialSampleBtn = document.getElementById('officialSampleBtn');
+  const stageSampleDemoBtn = document.getElementById('stageSampleDemoBtn');
 
   // Custom Avatar Banner Elements
   const customAvatarBanner = document.getElementById('customAvatarBanner');
@@ -634,7 +639,18 @@ document.addEventListener('DOMContentLoaded', () => {
   function togglePlay() {
     triggerHaptic();
     if (!audioEngine.hasAudioLoaded()) {
-      showToast('まず STEP 2 であなたの楽曲ファイルをアップロードしてください');
+      audioEngine.loadDemoTrack('jpop');
+      currentSongConfig = (typeof GROOVE_PRESETS !== 'undefined' && GROOVE_PRESETS.songs) ? GROOVE_PRESETS.songs.jpop : null;
+      if (controlSongTitle) controlSongTitle.textContent = 'Shining Beat (公式サンプル楽曲)';
+      if (stageSongTitle) stageSongTitle.textContent = 'Shining Beat (公式サンプル楽曲)';
+      trimStartSeconds = 0;
+      trimDurationSeconds = 30;
+      updateTrimmerUI();
+      audioEngine.pauseOffset = 0;
+      audioEngine.playTrim(0);
+      updatePlayUI(true);
+      updateFullPlayerUI(false);
+      showToast('🎵 サンプル楽曲（Shining Beat）の再生を開始しました');
       return;
     }
     if (audioEngine.isPlaying) {
