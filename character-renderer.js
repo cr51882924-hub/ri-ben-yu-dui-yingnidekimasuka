@@ -25,8 +25,9 @@ class CharacterRenderer {
     this.showLasers = true;
     this.showParticles = true;
 
-    // Custom user image avatar
+    // Custom user image avatar & lip-sync settings
     this.customAvatarImg = null;
+    this.mouthPosYRatio = 0.45; // Default 45% (human portrait mouth location)
 
     // Simulation states
     this.time = 0;
@@ -78,6 +79,10 @@ class CharacterRenderer {
 
   setCustomAvatar(imageElement) {
     this.customAvatarImg = imageElement;
+  }
+
+  setMouthPosY(ratio) {
+    this.mouthPosYRatio = Math.max(0.15, Math.min(0.85, ratio));
   }
 
   setStage(id) {
