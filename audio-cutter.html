@@ -545,27 +545,51 @@
           <audio id="modalAudioPreview" controls playsinline preload="auto" style="width: 100%; height: 44px; border-radius: 8px; outline: none;"></audio>
         </div>
 
+        <!-- Lyrics Card Preview (Pattern A) -->
+        <div id="modalLyricsCard" style="background: rgba(139, 92, 246, 0.12); border: 1.5px solid rgba(167, 139, 250, 0.35); border-radius: 14px; padding: 12px 14px; margin-top: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1.1rem;">📝</span>
+              <strong style="color: #c4b5fd; font-size: 0.88rem;">切り出し区間の歌詞（テキスト）</strong>
+            </div>
+            <button id="copyLyricsBtn" type="button" style="background: rgba(139, 92, 246, 0.35); border: 1px solid #a78bfa; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">📋 歌詞をコピー</button>
+          </div>
+          <div id="modalLyricsPreview" style="background: #0f172a; border-radius: 8px; padding: 10px; font-size: 0.82rem; color: #e2e8f0; line-height: 1.6; max-height: 110px; overflow-y: auto; white-space: pre-wrap; font-family: monospace;"></div>
+        </div>
+
         <div class="modal-actions-list">
           <!-- Save to iPhone / Share Sheet Button -->
           <button id="audioShareBtn" class="giant-save-photos-btn" type="button" style="background: linear-gradient(135deg, #10b981, #06b6d4); border-color: #34d399; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);">
             <span class="btn-icon" style="font-size: 1.6rem;">📱</span>
             <div class="btn-text-col">
-              <strong style="font-size: 1.05rem;">スマホに保存 / 共有する</strong>
-              <span style="font-size: 0.82rem;">メニューの「"ファイル"に保存」でiPhone内に確実に保存できます</span>
+              <strong style="font-size: 1.05rem;">音声＆歌詞をスマホに保存 / 共有</strong>
+              <span style="font-size: 0.82rem;">「"ファイル"に保存」でMP3と歌詞テキスト（.txt）を同時に保存</span>
             </div>
           </button>
 
-          <!-- Direct Download Button -->
-          <button id="audioDirectDownloadBtn" class="giant-download-file-btn" type="button">
-            <span class="btn-icon" style="font-size: 1.4rem;">⬇️</span>
-            <div class="btn-text-col">
-              <strong>PC・ブラウザで直接ダウンロード</strong>
-              <span style="font-size: 0.8rem;">ダウンロードフォルダにファイルを直接保存</span>
-            </div>
-          </button>
+          <!-- Direct Download Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;">
+            <!-- Direct Audio Download Button -->
+            <button id="audioDirectDownloadBtn" class="giant-download-file-btn" type="button" style="padding: 12px 10px; justify-content: center;">
+              <span class="btn-icon" style="font-size: 1.3rem;">⬇️</span>
+              <div class="btn-text-col" style="text-align: left;">
+                <strong style="font-size: 0.88rem;">MP3を保存</strong>
+                <span style="font-size: 0.74rem;">音声ファイル</span>
+              </div>
+            </button>
+
+            <!-- Direct Lyrics Download Button -->
+            <button id="lyricsDirectDownloadBtn" class="giant-download-file-btn" type="button" style="padding: 12px 10px; justify-content: center; border-color: rgba(167, 139, 250, 0.4); background: rgba(30, 27, 75, 0.6);">
+              <span class="btn-icon" style="font-size: 1.3rem;">📝</span>
+              <div class="btn-text-col" style="text-align: left;">
+                <strong style="font-size: 0.88rem; color: #c4b5fd;">歌詞を保存</strong>
+                <span style="font-size: 0.74rem;">.txt テキスト</span>
+              </div>
+            </button>
+          </div>
 
           <!-- Direct link fallback -->
-          <a id="modalAudioDownloadLink" class="modal-link-fallback" href="#" target="_blank" rel="noopener">↗️ 新しいタブで開く・長押し保存</a>
+          <a id="modalAudioDownloadLink" class="modal-link-fallback" href="#" target="_blank" rel="noopener">↗️ 音声を新しいタブで開く・長押し保存</a>
         </div>
 
         <!-- Step-by-step guidance for iPhone -->
@@ -578,14 +602,14 @@
             <span class="step-num" style="background: #10b981;">1</span>
             <div>
               <strong>iPhone本体に保存したい時：</strong>
-              <p>上の【スマホに保存 / 共有する】をタップし、メニュー一覧から<strong>「"ファイル"に保存」</strong>を選択してください（iCloud Driveや「このiPhone内」に保存されます）。</p>
+              <p>上の【音声＆歌詞をスマホに保存 / 共有】をタップし、メニュー一覧から<strong>「"ファイル"に保存」</strong>を選択してください（MP3と歌詞テキストが同時に保存されます）。</p>
             </div>
           </div>
           <div class="guidance-step">
             <span class="step-num" style="background: #10b981;">2</span>
             <div>
               <strong>外部アプリ（CapCut・SNS・GarageBand等）で使う時：</strong>
-              <p>同じメニューから直接動画編集アプリやメッセージに送ることも可能です。</p>
+              <p>同じメニューから直接動画編集アプリやメッセージに送ることも可能です。また上の「📋 歌詞をコピー」でテロップ用テキストをすぐ貼り付けられます。</p>
             </div>
           </div>
         </div>
@@ -604,7 +628,9 @@
 
   <!-- LameJS for client-side MP3 encoding -->
   <script src="lame.min.js"></script>
+  <!-- Presets data for demo songs and lyrics -->
+  <script src="presets.js?v=20261013_13"></script>
   <!-- Standalone Audio Cutter Logic -->
-  <script src="audio-cutter.js?v=20261013_12"></script>
+  <script src="audio-cutter.js?v=20261013_13"></script>
 </body>
 </html>
