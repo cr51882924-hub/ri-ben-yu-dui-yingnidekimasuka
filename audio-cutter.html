@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="音声カッター">
   <meta name="theme-color" content="#090d16">
   <title>楽曲カッター＆トリマー - 曲の長さを決めてカット音声をダウンロード</title>
-  <link rel="stylesheet" href="style.css?v=20261013_11">
+  <link rel="stylesheet" href="style.css?v=20261013_14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
@@ -392,10 +392,10 @@
           <div class="slider-subtext">数字を直接タップして入力するか、スライダーまたは「-10秒 / +10秒」ボタンで直感調整できます</div>
         </div>
 
-        <!-- ② 長さ（何秒間にするか）直接入力 ＆ ワンタップボタン -->
+        <!-- ② 長さ・終了時間 直接入力 ＆ 微調整 -->
         <div class="trim-direct-input-card" style="margin-top: 16px;">
           <div class="input-card-header">
-            <span class="input-card-title">② 切り出す長さ（何秒間にするか）</span>
+            <span class="input-card-title">② 切り出す長さ・終了時間（何秒間にするか）</span>
             <span class="input-card-badge" id="durationBadge">30秒間</span>
           </div>
 
@@ -404,10 +404,14 @@
               <input type="number" id="trimDurationInput" class="time-num-input" min="1" max="600" value="30" inputmode="numeric" aria-label="切り出す長さ（秒間）">
               <span class="time-unit">秒間</span>
             </div>
-            <div class="stepper-buttons-row inline-stepper">
-              <button type="button" class="stepper-btn" id="durMinus5Btn">◀ -5秒</button>
-              <button type="button" class="stepper-btn" id="durPlus5Btn">+5秒 ▶</button>
-            </div>
+          </div>
+
+          <!-- 終了時間・長さの微調整ボタン -->
+          <div class="stepper-buttons-row">
+            <button type="button" class="stepper-btn" id="durMinus5Btn">◀ -5秒</button>
+            <button type="button" class="stepper-btn" id="durMinus1Btn">◀ -1秒</button>
+            <button type="button" class="stepper-btn" id="durPlus1Btn">+1秒 ▶</button>
+            <button type="button" class="stepper-btn" id="durPlus5Btn">+5秒 ▶</button>
           </div>
 
           <!-- ワンタッププリセットボタン -->
@@ -421,6 +425,7 @@
           </div>
 
           <input type="range" id="trimDurationSlider" class="super-fat-slider" min="1" max="600" value="30" step="1" aria-label="切り出す長さスライダー" style="margin-top: 14px;">
+          <div class="slider-subtext">数字を直接タップして入力するか、スライダーまたは「-1秒 / +1秒」「-5秒 / +5秒」ボタンで直感調整できます</div>
         </div>
 
         <!-- 決定された区間の確認 ＆ 試聴ボタン -->
@@ -631,6 +636,6 @@
   <!-- Presets data for demo songs and lyrics -->
   <script src="presets.js?v=20261013_13"></script>
   <!-- Standalone Audio Cutter Logic -->
-  <script src="audio-cutter.js?v=20261013_13"></script>
+  <script src="audio-cutter.js?v=20261013_14"></script>
 </body>
 </html>
