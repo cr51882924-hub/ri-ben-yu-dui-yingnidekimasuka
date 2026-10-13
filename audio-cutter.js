@@ -71,6 +71,8 @@
   const trimDurationInput = document.getElementById('trimDurationInput');
   const trimDurationSlider = document.getElementById('trimDurationSlider');
   const durMinus5Btn = document.getElementById('durMinus5Btn');
+  const durMinus1Btn = document.getElementById('durMinus1Btn');
+  const durPlus1Btn = document.getElementById('durPlus1Btn');
   const durPlus5Btn = document.getElementById('durPlus5Btn');
   const presetChips = document.querySelectorAll('.trim-preset-chip');
 
@@ -207,7 +209,7 @@
       trimDurationSlider.max = Math.max(1, Math.floor(maxDur));
       trimDurationSlider.value = Math.round(trimDuration);
     }
-    if (durationBadge) durationBadge.textContent = `${Math.round(trimDuration)}秒間`;
+    if (durationBadge) durationBadge.textContent = `${Math.round(trimDuration)}秒間（終了: ${formatTime(trimEnd)}）`;
 
     // Presets Active styling
     presetChips.forEach(chip => {
@@ -1076,6 +1078,18 @@
     if (durMinus5Btn) {
       durMinus5Btn.addEventListener('click', () => {
         trimDuration = Math.max(1, trimDuration - 5);
+        updateTrimmerUI();
+      });
+    }
+    if (durMinus1Btn) {
+      durMinus1Btn.addEventListener('click', () => {
+        trimDuration = Math.max(1, trimDuration - 1);
+        updateTrimmerUI();
+      });
+    }
+    if (durPlus1Btn) {
+      durPlus1Btn.addEventListener('click', () => {
+        trimDuration = Math.min(totalDuration - trimStart, trimDuration + 1);
         updateTrimmerUI();
       });
     }
