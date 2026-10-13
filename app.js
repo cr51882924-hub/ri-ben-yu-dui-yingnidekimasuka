@@ -850,8 +850,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   const quickDownloadTrimmedBtn = document.getElementById('quickDownloadTrimmedBtn');
 
+  // Audio Complete Modal Elements (Studio STEP 3)
+  const audioCompleteModal = document.getElementById('audioCompleteModal');
+  const closeAudioModalCrossBtn = document.getElementById('closeAudioModalCrossBtn');
+  const closeAudioModalBottomBtn = document.getElementById('closeAudioModalBottomBtn');
+  const completeAudioPreview = document.getElementById('completeAudioPreview');
+  const modalAudioFileName = document.getElementById('modalAudioFileName');
+  const modalAudioFormatBadge = document.getElementById('modalAudioFormatBadge');
+  const modalAudioMeta = document.getElementById('modalAudioMeta');
+  const saveAudioToPhoneBtn = document.getElementById('saveAudioToPhoneBtn');
+  const directAudioDownloadBtn = document.getElementById('directAudioDownloadBtn');
+  const modalAudioDirectLink = document.getElementById('modalAudioDirectLink');
+
+  let lastCutAudioBlob = null;
+  let lastCutAudioFile = null;
+  let lastCutAudioFilename = '';
+  let lastCutAudioUrl = null;
+
   function sliceBufferDirect(srcBuffer, startSec, endSec) {
-    const ctx = audioEngine.ctx;
+    const ctx = audioEngine.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    audioEngine.ctx = ctx;
     const sampleRate = srcBuffer.sampleRate;
     const numChannels = srcBuffer.numberOfChannels;
     const startSample = Math.max(0, Math.floor(startSec * sampleRate));
@@ -860,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sliced = ctx.createBuffer(numChannels, length, sampleRate);
     for (let c = 0; c < numChannels; c++) {
       const srcData = srcBuffer.getChannelData(c).subarray(startSample, endSample);
-      sliced.copyToChannel(srcData, c, 0);
+      sliced.getChannelData(c).set(srcData);
     }
     return sliced;
   }
@@ -918,19 +936,93 @@ document.addEventListener('DOMContentLoaded', () => {
     const leftInt = new Int16Array(len);
     const rightInt = new Int16Array(len);
     for (let i = 0; i < len; i++) {
-      leftInt[i] = Math.max(-1, Math.min(1, leftRaw[i])) * 0x7FFF;
-      rightInt[i] = Math.max(-1, Math.min(1, rightRaw[i])) * 0x7FFF;
+      const l = Math.max(-1, Math.min(1, leftRaw[i]));
+      leftInt[i] = l < 0 ? l * 0x8000 : l * 0x7FFF;
+      const r = Math.max(-1, Math.min(1, rightRaw[i]));
+      rightInt[i] = r < 0 ? r * 0x8000 : r * 0x7FFF;
     }
     const blockSize = 1152;
     for (let i = 0; i < len; i += blockSize) {
       const l = leftInt.subarray(i, i + blockSize);
       const r = rightInt.subarray(i, i + blockSize);
-      const mp3buf = encoder.encodeBuffer(l, r);
+      const mp3buf = (channels === 1) ? encoder.encodeBuffer(l) : encoder.encodeBuffer(l, r);
       if (mp3buf.length > 0) chunks.push(mp3buf);
     }
     const end = encoder.flush();
     if (end.length > 0) chunks.push(end);
-    return new Blob(chunks, { type: 'audio/mp3' });
+    return new Blob(chunks, { type: 'audio/mpeg' });
+  }
+
+  function triggerDirectAudioDownload(blob, filename) {
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        try { document.body.removeChild(a); } catch (e) {}
+      }, 1000);
+      setTimeout(() => {
+        try { URL.revokeObjectURL(url); } catch (e) {}
+      }, 60000);
+    } catch (e) {
+      console.warn('triggerDirectAudioDownload failed:', e);
+    }
+  }
+
+  function openCutAudioModal(blob, file, filename, trimStart, trimEnd) {
+    if (!audioCompleteModal) return;
+    if (audioEngine && audioEngine.isPlaying) {
+      audioEngine.pause();
+      updatePlayUI(false);
+    }
+
+    lastCutAudioBlob = blob;
+    lastCutAudioFile = file;
+    lastCutAudioFilename = filename;
+
+    if (lastCutAudioUrl) {
+      try { URL.revokeObjectURL(lastCutAudioUrl); } catch (e) {}
+    }
+    lastCutAudioUrl = URL.createObjectURL(blob);
+
+    if (modalAudioFileName) modalAudioFileName.textContent = filename;
+    if (modalAudioFormatBadge) modalAudioFormatBadge.textContent = 'MP3';
+    if (modalAudioMeta) {
+      const dur = Math.max(1, Math.round(trimEnd - trimStart));
+      const kb = (blob.size / 1024).toFixed(1);
+      modalAudioMeta.textContent = `区間: ${formatTime(trimStart)} 〜 ${formatTime(trimEnd)} (${dur}秒間) | 容量: ${kb} KB`;
+    }
+
+    if (completeAudioPreview) {
+      completeAudioPreview.src = lastCutAudioUrl;
+      completeAudioPreview.load();
+    }
+
+    if (modalAudioDirectLink) {
+      modalAudioDirectLink.href = lastCutAudioUrl;
+      modalAudioDirectLink.download = filename;
+    }
+
+    audioCompleteModal.classList.remove('hidden');
+    audioCompleteModal.classList.add('visible');
+    triggerHaptic();
+  }
+
+  function closeCutAudioModal() {
+    triggerHaptic();
+    if (completeAudioPreview) {
+      try { completeAudioPreview.pause(); } catch (e) {}
+    }
+    if (audioCompleteModal) {
+      audioCompleteModal.classList.remove('visible');
+      audioCompleteModal.classList.add('hidden');
+    }
   }
 
   if (quickDownloadTrimmedBtn) {
@@ -939,41 +1031,88 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerHaptic();
 
       if (!audioEngine.hasAudioLoaded()) {
-        showToast('先にSTEP 2で楽曲を取り込むか、デモ曲を選択してください');
-        return;
+        audioEngine.loadDemoTrack('jpop');
       }
 
       showToast('✂️ カット音声をエンコード中...');
 
       try {
-        let buf = audioEngine.audioBuffer;
+        let buf = audioEngine.ensureAudioBuffer();
         if (!buf) {
-          // Fallback: If demo track, generate brief buffer
           const ctx = audioEngine.ctx || new (window.AudioContext || window.webkitAudioContext)();
           buf = ctx.createBuffer(2, ctx.sampleRate * 30, ctx.sampleRate);
         }
 
         const sliced = sliceBufferDirect(buf, audioEngine.trimStart, audioEngine.trimEnd);
         const blob = encodeMp3Direct(sliced);
-        const fileName = `${currentSongConfig.title || 'song'}_cut_${formatTime(audioEngine.trimStart).replace(':', 'm')}s-${formatTime(audioEngine.trimEnd).replace(':', 'm')}s.mp3`;
+        const songTitle = (currentSongConfig && currentSongConfig.title) ? currentSongConfig.title : 'song';
+        const fileName = `${songTitle}_cut_${formatTime(audioEngine.trimStart).replace(':', 'm')}s-${formatTime(audioEngine.trimEnd).replace(':', 'm')}s.mp3`;
 
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 1500);
+        const file = new File([blob], fileName, { type: 'audio/mpeg' });
 
-        showToast(`✔ 「${fileName}」をダウンロードしました！`);
+        openCutAudioModal(blob, file, fileName, audioEngine.trimStart, audioEngine.trimEnd);
+        showToast(`✂️ 「${fileName}」を切り出しました！`);
+
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (!isMobile) {
+          triggerDirectAudioDownload(blob, fileName);
+        }
       } catch (err) {
         console.error('Quick download failed:', err);
         showToast('切り出し保存に失敗しました。専用カッターツールもお試しください');
       }
+    });
+  }
+
+  // Audio Complete Modal Event Listeners
+  if (saveAudioToPhoneBtn) {
+    saveAudioToPhoneBtn.addEventListener('click', async () => {
+      triggerHaptic();
+      if (!lastCutAudioFile) return;
+
+      const shareData = {
+        files: [lastCutAudioFile],
+        title: lastCutAudioFilename
+      };
+
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+          showToast('共有メニューを開きました。「"ファイル"に保存」を選択してください');
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return;
+          console.warn('navigator.share failed, fallback to direct download:', err);
+        }
+      }
+
+      triggerDirectAudioDownload(lastCutAudioBlob, lastCutAudioFilename);
+      showToast('ダウンロードを開始しました');
+    });
+  }
+
+  if (directAudioDownloadBtn) {
+    directAudioDownloadBtn.addEventListener('click', () => {
+      triggerHaptic();
+      if (!lastCutAudioBlob) return;
+      triggerDirectAudioDownload(lastCutAudioBlob, lastCutAudioFilename);
+      showToast('ダウンロードを開始しました');
+    });
+  }
+
+  if (modalAudioDirectLink) {
+    modalAudioDirectLink.addEventListener('click', () => {
+      if (lastCutAudioUrl) {
+        window.open(lastCutAudioUrl, '_blank');
+      }
+    });
+  }
+
+  if (closeAudioModalCrossBtn) closeAudioModalCrossBtn.addEventListener('click', closeCutAudioModal);
+  if (closeAudioModalBottomBtn) closeAudioModalBottomBtn.addEventListener('click', closeCutAudioModal);
+  if (audioCompleteModal) {
+    audioCompleteModal.addEventListener('click', (e) => {
+      if (e.target === audioCompleteModal) closeCutAudioModal();
     });
   }
 
