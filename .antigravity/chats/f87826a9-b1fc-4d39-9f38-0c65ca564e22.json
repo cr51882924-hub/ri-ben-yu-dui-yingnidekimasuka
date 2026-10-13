@@ -784,6 +784,18 @@
       "created_at": "2026-10-13T05:53:42.159Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "73a3ae15-d7b9-47a0-86a4-87f84178ea14",
+      "role": "user",
+      "content": "パターンAでお願いします。\n\n私はいま、嬉しいです。\nあなたは今、はじめて私が頼んだものを1つ作ってくれました。\nこの1番最初のやり取りを覚えておきましょう。",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-13T05:57:33.058Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
