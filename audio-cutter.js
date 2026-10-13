@@ -514,7 +514,7 @@
     for (let c = 0; c < numChannels; c++) {
       const srcChannel = sourceBuffer.getChannelData(c);
       const sub = srcChannel.subarray(startSample, endSample);
-      slicedBuffer.copyToChannel(sub, c, 0);
+      slicedBuffer.getChannelData(c).set(sub);
     }
 
     return slicedBuffer;
@@ -582,7 +582,7 @@
     return new Blob([arrayBuffer], { type: 'audio/wav' });
   }
 
-  // Pure JS MP3 Encoder using lamejs
+  // Pure JS MP3 Encoder using lamejs (192kbps)
   function encodeMP3(buffer, onProgress) {
     if (typeof lamejs === 'undefined') {
       console.warn('lamejs not available, falling back to WAV');
@@ -638,26 +638,84 @@
       mp3Data.push(endBuf);
     }
 
-    return new Blob(mp3Data, { type: 'audio/mp3' });
+    // Standard RFC MIME type for MP3 is audio/mpeg
+    return new Blob(mp3Data, { type: 'audio/mpeg' });
   }
 
-  // Trigger file download helper
-  function triggerDownload(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 1500);
+  // Open Audio Complete Modal with preview player and iPhone share actions
+  function openAudioModal(blob, file, filename, targetExt) {
+    if (!audioCompleteModal) return;
+    stopAllAudio();
+
+    lastCutBlob = blob;
+    lastCutFile = file;
+    lastCutFilename = filename;
+
+    if (lastCutUrl) {
+      try { URL.revokeObjectURL(lastCutUrl); } catch (e) {}
+    }
+    lastCutUrl = URL.createObjectURL(blob);
+
+    if (modalAudioFileName) modalAudioFileName.textContent = filename;
+    if (modalAudioFormatBadge) modalAudioFormatBadge.textContent = targetExt.toUpperCase();
+    if (modalAudioMeta) {
+      const kb = (blob.size / 1024).toFixed(1);
+      modalAudioMeta.textContent = `区間: ${formatTime(trimStart)} 〜 ${formatTime(trimEnd)} (${Math.round(trimDuration)}秒間) | 容量: ${kb} KB`;
+    }
+
+    if (modalAudioPreview) {
+      modalAudioPreview.src = lastCutUrl;
+      modalAudioPreview.load();
+    }
+
+    if (modalAudioDownloadLink) {
+      modalAudioDownloadLink.href = lastCutUrl;
+      modalAudioDownloadLink.download = filename;
+    }
+
+    audioCompleteModal.classList.remove('hidden');
+    audioCompleteModal.classList.add('visible');
+  }
+
+  function closeAudioModal() {
+    if (!audioCompleteModal) return;
+    if (modalAudioPreview) {
+      try { modalAudioPreview.pause(); } catch (e) {}
+    }
+    audioCompleteModal.classList.remove('visible');
+    audioCompleteModal.classList.add('hidden');
+  }
+
+  // Trigger file download helper (with safe lifetime for iOS/WebKit)
+  function triggerDownloadDirect(blob, filename) {
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        try { document.body.removeChild(a); } catch (e) {}
+      }, 1000);
+      setTimeout(() => {
+        try { URL.revokeObjectURL(url); } catch (e) {}
+      }, 60000);
+    } catch (e) {
+      console.warn('triggerDownloadDirect failed:', e);
+    }
   }
 
   // Main Download Handler
   async function handleDownload() {
+    if (!rawAudioBuffer) {
+      showToast('🌟 公式デモ曲を自動ロード中...');
+      await loadDemoSong();
+    }
+
     if (!rawAudioBuffer) {
       alert('先に音楽ファイルをアップロードするか、デモ曲を選択してください。');
       return;
@@ -686,7 +744,7 @@
 
     // Show Progress
     if (downloadProgressBox) downloadProgressBox.classList.remove('hidden');
-    if (downloadProgressBar) downloadProgressBar.style.width = '10%';
+    if (downloadProgressBar) downloadProgressBar.style.width = '15%';
     if (downloadProgressText) downloadProgressText.textContent = '区間データを切り出し中...';
     if (downloadBtn) downloadBtn.disabled = true;
 
@@ -696,31 +754,41 @@
     try {
       // 1. Slice buffer
       const sliced = sliceAudioBuffer(rawAudioBuffer, trimStart, trimEnd);
-      if (downloadProgressBar) downloadProgressBar.style.width = '40%';
+      if (downloadProgressBar) downloadProgressBar.style.width = '45%';
       if (downloadProgressText) downloadProgressText.textContent = `${targetExt.toUpperCase()} 形式へエンコード中...`;
       await new Promise(r => setTimeout(r, 60));
 
       let blob = null;
+      const mime = (targetExt === 'wav') ? 'audio/wav' : 'audio/mpeg';
+
       if (targetExt === 'wav') {
         blob = encodeWAV(sliced);
         if (downloadProgressBar) downloadProgressBar.style.width = '95%';
       } else {
         blob = encodeMP3(sliced, (pct) => {
-          if (downloadProgressBar) downloadProgressBar.style.width = `${40 + Math.floor(pct * 0.5)}%`;
+          if (downloadProgressBar) downloadProgressBar.style.width = `${45 + Math.floor(pct * 0.5)}%`;
         });
       }
 
       if (downloadProgressBar) downloadProgressBar.style.width = '100%';
       if (downloadProgressText) downloadProgressText.textContent = 'ダウンロード準備完了！';
 
-      // 2. Download
-      triggerDownload(blob, outputFilename);
-      showToast(`✔ 「${outputFilename}」をダウンロードしました！`);
+      const file = new File([blob], outputFilename, { type: mime });
+
+      // Open Audio Complete Modal with audio player and iPhone/Android save options
+      openAudioModal(blob, file, outputFilename, targetExt);
+      showToast(`✂️ 「${outputFilename}」を切り出しました！`);
+
+      // On PC / Desktop browsers, also trigger immediate download
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (!isMobile) {
+        triggerDownloadDirect(blob, outputFilename);
+      }
 
       setTimeout(() => {
         if (downloadProgressBox) downloadProgressBox.classList.add('hidden');
         if (downloadBtn) downloadBtn.disabled = false;
-      }, 1500);
+      }, 1000);
 
     } catch (e) {
       console.error('Download error:', e);
@@ -936,12 +1004,76 @@
     if (downloadBtn) {
       downloadBtn.addEventListener('click', handleDownload);
     }
+
+    // Audio Complete Modal Actions (iPhone WebKit & Android & PC)
+    if (audioShareBtn) {
+      audioShareBtn.addEventListener('click', async () => {
+        if (!lastCutFile) return;
+
+        const shareData = {
+          files: [lastCutFile],
+          title: lastCutFilename
+        };
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+          try {
+            await navigator.share(shareData);
+            showToast('共有メニューを開きました。「"ファイル"に保存」を選択してください');
+            return;
+          } catch (err) {
+            if (err.name === 'AbortError') return;
+            console.warn('navigator.share failed, fallback to direct download:', err);
+          }
+        }
+
+        // Fallback for non-share environments
+        triggerDownloadDirect(lastCutBlob, lastCutFilename);
+        showToast('ダウンロードを開始しました');
+      });
+    }
+
+    if (audioDirectDownloadBtn) {
+      audioDirectDownloadBtn.addEventListener('click', () => {
+        if (!lastCutBlob) return;
+        triggerDownloadDirect(lastCutBlob, lastCutFilename);
+        showToast('ダウンロードを開始しました');
+      });
+    }
+
+    if (modalAudioDownloadLink) {
+      modalAudioDownloadLink.addEventListener('click', (e) => {
+        if (lastCutUrl) {
+          window.open(lastCutUrl, '_blank');
+        }
+      });
+    }
+
+    if (closeAudioModalBtn) {
+      closeAudioModalBtn.addEventListener('click', closeAudioModal);
+    }
+    if (closeAudioModalBottomBtn) {
+      closeAudioModalBottomBtn.addEventListener('click', closeAudioModal);
+    }
+    if (audioCompleteModal) {
+      audioCompleteModal.addEventListener('click', (e) => {
+        if (e.target === audioCompleteModal) {
+          closeAudioModal();
+        }
+      });
+    }
   }
 
   // Auto initialize on DOMContentLoaded
   document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     updateTrimmerUI();
+
+    // Auto-load demo song so the user can immediately test trimming & downloading without empty state
+    setTimeout(() => {
+      if (!rawAudioBuffer && !originalFile) {
+        loadDemoSong();
+      }
+    }, 150);
   });
 
 })();
