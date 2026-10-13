@@ -91,6 +91,23 @@
   const downloadProgressText = document.getElementById('downloadProgressText');
   const toastEl = document.getElementById('toast');
 
+  // Audio Complete Modal Elements
+  const audioCompleteModal = document.getElementById('audioCompleteModal');
+  const closeAudioModalBtn = document.getElementById('closeAudioModalBtn');
+  const closeAudioModalBottomBtn = document.getElementById('closeAudioModalBottomBtn');
+  const modalAudioFileName = document.getElementById('modalAudioFileName');
+  const modalAudioFormatBadge = document.getElementById('modalAudioFormatBadge');
+  const modalAudioMeta = document.getElementById('modalAudioMeta');
+  const modalAudioPreview = document.getElementById('modalAudioPreview');
+  const audioShareBtn = document.getElementById('audioShareBtn');
+  const audioDirectDownloadBtn = document.getElementById('audioDirectDownloadBtn');
+  const modalAudioDownloadLink = document.getElementById('modalAudioDownloadLink');
+
+  let lastCutBlob = null;
+  let lastCutFile = null;
+  let lastCutFilename = '';
+  let lastCutUrl = null;
+
   // Helper: Format seconds to MM:SS
   function formatTime(seconds) {
     if (isNaN(seconds) || seconds < 0) return '00:00';
