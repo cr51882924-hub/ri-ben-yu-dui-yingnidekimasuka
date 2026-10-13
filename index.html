@@ -662,6 +662,92 @@
       </div>
     </div>
 
+    <!-- Audio Complete & Save Modal (iPhone & Mobile Accessible) -->
+    <div id="audioCompleteModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="audioCompleteModalTitle">
+      <div class="modal-card">
+        <div class="modal-header" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(139, 92, 246, 0.3)); border-bottom: 1.5px solid rgba(110, 231, 183, 0.3);">
+          <div class="modal-title-group">
+            <span class="modal-sparkle-icon">✂️</span>
+            <h3 id="audioCompleteModalTitle" class="modal-title">カット音声を切り出しました！</h3>
+          </div>
+          <button id="closeAudioModalCrossBtn" class="modal-close-icon" aria-label="閉じる">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Audio Cut Info Card -->
+          <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(110, 231, 183, 0.35); border-radius: 14px; padding: 14px 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px;">
+              <span id="modalAudioFileName" style="font-weight: 800; color: #fff; font-size: 0.95rem; word-break: break-all;">song_cut.mp3</span>
+              <span id="modalAudioFormatBadge" style="background: rgba(16, 185, 129, 0.25); color: #6ee7b7; border: 1px solid #10b981; border-radius: 6px; padding: 2px 8px; font-size: 0.78rem; font-weight: 700; flex-shrink: 0;">MP3</span>
+            </div>
+            <div id="modalAudioMeta" style="font-size: 0.84rem; color: #94a3b8;">
+              区間: 00:00 〜 00:30 (30秒間)
+            </div>
+          </div>
+
+          <!-- Audio Preview Player -->
+          <div style="background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 8px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+              <span>🎧</span>
+              <span>切り出した音声を今すぐ試聴:</span>
+            </div>
+            <audio id="completeAudioPreview" controls playsinline preload="auto" style="width: 100%; height: 44px; border-radius: 8px; outline: none;"></audio>
+          </div>
+
+          <div class="modal-actions-list">
+            <!-- Save to iPhone / Share Sheet Button -->
+            <button id="saveAudioToPhoneBtn" class="giant-save-photos-btn" type="button" style="background: linear-gradient(135deg, #10b981, #06b6d4); border-color: #34d399; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);">
+              <span class="btn-icon" style="font-size: 1.6rem;">📱</span>
+              <div class="btn-text-col">
+                <strong style="font-size: 1.05rem;">スマホに保存 / 共有する</strong>
+                <span style="font-size: 0.82rem;">メニューの「"ファイル"に保存」でiPhone内に確実に保存できます</span>
+              </div>
+            </button>
+
+            <!-- Direct Download Button -->
+            <button id="directAudioDownloadBtn" class="giant-download-file-btn" type="button">
+              <span class="btn-icon" style="font-size: 1.4rem;">⬇️</span>
+              <div class="btn-text-col">
+                <strong>PC・ブラウザで直接ダウンロード</strong>
+                <span style="font-size: 0.8rem;">ダウンロードフォルダにファイルを直接保存</span>
+              </div>
+            </button>
+
+            <!-- Direct link fallback -->
+            <a id="modalAudioDirectLink" class="modal-link-fallback" href="#" target="_blank" rel="noopener">↗️ 新しいタブで開く・長押し保存</a>
+          </div>
+
+          <!-- Step-by-step guidance for iPhone -->
+          <div class="save-guidance-card">
+            <div class="guidance-head">
+              <span>📱</span>
+              <strong>iPhoneをお使いの方へ</strong>
+            </div>
+            <div class="guidance-step">
+              <span class="step-num" style="background: #10b981;">1</span>
+              <div>
+                <strong>iPhone本体に保存したい時：</strong>
+                <p>上の【スマホに保存 / 共有する】をタップし、メニュー一覧から<strong>「"ファイル"に保存」</strong>を選択してください（iCloud Driveや「このiPhone内」に保存されます）。</p>
+              </div>
+            </div>
+            <div class="guidance-step">
+              <span class="step-num" style="background: #10b981;">2</span>
+              <div>
+                <strong>外部アプリ（CapCut・SNS・GarageBand等）で使う時：</strong>
+                <p>同じメニューから直接動画編集アプリやメッセージに送ることも可能です。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="closeAudioModalBottomBtn" class="modal-btn-sub" type="button">
+            <span>操作画面に戻る</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Notification Toast -->
     <div id="toast" class="toast hidden">
       <span id="toastMsg">通知メッセージ</span>
