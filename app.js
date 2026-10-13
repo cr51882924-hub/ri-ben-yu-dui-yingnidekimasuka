@@ -55,6 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const startPlus10Btn = document.getElementById('startPlus10Btn');
   const trimDurationInput = document.getElementById('trimDurationInput');
   const durMinus5Btn = document.getElementById('durMinus5Btn');
+  const durMinus1Btn = document.getElementById('durMinus1Btn');
+  const durPlus1Btn = document.getElementById('durPlus1Btn');
   const durPlus5Btn = document.getElementById('durPlus5Btn');
   const startPosBadge = document.getElementById('startPosBadge');
   const durationBadge = document.getElementById('durationBadge');
@@ -247,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
       startPosBadge.textContent = `${formatTime(trimStartSeconds)} からスタート`;
     }
     if (durationBadge) {
-      durationBadge.textContent = `${Math.round(trimDurationSeconds)}秒間`;
+      durationBadge.textContent = `${Math.round(trimDurationSeconds)}秒間（終了: ${formatTime(endSeconds)}）`;
     }
 
     if (confirmStartTxt) confirmStartTxt.textContent = formatTime(trimStartSeconds);
@@ -340,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Duration input & steppers
   if (trimDurationInput) {
     const onDurChange = () => {
-      trimDurationSeconds = Math.max(5, parseFloat(trimDurationInput.value) || 30);
+      trimDurationSeconds = Math.max(1, parseFloat(trimDurationInput.value) || 30);
       updateTrimmerUI();
     };
     trimDurationInput.addEventListener('input', onDurChange);
@@ -349,7 +351,21 @@ document.addEventListener('DOMContentLoaded', () => {
   if (durMinus5Btn) {
     durMinus5Btn.addEventListener('click', () => {
       triggerHaptic();
-      trimDurationSeconds = Math.max(5, trimDurationSeconds - 5);
+      trimDurationSeconds = Math.max(1, trimDurationSeconds - 5);
+      updateTrimmerUI();
+    });
+  }
+  if (durMinus1Btn) {
+    durMinus1Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimDurationSeconds = Math.max(1, trimDurationSeconds - 1);
+      updateTrimmerUI();
+    });
+  }
+  if (durPlus1Btn) {
+    durPlus1Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimDurationSeconds = trimDurationSeconds + 1;
       updateTrimmerUI();
     });
   }
