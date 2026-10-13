@@ -712,6 +712,18 @@
       "created_at": "2026-10-13T00:29:47.515Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "dc1b621a-e327-4939-8a54-279dd86d26d5",
+      "role": "user",
+      "content": "ダウンロードできませんでし。",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-13T02:11:15.417Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
