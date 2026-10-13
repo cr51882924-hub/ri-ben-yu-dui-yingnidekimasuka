@@ -651,7 +651,83 @@
     return new Blob(mp3Data, { type: 'audio/mpeg' });
   }
 
-  // Open Audio Complete Modal with preview player and iPhone share actions
+  // Helper: Get lyrics data for current track
+  function getTrackLyricsData() {
+    if (isDemoTrack) {
+      if (window.GROOVE_PRESETS && window.GROOVE_PRESETS.songs && window.GROOVE_PRESETS.songs.jpop) {
+        return window.GROOVE_PRESETS.songs.jpop;
+      }
+      return {
+        title: 'Shining Beat',
+        genre: 'J-POP / アイドル',
+        bpm: 132,
+        lyrics: [
+          { time: 0, text: '輝くライトが ステージ照らし出す' },
+          { time: 4, text: '胸の鼓動が リズムと重なって' },
+          { time: 8, text: '世界中へ響け このメロディ！' },
+          { time: 14, text: '君の手を取って 走り出そう' },
+          { time: 20, text: 'Shining Beat! 奇跡を起こす瞬間へ' },
+          { time: 26, text: 'どこまでも高く 歌い続けるよ' }
+        ]
+      };
+    }
+    // Custom uploaded file
+    const fname = originalFile ? originalFile.name.replace(/\.[^/.]+$/, '') : '持ち込み音源';
+    return {
+      title: fname,
+      genre: '持ち込み楽曲',
+      bpm: null,
+      lyrics: []
+    };
+  }
+
+  // Format full lyrics text card (Pattern A)
+  function buildLyricsText(trackData, startSec, endSec) {
+    const durSec = Math.max(1, Math.round(endSec - startSec));
+    const startStr = formatTime(startSec);
+    const endStr = formatTime(endSec);
+    const dateStr = new Date().toLocaleDateString('ja-JP');
+
+    let text = `========================================\n`;
+    text += `【楽曲情報】\n`;
+    text += `曲名: ${trackData.title || '楽曲'}\n`;
+    if (trackData.genre) text += `ジャンル: ${trackData.genre}\n`;
+    if (trackData.bpm) text += `BPM: ${trackData.bpm}\n`;
+    text += `切り出し区間: ${startStr} 〜 ${endStr} (${durSec}秒間)\n`;
+    text += `========================================\n\n`;
+
+    if (trackData.lyrics && trackData.lyrics.length > 0) {
+      const trimmedLyrics = trackData.lyrics.filter(l => l.time >= startSec && l.time <= endSec);
+      text += `【✂️ 切り出し区間の歌詞】\n`;
+      if (trimmedLyrics.length > 0) {
+        trimmedLyrics.forEach(l => {
+          const relSec = Math.max(0, l.time - startSec);
+          text += `[${formatTime(relSec)}] (原曲 ${formatTime(l.time)}) ${l.text}\n`;
+        });
+      } else {
+        const active = trackData.lyrics.slice().reverse().find(l => l.time <= startSec) || trackData.lyrics[0];
+        text += `[00:00] (原曲 ${formatTime(active.time)}) ${active.text}\n`;
+      }
+      text += `\n----------------------------------------\n`;
+      text += `【🎵 曲全体の歌詞一覧】\n`;
+      trackData.lyrics.forEach(l => {
+        text += `[${formatTime(l.time)}] ${l.text}\n`;
+      });
+    } else {
+      text += `【✂️ 切り出し区間の歌詞 / テロップメモ】\n`;
+      text += `※ご自身のオリジナル持ち込み音源です。\n`;
+      text += `動画編集（CapCut等）やSNS投稿時の歌詞・テロップメモとして自由にご編集ください。\n\n`;
+      text += `[00:00] （ここに歌詞やテロップを入力）\n`;
+    }
+
+    text += `\n========================================\n`;
+    text += `作成日: ${dateStr}\n`;
+    text += `GrooveSync MV Studio\n`;
+    text += `========================================\n`;
+    return text;
+  }
+
+  // Open Audio Complete Modal with preview player, lyrics card and iPhone share actions
   function openAudioModal(blob, file, filename, targetExt) {
     if (!audioCompleteModal) return;
     stopAllAudio();
@@ -670,6 +746,32 @@
     if (modalAudioMeta) {
       const kb = (blob.size / 1024).toFixed(1);
       modalAudioMeta.textContent = `区間: ${formatTime(trimStart)} 〜 ${formatTime(trimEnd)} (${Math.round(trimDuration)}秒間) | 容量: ${kb} KB`;
+    }
+
+    // Build Lyrics Data & Text File
+    const trackData = getTrackLyricsData();
+    lastCutLyricsText = buildLyricsText(trackData, trimStart, trimEnd);
+    const baseName = filename.replace(/\.[^/.]+$/, '');
+    lastCutLyricsFilename = `${baseName}_歌詞.txt`;
+    lastCutLyricsBlob = new Blob([lastCutLyricsText], { type: 'text/plain;charset=utf-8' });
+    lastCutLyricsFile = new File([lastCutLyricsBlob], lastCutLyricsFilename, { type: 'text/plain;charset=utf-8' });
+
+    // Populate Lyrics Preview
+    if (modalLyricsPreview) {
+      // Extract short readable preview for modal display
+      if (trackData.lyrics && trackData.lyrics.length > 0) {
+        const trimmed = trackData.lyrics.filter(l => l.time >= trimStart && l.time <= trimEnd);
+        if (trimmed.length > 0) {
+          modalLyricsPreview.textContent = trimmed.map(l => {
+            const rel = Math.max(0, l.time - trimStart);
+            return `[${formatTime(rel)}] ${l.text}`;
+          }).join('\n');
+        } else {
+          modalLyricsPreview.textContent = `♪ ${trackData.title || '音楽'} を再生中`;
+        }
+      } else {
+        modalLyricsPreview.textContent = `♪ 持ち込み音源 (${formatTime(trimStart)} 〜 ${formatTime(trimEnd)})`;
+      }
     }
 
     if (modalAudioPreview) {
@@ -1014,29 +1116,75 @@
       downloadBtn.addEventListener('click', handleDownload);
     }
 
-    // Audio Complete Modal Actions (iPhone WebKit & Android & PC)
+    // Audio Complete Modal Actions (Pattern A: Audio + Lyrics .txt)
+    if (copyLyricsBtn) {
+      copyLyricsBtn.addEventListener('click', async () => {
+        if (!lastCutLyricsText) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(lastCutLyricsText);
+            showToast('✔ 歌詞テキストをクリップボードにコピーしました！');
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = lastCutLyricsText;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('✔ 歌詞テキストをコピーしました！');
+          }
+        } catch (e) {
+          console.warn('Clipboard copy failed:', e);
+          showToast('コピーに失敗しました。プレビューから直接選択してコピーしてください');
+        }
+      });
+    }
+
+    if (lyricsDirectDownloadBtn) {
+      lyricsDirectDownloadBtn.addEventListener('click', () => {
+        if (!lastCutLyricsBlob || !lastCutLyricsFilename) return;
+        triggerDownloadDirect(lastCutLyricsBlob, lastCutLyricsFilename);
+        showToast('歌詞テキスト（.txt）のダウンロードを開始しました');
+      });
+    }
+
     if (audioShareBtn) {
       audioShareBtn.addEventListener('click', async () => {
         if (!lastCutFile) return;
 
+        // Share both Audio MP3 and Lyrics TXT files together (Pattern A)
+        const filesToShare = [lastCutFile, lastCutLyricsFile].filter(Boolean);
         const shareData = {
-          files: [lastCutFile],
-          title: lastCutFilename
+          files: filesToShare
         };
 
         if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
           try {
             await navigator.share(shareData);
-            showToast('共有メニューを開きました。「"ファイル"に保存」を選択してください');
+            showToast('共有メニューを開きました。「"ファイル"に保存」でMP3と歌詞が同時に保存されます');
             return;
           } catch (err) {
             if (err.name === 'AbortError') return;
-            console.warn('navigator.share failed, fallback to direct download:', err);
+            console.warn('Dual-file share failed, trying audio-only share:', err);
           }
         }
 
-        // Fallback for non-share environments
+        // Fallback 1: Share audio file alone
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [lastCutFile] })) {
+          try {
+            await navigator.share({ files: [lastCutFile] });
+            showToast('音声ファイルを共有しました。歌詞は「歌詞を保存」ボタンから保存できます');
+            return;
+          } catch (err) {
+            if (err.name === 'AbortError') return;
+          }
+        }
+
+        // Fallback 2: Direct downloads
         triggerDownloadDirect(lastCutBlob, lastCutFilename);
+        if (lastCutLyricsBlob) {
+          setTimeout(() => triggerDownloadDirect(lastCutLyricsBlob, lastCutLyricsFilename), 600);
+        }
         showToast('ダウンロードを開始しました');
       });
     }
@@ -1045,7 +1193,7 @@
       audioDirectDownloadBtn.addEventListener('click', () => {
         if (!lastCutBlob) return;
         triggerDownloadDirect(lastCutBlob, lastCutFilename);
-        showToast('ダウンロードを開始しました');
+        showToast('MP3音声のダウンロードを開始しました');
       });
     }
 
