@@ -952,6 +952,18 @@
       "created_at": "2026-10-13T22:12:35.916Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "e3b867e2-f478-40fd-97c0-9456c5176416",
+      "role": "user",
+      "content": "先に、Lume Flow AIと、\nLuma AIは同じではなく別々だとおもう。",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-13T22:19:03.436Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
