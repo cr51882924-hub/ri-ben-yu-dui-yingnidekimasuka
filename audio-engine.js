@@ -304,12 +304,74 @@ class AudioEngine {
       this.audioElement = null;
     }
 
+    // Pre-synthesize demo buffer so cutting, slicing and downloading works immediately
+    try {
+      this.ensureAudioBuffer();
+    } catch (e) {
+      console.warn('Demo buffer pre-synthesis deferred:', e);
+    }
+
     return {
       success: true,
       duration: 30,
       bpm: 132,
       isDemo: true
     };
+  }
+
+  // Ensure we have a valid AudioBuffer (synthesizes musical demo buffer if demo mode)
+  ensureAudioBuffer() {
+    if (this.audioBuffer) return this.audioBuffer;
+
+    const ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    this.ctx = ctx;
+    const sampleRate = ctx.sampleRate || 44100;
+    const dur = Math.max(30, Math.ceil(this.duration || 32));
+    const buffer = ctx.createBuffer(2, sampleRate * dur, sampleRate);
+    const left = buffer.getChannelData(0);
+    const right = buffer.getChannelData(1);
+
+    const bpm = this.bpm || 132;
+    const beatSec = 60 / bpm;
+
+    for (let i = 0; i < buffer.length; i++) {
+      const t = i / sampleRate;
+      const beatProg = (t % beatSec) / beatSec;
+      const kickEnv = Math.max(0, 1 - beatProg * 5);
+      const kick = Math.sin(2 * Math.PI * (130 - beatProg * 95) * t) * kickEnv * 0.45;
+
+      const barProg = (t % (beatSec * 4)) / beatSec;
+      let snare = 0;
+      if ((barProg >= 1 && barProg < 2) || (barProg >= 3 && barProg < 4)) {
+        const snareProg = barProg % 1;
+        const snareEnv = Math.max(0, 1 - snareProg * 6);
+        const noise = (Math.random() * 2 - 1) * 0.28;
+        const tone = Math.sin(2 * Math.PI * 180 * t) * 0.2;
+        snare = (noise + tone) * snareEnv;
+      }
+
+      const chordIndex = Math.floor(t / (beatSec * 4)) % 4;
+      const chords = [
+        [261.63, 329.63, 392.00],
+        [220.00, 261.63, 329.63],
+        [174.61, 220.00, 261.63],
+        [196.00, 246.94, 293.66]
+      ];
+      let synth = 0;
+      chords[chordIndex].forEach(f => {
+        synth += Math.sin(2 * Math.PI * f * t) * 0.08;
+      });
+
+      const vocalMelody = [523.25, 587.33, 659.25, 587.33, 523.25, 440.00, 493.88, 523.25];
+      const vocalNote = vocalMelody[Math.floor(t / beatSec) % vocalMelody.length];
+      const vocal = Math.sin(2 * Math.PI * vocalNote * t) * 0.12 * (1 + Math.sin(t * 12) * 0.15);
+
+      left[i] = Math.max(-0.95, Math.min(0.95, kick + snare * 0.8 + synth + vocal * 0.9));
+      right[i] = Math.max(-0.95, Math.min(0.95, kick + snare * 0.8 + synth * 0.9 + vocal * 1.1));
+    }
+
+    this.audioBuffer = buffer;
+    return buffer;
   }
 
   // Simple BPM heuristic estimator
