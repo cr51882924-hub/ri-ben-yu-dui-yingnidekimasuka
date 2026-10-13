@@ -860,12 +860,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalAudioMeta = document.getElementById('modalAudioMeta');
   const saveAudioToPhoneBtn = document.getElementById('saveAudioToPhoneBtn');
   const directAudioDownloadBtn = document.getElementById('directAudioDownloadBtn');
+  const directLyricsDownloadBtn = document.getElementById('directLyricsDownloadBtn');
+  const copyStudioLyricsBtn = document.getElementById('copyStudioLyricsBtn');
+  const modalStudioLyricsCard = document.getElementById('modalStudioLyricsCard');
+  const modalStudioLyricsPreview = document.getElementById('modalStudioLyricsPreview');
   const modalAudioDirectLink = document.getElementById('modalAudioDirectLink');
 
   let lastCutAudioBlob = null;
   let lastCutAudioFile = null;
   let lastCutAudioFilename = '';
   let lastCutAudioUrl = null;
+
+  let lastCutLyricsBlob = null;
+  let lastCutLyricsFile = null;
+  let lastCutLyricsFilename = '';
+  let lastCutLyricsText = '';
 
   function sliceBufferDirect(srcBuffer, startSec, endSec) {
     const ctx = audioEngine.ctx || new (window.AudioContext || window.webkitAudioContext)();
