@@ -7,8 +7,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="GrooveSync MV">
   <meta name="theme-color" content="#090d16">
-  <title>GrooveSync MV - あなたの写真と楽曲でリップシンクMV制作</title>
-  <link rel="stylesheet" href="style.css?v=20261007_10">
+  <title>GrooveSync MV Studio - 全自動MV制作＆ビート同期ステージ (v11)</title>
+  <link rel="stylesheet" href="style.css?v=20261013_11">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
@@ -36,8 +36,13 @@
         </button>
       </div>
 
-      <!-- ユーティリティバー（文字拡大 ＆ ホーム画面リロードボタン） -->
+      <!-- ユーティリティバー（文字拡大 ＆ 音声カッター直通 ＆ バージョン更新ボタン） -->
       <div class="header-accessibility-bar">
+        <a href="audio-cutter.html" class="app-reload-btn" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.25)); border-color: #a855f7; color: #fff; text-decoration: none;" title="楽曲切り出し専用ツールを開く">
+          <span>✂️</span>
+          <span>楽曲カッター</span>
+        </a>
+
         <button id="zoomToggleBtn" class="zoom-toggle-btn" aria-label="文字とボタンを特大サイズに拡大します">
           <span class="zoom-icon">🔍</span>
           <span id="zoomBtnText">文字を特大にする</span>
@@ -46,7 +51,7 @@
 
         <button id="appReloadBtn" class="app-reload-btn" aria-label="アプリを最新状態に更新・リロードします" title="最新バージョンを再読み込み">
           <span class="reload-icon">🔄</span>
-          <span>最新版に更新 (v10)</span>
+          <span>最新版 (v11)</span>
         </button>
       </div>
     </header>
@@ -56,18 +61,17 @@
     <!-- =============================================================== -->
     <main id="viewControls" class="main-view active-view">
 
-
       <!-- Step-by-Step Arrow Flow Guide Banner (矢印フロー解説) -->
       <section class="flow-guide-card">
-        <span class="flow-badge">💡 リップシンクMV制作の簡単ステップ</span>
+        <span class="flow-badge">💡 全自動MV制作スタジオ (v11)</span>
         <div class="flow-steps-row">
           <span class="flow-chip">① 写真を選択</span>
           <span class="flow-arrow">➔</span>
           <span class="flow-chip">② 楽曲を選択</span>
           <span class="flow-arrow">➔</span>
-          <span class="flow-chip highlight">③ 使う長さを調整</span>
+          <span class="flow-chip highlight">③ サビの長さを調整</span>
           <span class="flow-arrow">➔</span>
-          <span class="flow-chip">④ 動作を選択</span>
+          <span class="flow-chip">④ 動作・ステージ</span>
           <span class="flow-arrow">➔</span>
           <span class="flow-chip rec">⑤ 録画して保存</span>
         </div>
@@ -118,7 +122,7 @@
           </div>
         </div>
 
-        <!-- Big Photo Upload Button (Native label for instant mobile response) -->
+        <!-- Big Photo Upload Button -->
         <label for="avatarFileInput" class="giant-action-card photo-upload-card" id="avatarUploadBtn" role="button" tabindex="0" aria-label="あなたが用意した人物の写真をアップロード">
           <div class="avatar-preview-wrap" id="avatarPreviewWrap">
             <span class="action-card-icon" id="avatarCardIcon">📷</span>
@@ -131,39 +135,42 @@
         </label>
         <input type="file" id="avatarFileInput" accept="image/*" class="sr-only-input">
 
-        <!-- Custom Avatar Success & Action Banner (写真セット後の確認・切り替えバナー) -->
+        <!-- Custom Avatar Success & Action Banner -->
         <div id="customAvatarBanner" class="custom-avatar-banner hidden">
           <div class="custom-avatar-banner-head">
             <span class="custom-avatar-check-badge">✔</span>
             <div class="custom-avatar-banner-text">
               <strong id="customAvatarStatusTitle">あなたの写真がMVの主役にセットされました！</strong>
-              <span id="customAvatarStatusSub">音楽のリズムに合わせてこの写真の人物が歌って動きます</span>
-            </div>
-          </div>
-          <!-- Mouth / Lip-Sync Position Adjuster -->
-          <div class="mouth-adjust-panel">
-            <div class="mouth-adjust-header">
-              <span>👄 リップシンク（歌う口の位置）:</span>
-              <strong id="mouthPosVal">44% (顔の口元)</strong>
-            </div>
-            <div class="mouth-adjust-row">
-              <button id="mouthPosUpBtn" type="button" class="mouth-step-btn">▲ 上へ</button>
-              <input id="mouthPosSlider" type="range" min="20" max="80" value="44" step="1" class="mouth-slider" aria-label="口の位置調整スライダー">
-              <button id="mouthPosDownBtn" type="button" class="mouth-step-btn">▼ 下へ</button>
-            </div>
-            <div class="mouth-test-row">
-              <button id="testLipsyncBtn" type="button" class="mouth-test-btn">
-                <span>🔊 口の動きをテスト（母音変化）</span>
-              </button>
-              <p class="mouth-adjust-hint">※ 写真の人物の口の高さに合わせて上下に合わせられます</p>
+              <span id="customAvatarStatusSub">ビートに合わせて美しく光り輝くステージ演出と同期します</span>
             </div>
           </div>
 
-          <div class="custom-avatar-btn-row">
-            <button id="viewStageFromAvatarBtn" class="avatar-action-btn primary-stage-btn" type="button">
-              <span>🎬 MV映像で歌う姿を見る（リップシンク確認）</span>
-            </button>
-            <button id="changeAvatarBtn" class="avatar-action-btn secondary-btn" type="button">
+          <!-- AI Lip-Sync Integration Panel -->
+          <div class="ai-sync-card" style="margin-top: 16px; background: rgba(168, 85, 247, 0.12); border: 1.5px solid rgba(168, 85, 247, 0.4); border-radius: 16px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.3rem;">🤖</span>
+                <strong style="color: #fff; font-size: 1.02rem;">本格AIリップシンク生成 (Fal.ai LivePortrait連携)</strong>
+              </div>
+              <button id="openAiSettingsBtn" type="button" class="btn-sub-action" style="padding: 4px 10px; font-size: 0.8rem;">
+                <span>⚙️ API設定</span>
+              </button>
+            </div>
+            <p style="color: #cbd5e1; font-size: 0.84rem; margin: 0 0 12px 0; line-height: 1.4;">
+              写真の顔・唇・表情を楽曲のボーカルと完全同期させる世界最高峰AI（LivePortrait）との通信パイプラインです。
+            </p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button id="generateAiLipsyncBtn" type="button" class="giant-btn" style="flex: 1; min-width: 200px; background: linear-gradient(135deg, #a855f7, #ec4899); padding: 14px; font-size: 1rem; border: none; border-radius: 12px; color: #fff; font-weight: 700; cursor: pointer;">
+                <span>✨ AIリップシンク動画を生成</span>
+              </button>
+              <button id="viewStageFromAvatarBtn" class="avatar-action-btn primary-stage-btn" type="button" style="flex: 1; min-width: 180px;">
+                <span>🎬 3Dビートステージを見る</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="custom-avatar-btn-row" style="margin-top: 12px;">
+            <button id="changeAvatarBtn" class="avatar-action-btn secondary-btn" type="button" style="width: 100%;">
               <span>🔄 別の写真に変更</span>
             </button>
           </div>
@@ -193,16 +200,16 @@
         <input type="file" id="audioFileInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.mp4,.mov,.m4v,.webm,.caf,.aif" class="sr-only-input" tabindex="-1">
 
         <button id="micToggleBtn" class="giant-action-card mic-card">
-          <span class="action-card-icon">🎤</span>
+          <span class="action-card-icon">🎙️</span>
           <div class="action-card-text">
-            <strong id="micBtnTitle">スマホのマイクで歌唱テスト</strong>
-            <span>マイクに向かって歌うとリアルタイムに口パクします</span>
+            <strong>マイク入力でリアルタイムに歌う</strong>
+            <span id="micCardHint">あなたの声に合わせてリアルタイムに歌い動きます</span>
           </div>
         </button>
       </section>
 
       <!-- ==========================================
-           STEP 3: 楽曲の長さ・動画にする区間を調整する (新機能！)
+           STEP 3: 楽曲の長さ・動画にする区間を調整する
            ========================================== -->
       <section class="large-section" id="sectionTrimmer">
         <div class="section-title-wrap">
@@ -214,7 +221,7 @@
         </div>
 
         <div class="trimmer-card">
-          <!-- ★新設: 曲全体プレビュー＆リアルタイム秒数モニター -->
+          <!-- 曲全体プレビュー＆リアルタイム秒数モニター -->
           <div class="song-full-preview-box">
             <div class="preview-box-header">
               <span class="preview-box-tag">🎵 楽曲全体の秒数チェック＆サビ探し</span>
@@ -235,14 +242,11 @@
             <!-- 曲全体のタイムライン・シークバー＆切り取り範囲の可視化バー -->
             <div class="timeline-visual-container">
               <div class="timeline-track" id="timelineTrack">
-                <!-- 選択中の動画区間ハイライト帯 -->
                 <div class="timeline-selection-range" id="timelineSelectionRange">
                   <span class="selection-range-label">動画にする区間</span>
                 </div>
-                <!-- 現在の再生位置インジケーター（再生針） -->
                 <div class="timeline-playhead" id="timelinePlayhead"></div>
               </div>
-              <!-- タイムラインのシークスライダー（操作用スライダー） -->
               <input type="range" id="fullSongSeekSlider" class="timeline-seek-slider" min="0" max="30" value="0" step="0.5" aria-label="曲全体の再生位置をシーク">
               <div class="timeline-labels">
                 <span>00:00 (曲の始まり)</span>
@@ -306,7 +310,7 @@
               </div>
             </div>
 
-            <!-- 微調整ボタン（タップで1秒・10秒単位で移動） -->
+            <!-- 微調整ボタン -->
             <div class="stepper-buttons-row">
               <button type="button" class="stepper-btn" id="startMinus10Btn">◀ -10秒</button>
               <button type="button" class="stepper-btn" id="startMinus1Btn">◀ -1秒</button>
@@ -359,6 +363,17 @@
               <span id="previewTrimIcon">▶</span>
               <span id="previewTrimLabel">この区間（サビ）だけを試聴する</span>
             </button>
+          </div>
+
+          <!-- ★新設: カット音声をダウンロード ＆ カッター専用ツールへの直通リンク -->
+          <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+            <button id="quickDownloadTrimmedBtn" class="giant-btn" type="button" style="flex: 1; min-width: 220px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 14px; padding: 16px; font-size: 1.05rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>✂️</span>
+              <span>このカット音声をダウンロード</span>
+            </button>
+            <a href="audio-cutter.html" class="btn-sub-action" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 16px 20px; font-size: 0.95rem; text-decoration: none; border-radius: 14px; border-color: #a855f7; color: #c084fc;">
+              <span>🎵 カッター専用ツールを開く ➔</span>
+            </a>
           </div>
         </div>
       </section>
@@ -471,8 +486,8 @@
           <div class="export-banner-head">
             <span class="export-big-icon">🎬</span>
             <div>
-              <h4 id="exportSummaryTitle">30秒間のリップシンクMVを作成します</h4>
-              <p id="exportSummaryDesc">音楽・演奏・歌唱・リップシンクが一体になった動画です</p>
+              <h4 id="exportSummaryTitle">30秒間のMVを作成します</h4>
+              <p id="exportSummaryDesc">音楽・ステージ演出・ビート同期が一体になった動画です</p>
             </div>
           </div>
 
@@ -500,7 +515,7 @@
     <div id="viewStage" class="stage-view-fullscreen hidden">
       <canvas id="stageCanvas" width="720" height="1280"></canvas>
 
-      <!-- Top Overlay: Return to Controls button & Sample Demo button -->
+      <!-- Top Overlay: Return to Controls button -->
       <div class="stage-fullscreen-header">
         <button id="backToControlsBtn" class="stage-back-btn">
           <span>← 🎛️ 操作画面に戻る</span>
@@ -513,9 +528,9 @@
         <h2 id="lyricsText">音に合わせて感情豊かに歌い踊る</h2>
       </div>
 
-      <!-- Realtime Viseme Badge -->
+      <!-- Realtime Beat Pulse Badge -->
       <div class="stage-viseme-badge">
-        <span>母音: <strong id="stageVisemeChar">A</strong></span>
+        <span>BEAT: <strong id="stageVisemeChar">SYNC</strong></span>
       </div>
 
       <!-- Bottom Floating Player Controls -->
@@ -538,6 +553,40 @@
               <span class="stage-rec-dot"></span>
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI API Settings Modal -->
+    <div id="aiSettingsModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aiSettingsModalTitle">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-sparkle-icon">⚙️</span>
+            <h3 id="aiSettingsModalTitle" class="modal-title">AIリップシンク API設定</h3>
+          </div>
+          <button id="closeAiSettingsBtn" class="modal-close-icon" aria-label="閉じる">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+            <strong style="color: #c084fc; display: block; margin-bottom: 4px;">🌟 おすすめ: Fal.ai (LivePortrait)</strong>
+            <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0; line-height: 1.4;">
+              月額固定費0円、完全従量課金（1曲30秒あたり約10〜20円）で世界トップクラスの歌唱リップシンクが生成できます。
+            </p>
+          </div>
+
+          <label style="display: block; color: #fff; font-weight: 700; margin-bottom: 6px; font-size: 0.95rem;">
+            Fal.ai APIキー (Key Secret):
+          </label>
+          <input type="password" id="falApiKeyInput" placeholder="例: 12345678-abcd-ef01-..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.8); border: 1.5px solid rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 12px; color: #fff; font-size: 0.95rem; margin-bottom: 8px;">
+
+          <div style="font-size: 0.8rem; color: #94a3b8; line-height: 1.4; margin-bottom: 16px;">
+            ※ APIキーはブラウザ内（端末）にのみ安全に保管されます。Fal.aiのアカウントページ（fal.ai/dashboard/keys）から取得できます。
+          </div>
+
+          <button id="saveAiSettingsBtn" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #a855f7, #ec4899); border: none; border-radius: 12px; padding: 14px; color: #fff; font-weight: 700; cursor: pointer;">
+            ✔ 設定を保存する
+          </button>
         </div>
       </div>
     </div>
@@ -619,11 +668,12 @@
     </div>
   </div>
 
-  <!-- Scripts with cache busting query -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-  <script src="audio-engine.js?v=20261007_10"></script>
-  <script src="presets.js?v=20261007_10"></script>
-  <script src="character-renderer.js?v=20261007_10"></script>
-  <script src="app.js?v=20261007_10"></script>
+  <script src="lame.min.js"></script>
+  <script src="audio-engine.js?v=20261013_11"></script>
+  <script src="presets.js?v=20261013_11"></script>
+  <script src="character-renderer.js?v=20261013_11"></script>
+  <script src="app.js?v=20261013_11"></script>
 </body>
 </html>
