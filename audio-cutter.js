@@ -101,12 +101,21 @@
   const modalAudioPreview = document.getElementById('modalAudioPreview');
   const audioShareBtn = document.getElementById('audioShareBtn');
   const audioDirectDownloadBtn = document.getElementById('audioDirectDownloadBtn');
+  const lyricsDirectDownloadBtn = document.getElementById('lyricsDirectDownloadBtn');
+  const copyLyricsBtn = document.getElementById('copyLyricsBtn');
+  const modalLyricsCard = document.getElementById('modalLyricsCard');
+  const modalLyricsPreview = document.getElementById('modalLyricsPreview');
   const modalAudioDownloadLink = document.getElementById('modalAudioDownloadLink');
 
   let lastCutBlob = null;
   let lastCutFile = null;
   let lastCutFilename = '';
   let lastCutUrl = null;
+
+  let lastCutLyricsBlob = null;
+  let lastCutLyricsFile = null;
+  let lastCutLyricsFilename = '';
+  let lastCutLyricsText = '';
 
   // Helper: Format seconds to MM:SS
   function formatTime(seconds) {
