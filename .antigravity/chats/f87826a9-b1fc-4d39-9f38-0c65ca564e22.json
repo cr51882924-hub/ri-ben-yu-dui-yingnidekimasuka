@@ -1024,6 +1024,18 @@
       "created_at": "2026-10-13T22:22:51.857Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "92f381a7-3839-4cb7-a1be-f8ff1e5d2a59",
+      "role": "user",
+      "content": "なるほど！\nAPI繋げて構築していきましょう。\n\n確かAPI繋げた時に料金は使った分だけ、みたいな感じでしたっけ？",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-14T07:14:14.343Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
