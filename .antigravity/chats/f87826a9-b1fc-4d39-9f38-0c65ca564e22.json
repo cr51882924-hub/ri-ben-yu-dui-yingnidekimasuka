@@ -1156,6 +1156,18 @@
       "created_at": "2026-10-15T10:40:16.952Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "155cfbe1-2544-49a1-a121-1d6b145a94ec",
+      "role": "agent",
+      "content": "iPhoneの音声入力でお送りいただいた内容、バッチリ意味が伝わっていますのでご安心ください！（「A 11のA」＝ [v11-a.html](file:///home/agent/workspace/v11-a.html)、「空（SO R A）」＝ OpenAIの **Sora** のことですね）。\n\n---\n\n### 1. OpenAIの「Sora」はAPIなら続いているのか？\n\n**いいえ、おっしゃる通り「APIも含めて完全に終了」しています！** 鋭いご指摘ありがとうございます。\n\n* **一般向けサービス（Web / アプリ）**：2026年4月に終了\n* **開発者向け「Sora API」**：**2026年9月24日をもって完全に提供終了（閉鎖）**\n\nそのため、「サービスは終わったけれどAPIでは続いている」ということはなく、**現在はAPI経由でもSoraを使うことはできません**。[v11-a.html](file:///home/agent/workspace/v11-a.html)（[index.html](file:///home/agent/workspace/index.html)）の比較画面に、すでに終了したSoraを例として並べてしまっており失礼いたしました！\n\n---\n\n### 💡 実はこれが「v11-b（統合API）」をおすすめする最大の理由でもあります\n\n今回気づいていただいた「Soraのサービス終了」は、まさに **[v11-a.html](file:///home/agent/workspace/v11-a.html)（各社個別）と [v11-b.html](file:///home/agent/workspace/v11-b.html)（Fal.ai 統合API）の決定的な違い** に関わってきます。\n\n1. **🅰️ v11-a（各社公式APIを個別に繋ぐ方式）の弱点**\n   * 今回のOpenAI（Sora）のように、ある会社が動画AIから撤退・終了してしまうと、せっかく登録してチャージしたその会社のAPIが使えなくなってしまいます。\n   * 新しい動画AI（Runway や Luma、Kling など）を使いたくなった時も、また1から別会社のアカウント登録・課金設定をやり直す必要があります。\n2. **🅱️ v11-b（Fal.ai 統合API方式 ★おすすめ）の強み**\n   * **1つのAPIキー（共通のお財布）のまま**、その時点で一番性能が良い現役の動画AI（`Google Veo 2`、`Kling`、`Luma Ray 2`、`MiniMax` など）をボタン1つでいつでも切り替えられます。\n   * もし特定のAIモデルが終了しても、キーを取り直すことなく別の最新AIへすぐ乗り換えられます。\n\n---\n\n### 2. チャット欄のマイクマーク（音声入力）について\n\nチャット欄にあるマイクボタンは、環境によって英語認識に切り替わってしまうことがあるため、今やっていただいたように **iPhoneのキーボード左下にあるマイクマーク（iOS標準の音声入力）** を使って話しかけていただくのが一番確実です。\n多少の誤変換（「v11-a」が「A 11のA」になるなど）があっても文脈からしっかり読み取れますので、そのまま気軽にお話しください！\n\n---\n\n[v11-a.html](file:///home/agent/workspace/v11-a.html) 側のOpenAI（Sora）の枠は、紛らわしいため削除（または現在動いている別会社のAPIに変更）しておきましょうか？それとも、このまま本命の **v11-b（統合API版）** をベースに進めていきましょうか？",
+      "status": "completed",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "1f930624-8a80-4321-b805-d5ac914ca186",
+      "created_at": "2026-10-15T10:42:14.501Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
