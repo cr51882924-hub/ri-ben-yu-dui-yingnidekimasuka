@@ -33,7 +33,10 @@ class CharacterRenderer {
 
     // Custom user/sample photo avatar
     this.customAvatarImg = null;
-    this.aiVideoElement = null; // When AI lip-sync video is generated
+    this.aiVideoElement = null; // When AI video is loaded/generated
+    this.aiMotionActive = false; // Step 1 non-lipsync AI video motion mode
+    this.aiModelBadge = '';
+    this.aiPromptStyle = 'sway';
 
     // Simulation states
     this.time = 0;
