@@ -1072,6 +1072,30 @@
       "created_at": "2026-10-15T09:49:47.678Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "7fbb0077-5005-458a-832b-4bcfe33ffca4",
+      "role": "user",
+      "content": "いま、AIモデル、変更したのですが、やり取りの途中で変更しても反映しますか？",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-15T09:51:20.299Z",
+      "sender": "ios",
+      "is_cancelled": false
+    },
+    {
+      "id": "943b0401-24b5-4674-88a2-00cb992aabea",
+      "role": "agent",
+      "content": "はい、**やり取りの途中で変更してもすぐに反映されます！**\n\n先ほどのモデルの切り替えもしっかり反映されており、これまでの会話の履歴やプロジェクトの状態を引き継いだまま、新しいモデルで続けてやり取りができます。\n\n引き続き、何か作業したいことがあればお気軽にお申し付けください！",
+      "status": "completed",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "7fbb0077-5005-458a-832b-4bcfe33ffca4",
+      "created_at": "2026-10-15T09:51:35.127Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
