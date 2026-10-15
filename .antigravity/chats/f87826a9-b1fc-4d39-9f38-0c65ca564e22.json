@@ -1048,6 +1048,30 @@
       "created_at": "2026-10-14T07:16:01.958Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "491c83da-52e1-41f7-af55-1f2fa268a5b5",
+      "role": "user",
+      "content": "メッセージ見れていますか？",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-15T09:49:37.271Z",
+      "sender": "ios",
+      "is_cancelled": false
+    },
+    {
+      "id": "70f82a42-1c12-42bf-a8c4-98f163e4e4a3",
+      "role": "agent",
+      "content": "はい、メッセージをしっかり受信できております！問題なく見えています。\n\n何か実装したい機能や修正したい点などがあれば、何でもお気軽にお知らせください。",
+      "status": "completed",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "491c83da-52e1-41f7-af55-1f2fa268a5b5",
+      "created_at": "2026-10-15T09:49:47.678Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
