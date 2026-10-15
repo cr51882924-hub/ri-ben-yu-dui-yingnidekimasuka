@@ -324,12 +324,32 @@ class CharacterRenderer {
     let breathScale = 1.0;
     let bodyTilt = 0;
 
-    if (isPlaying) {
+    if (isPlaying || this.aiMotionActive) {
       const swayRate = (bpm / 60) * Math.PI * 0.75;
-      bodySwayX = Math.sin(this.time * swayRate) * 6.0;
-      smoothNodY = Math.sin(this.time * swayRate * 2) * 3.5 + (beatPulse * 4.0);
-      breathScale = 1.0 + Math.sin(this.time * 1.5) * 0.01 + (beatPulse * 0.02);
-      bodyTilt = bodySwayX / 550;
+      if (this.aiMotionActive) {
+        // Cinematic AI Video style motion (smooth 3D camera pan, parallax zoom, natural body groove)
+        if (this.aiPromptStyle === 'zoom') {
+          bodySwayX = Math.sin(this.time * 0.8) * 10.0;
+          smoothNodY = Math.cos(this.time * 0.6) * 6.0;
+          breathScale = 1.04 + Math.sin(this.time * 0.7) * 0.045 + (beatPulse * 0.02);
+          bodyTilt = Math.sin(this.time * 0.5) * 0.018;
+        } else if (this.aiPromptStyle === 'dynamic') {
+          bodySwayX = Math.sin(this.time * swayRate) * 14.0;
+          smoothNodY = Math.sin(this.time * swayRate * 2) * 7.0 + (beatPulse * 6.0);
+          breathScale = 1.02 + Math.sin(this.time * 1.8) * 0.025 + (beatPulse * 0.03);
+          bodyTilt = bodySwayX / 380;
+        } else {
+          bodySwayX = Math.sin(this.time * swayRate * 0.85) * 9.5;
+          smoothNodY = Math.sin(this.time * swayRate * 1.7) * 5.0 + (beatPulse * 4.5);
+          breathScale = 1.02 + Math.sin(this.time * 1.2) * 0.022 + (beatPulse * 0.022);
+          bodyTilt = bodySwayX / 450;
+        }
+      } else {
+        bodySwayX = Math.sin(this.time * swayRate) * 6.0;
+        smoothNodY = Math.sin(this.time * swayRate * 2) * 3.5 + (beatPulse * 4.0);
+        breathScale = 1.0 + Math.sin(this.time * 1.5) * 0.01 + (beatPulse * 0.02);
+        bodyTilt = bodySwayX / 550;
+      }
     } else {
       breathScale = 1.0 + Math.sin(this.time * 0.9) * 0.006;
     }
@@ -376,9 +396,11 @@ class CharacterRenderer {
 
     // Dynamic Beat Aura Glow Frame
     ctx.save();
-    ctx.strokeStyle = `rgba(168, 85, 247, ${0.4 + beatPulse * 0.5})`;
+    ctx.strokeStyle = this.aiMotionActive
+      ? `rgba(56, 189, 248, ${0.55 + beatPulse * 0.45})`
+      : `rgba(168, 85, 247, ${0.4 + beatPulse * 0.5})`;
     ctx.lineWidth = 2 + beatPulse * 3;
-    ctx.shadowColor = '#ec4899';
+    ctx.shadowColor = this.aiMotionActive ? '#06b6d4' : '#ec4899';
     ctx.shadowBlur = 15 + beatPulse * 20;
 
     // Rounded subtle border around the portrait area
@@ -389,6 +411,27 @@ class CharacterRenderer {
     ctx.restore();
 
     ctx.restore();
+
+    // If AI video mode is active, display sleek badge at top-right of stage
+    if (this.aiMotionActive && this.aiModelBadge) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+      ctx.lineWidth = 1.5;
+      const badgeW = 310;
+      const badgeH = 38;
+      const bx = (w - badgeW) / 2;
+      const by = h * 0.10;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, badgeW, badgeH, 19);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 15px "Noto Sans JP", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`🎬 AI動画モード: ${this.aiModelBadge}`, w / 2, by + 24);
+      ctx.restore();
+    }
   }
 
   // Draw AI Lip-Sync Generated Video
