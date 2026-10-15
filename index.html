@@ -647,51 +647,42 @@
       </div>
     </div>
 
-    <!-- AI API Settings Modal (Supports both v11-a & v11-b with persistent memory) -->
+    <!-- AI API Settings Modal (v11-b Fal.ai Unified API Key with persistent memory) -->
     <div id="aiSettingsModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aiSettingsModalTitle">
       <div class="modal-card">
         <div class="modal-header">
           <div class="modal-title-group">
             <span class="modal-sparkle-icon">🔑</span>
-            <h3 id="aiSettingsModalTitle" class="modal-title">APIキー登録・自動記憶設定</h3>
+            <h3 id="aiSettingsModalTitle" class="modal-title">Fal.ai 統合APIキー設定</h3>
           </div>
           <button id="closeAiSettingsBtn" class="modal-close-icon" aria-label="閉じる">✕</button>
         </div>
         <div class="modal-body">
-          <div style="background: rgba(16, 185, 129, 0.14); border: 1.5px solid rgba(16, 185, 129, 0.45); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
-            <strong style="color: #6ee7b7; display: block; margin-bottom: 4px; font-size: 0.92rem;">💡 都度入力は不要です！（初回1回のみ）</strong>
-            <p style="color: #e2e8f0; font-size: 0.82rem; margin: 0; line-height: 1.45;">
-              ここで一度入力して「保存」を押せば、お使いのスマホ（ブラウザ内）に安全に記憶されます。<strong>次回からは自動で読み込まれるため、毎回入力する必要はありません。</strong>
+          <div style="background: rgba(16, 185, 129, 0.16); border: 2px solid rgba(16, 185, 129, 0.55); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px;">
+            <strong style="color: #6ee7b7; display: block; margin-bottom: 6px; font-size: 1.05rem;">💡 初回1回だけ入力すればOK（自動記憶）</strong>
+            <p style="color: #f1f5f9; font-size: 0.95rem; margin: 0; line-height: 1.55;">
+              ここで一度キーを貼り付けて「保存」を押せば、お使いのiPhone（ブラウザ内）に安全に記憶されます。<strong>次回からは自動で読み込まれるため、毎回入力する必要はありません。</strong>
             </p>
           </div>
 
-          <!-- 🅱️ v11-b 用: Fal.ai 統合APIキー (1つで全モデル対応) -->
-          <div style="background: rgba(168, 85, 247, 0.12); border: 1.5px solid rgba(192, 132, 252, 0.45); border-radius: 12px; padding: 12px; margin-bottom: 14px;">
-            <strong style="color: #f0abfc; display: block; margin-bottom: 4px; font-size: 0.92rem;">🅱️ v11-b 用：Fal.ai 統合APIキー（★おすすめ）</strong>
-            <p style="color: #cbd5e1; font-size: 0.78rem; margin: 0 0 8px 0; line-height: 1.35;">
-              このキー1つだけで Kling / Google Veo 2 / Luma / MiniMax / リップシンク まで全モデルが使えます。
+          <!-- Fal.ai 統合APIキー (1つで全モデル対応) -->
+          <div style="background: rgba(168, 85, 247, 0.14); border: 2px solid rgba(192, 132, 252, 0.6); border-radius: 14px; padding: 16px; margin-bottom: 16px;">
+            <strong style="color: #f0abfc; display: block; margin-bottom: 6px; font-size: 1.05rem;">🔑 Fal.ai 統合APIキー（v11-b 共通キー）</strong>
+            <p style="color: #e2e8f0; font-size: 0.92rem; margin: 0 0 12px 0; line-height: 1.5;">
+              このキー1つだけで <strong>Kling 1.6 Pro / Google Veo 2 / Luma Ray 2 / MiniMax</strong> から、今後の<strong>リップシンクAI（ステップ3）</strong>まですべて切り替え利用できます。
             </p>
-            <input type="password" id="falApiKeyInput" placeholder="Fal.ai APIキー (例: key_id:key_secret)" style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(192, 132, 252, 0.45); border-radius: 10px; padding: 11px; color: #fff; font-size: 0.9rem;">
+            <input type="password" id="falApiKeyInput" placeholder="ここに Fal.ai APIキーを貼り付け" style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.95); border: 2px solid #c084fc; border-radius: 12px; padding: 15px; color: #fff; font-size: 1.05rem; margin-bottom: 10px;">
+            <div style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.45;">
+              ※ まだキーをお持ちでない場合は、下の「操作画面に戻る」を押して<strong>「🧪 0円おためし再生」</strong>でキーなしのまま動きを体験できます。
+            </div>
           </div>
 
-          <!-- 🅰️ v11-a 用: 各社公式APIキー (3社個別) -->
-          <div style="background: rgba(56, 189, 248, 0.08); border: 1.5px solid rgba(56, 189, 248, 0.35); border-radius: 12px; padding: 12px; margin-bottom: 14px;">
-            <strong style="color: #7dd3fc; display: block; margin-bottom: 4px; font-size: 0.92rem;">🅰️ v11-a 用：各社公式APIキー（3社個別）</strong>
-            <p style="color: #cbd5e1; font-size: 0.78rem; margin: 0 0 8px 0; line-height: 1.35;">
-              v11-a で各社を直接呼び出す場合は、使いたい会社のAPIキーをそれぞれ入力します。
-            </p>
-            <label style="display: block; color: #cbd5e1; font-size: 0.78rem; font-weight: 700; margin-bottom: 3px;">🔵 Google (Gemini / Veo APIキー):</label>
-            <input type="password" id="googleApiKeyInput" placeholder="AIzaSy..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 9px 10px; color: #fff; font-size: 0.85rem; margin-bottom: 8px;">
+          <button id="saveAiSettingsBtn" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #a855f7, #ec4899); border: 2px solid #f0abfc; border-radius: 14px; padding: 16px; font-size: 1.08rem; color: #fff; font-weight: 900; cursor: pointer; margin-bottom: 10px;">
+            ✔ キーをiPhoneに記憶・保存する
+          </button>
 
-            <label style="display: block; color: #cbd5e1; font-size: 0.78rem; font-weight: 700; margin-bottom: 3px;">⚫ xAI (Grok APIキー):</label>
-            <input type="password" id="xaiApiKeyInput" placeholder="xai-..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 9px 10px; color: #fff; font-size: 0.85rem; margin-bottom: 8px;">
-
-            <label style="display: block; color: #cbd5e1; font-size: 0.78rem; font-weight: 700; margin-bottom: 3px;">🟢 OpenAI (Sora / OpenAI APIキー):</label>
-            <input type="password" id="openaiApiKeyInput" placeholder="sk-..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 9px 10px; color: #fff; font-size: 0.85rem;">
-          </div>
-
-          <button id="saveAiSettingsBtn" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #a855f7, #ec4899); border: none; border-radius: 12px; padding: 14px; color: #fff; font-weight: 800; cursor: pointer;">
-            ✔ キーを端末に記憶・保存する（次回から入力不要）
+          <button id="closeAiSettingsBottomBtn" type="button" class="modal-btn-sub" style="width: 100%; padding: 14px; font-size: 1rem;">
+            <span>閉じる（操作画面に戻る）</span>
           </button>
         </div>
       </div>
