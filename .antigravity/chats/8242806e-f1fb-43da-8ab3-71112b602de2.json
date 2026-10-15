@@ -1,0 +1,21 @@
+{
+  "sessionId": "8242806e-f1fb-43da-8ab3-71112b602de2",
+  "name": "前のチャットからの引き継ぎです。 ワークスペース内の `HANDOVER.md` を読んで、これまでの経緯と仕様をすべて把握してください。 【重要ルールと現在の決定事項】 1.",
+  "createdAt": "2026-10-15T13:29:08.759Z",
+  "filename": "8242806e-f1fb-43da-8ab3-71112b602de2.json",
+  "geminiStarted": false,
+  "messages": [
+    {
+      "id": "55629ddd-8f8a-45e5-924c-42fe314eb6f7",
+      "role": "user",
+      "content": "前のチャットからの引き継ぎです。\nワークスペース内の `HANDOVER.md` を読んで、これまでの経緯と仕様をすべて把握してください。\n\n【重要ルールと現在の決定事項】\n1. 私はiPhoneから操作しており、視力への配慮が必要なため、アプリの画面は「特大文字・大きなボタン・画面いっぱいでスクロールしやすいUI」を維持してください。\n2. チャットはiPhoneの音声入力を使うことがあるため、多少の誤変換は文脈から汲み取ってください。\n3. AI動画生成は【v11-b（Fal.ai 統合API方式）】で進めることに決定しました（v11-aの個別API方式や終了したSoraは不要です）。\n4. 段階的ステップの【ステップ1：リップシンクなしのAI動画生成（v11-b）】をメイン画面（index.html）に一本化して整理し、次の進め方を案内してください。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-15T13:29:09.334Z",
+      "sender": "ios",
+      "is_cancelled": false
+    }
+  ]
+}
