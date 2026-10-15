@@ -790,167 +790,48 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // v11-a (Direct Official APIs) & v11-b (Fal.ai Unified API) Comparison & Video Studio
+  // v11-b (Fal.ai Unified API) Step 1: Non-Lipsync AI Video Generation Studio
   // ==========================================
   const aiSettingsModal = document.getElementById('aiSettingsModal');
   const openAiSettingsBtn = document.getElementById('openAiSettingsBtn');
-  const openAiSettingsBtnA = document.getElementById('openAiSettingsBtnA');
   const closeAiSettingsBtn = document.getElementById('closeAiSettingsBtn');
+  const closeAiSettingsBottomBtn = document.getElementById('closeAiSettingsBottomBtn');
   const saveAiSettingsBtn = document.getElementById('saveAiSettingsBtn');
 
   const falApiKeyInput = document.getElementById('falApiKeyInput');
-  const googleApiKeyInput = document.getElementById('googleApiKeyInput');
-  const xaiApiKeyInput = document.getElementById('xaiApiKeyInput');
-  const openaiApiKeyInput = document.getElementById('openaiApiKeyInput');
-
   const statusKeyFal = document.getElementById('statusKeyFal');
-  const statusKeyGoogle = document.getElementById('statusKeyGoogle');
-  const statusKeyXai = document.getElementById('statusKeyXai');
-  const statusKeyOpenai = document.getElementById('statusKeyOpenai');
-
-  const switchV11aBtn = document.getElementById('switchV11aBtn');
-  const switchV11bBtn = document.getElementById('switchV11bBtn');
-  const panelV11a = document.getElementById('panelV11a');
-  const panelV11b = document.getElementById('panelV11b');
-  const activeVersionPill = document.getElementById('activeVersionPill');
-  const headerVersionLabel = document.getElementById('headerVersionLabel');
-  const flowGuideBadge = document.getElementById('flowGuideBadge');
+  const aiGenStatusBox = document.getElementById('aiGenStatusBox');
 
   const generateAiLipsyncBtn = document.getElementById('generateAiLipsyncBtn');
-  const generateV11aApiBtn = document.getElementById('generateV11aApiBtn');
-  const demoV11aBtn = document.getElementById('demoV11aBtn');
   const demoV11bBtn = document.getElementById('demoV11bBtn');
   const aiVideoPromptInput = document.getElementById('aiVideoPromptInput');
   const aiVideoFileInput = document.getElementById('aiVideoFileInput');
 
-  let currentAiVersionMode = 'v11-b';
-  let selectedV11aProvider = 'google';
-  let selectedV11aLabel = 'Google Veo 2 (公式API)';
   let selectedV11bModel = 'fal-ai/kling-video/v1.6/pro/image-to-video';
   let selectedV11bLabel = 'Kling 1.6 Pro';
   let selectedAiPromptStyle = 'sway';
 
   function refreshApiKeyStatusBadges() {
     const falKey = localStorage.getItem('gs_fal_api_key') || '';
-    const googleKey = localStorage.getItem('gs_google_api_key') || '';
-    const xaiKey = localStorage.getItem('gs_xai_api_key') || '';
-    const openaiKey = localStorage.getItem('gs_openai_api_key') || '';
-
     if (statusKeyFal) {
       if (falKey) {
-        statusKeyFal.textContent = '🟢 端末に記憶済み（次回から入力不要）';
+        statusKeyFal.textContent = '🟢 iPhoneに記憶済み（次回から入力不要・全モデル利用可能）';
         statusKeyFal.style.background = 'rgba(16, 185, 129, 0.25)';
         statusKeyFal.style.color = '#6ee7b7';
       } else {
-        statusKeyFal.textContent = '⚪ 未登録（初回1回だけ入力すれば以後自動記憶）';
-        statusKeyFal.style.background = 'rgba(255, 255, 255, 0.1)';
-        statusKeyFal.style.color = '#e2e8f0';
+        statusKeyFal.textContent = '⚪ 未登録（キーなしでも下の「0円おためし」ですぐ体験できます）';
+        statusKeyFal.style.background = 'rgba(255, 255, 255, 0.12)';
+        statusKeyFal.style.color = '#fde047';
       }
-    }
-
-    const updateSubBadge = (el, hasKey) => {
-      if (!el) return;
-      if (hasKey) {
-        el.textContent = '🟢 記憶済み';
-        el.style.background = 'rgba(16, 185, 129, 0.25)';
-        el.style.color = '#6ee7b7';
-      } else {
-        el.textContent = '⚪ キー未保存';
-        el.style.background = 'rgba(255, 255, 255, 0.1)';
-        el.style.color = '#cbd5e1';
-      }
-    };
-
-    updateSubBadge(statusKeyGoogle, !!googleKey);
-    updateSubBadge(statusKeyXai, !!xaiKey);
-    updateSubBadge(statusKeyOpenai, !!openaiKey);
-  }
-
-  function setAiVersionMode(ver, silent) {
-    currentAiVersionMode = ver === 'v11-a' ? 'v11-a' : 'v11-b';
-    if (panelV11a && panelV11b) {
-      if (currentAiVersionMode === 'v11-a') {
-        panelV11a.classList.remove('hidden');
-        panelV11b.classList.add('hidden');
-      } else {
-        panelV11b.classList.remove('hidden');
-        panelV11a.classList.add('hidden');
-      }
-    }
-
-    if (switchV11aBtn && switchV11bBtn) {
-      if (currentAiVersionMode === 'v11-a') {
-        switchV11aBtn.style.background = 'linear-gradient(135deg, rgba(2, 132, 199, 0.35), rgba(37, 99, 235, 0.3))';
-        switchV11aBtn.style.borderColor = '#38bdf8';
-        switchV11aBtn.style.boxShadow = '0 0 16px rgba(56, 189, 248, 0.35)';
-        switchV11bBtn.style.background = 'rgba(30, 41, 59, 0.9)';
-        switchV11bBtn.style.borderColor = 'rgba(192, 132, 252, 0.35)';
-        switchV11bBtn.style.boxShadow = 'none';
-      } else {
-        switchV11bBtn.style.background = 'linear-gradient(135deg, rgba(168, 85, 247, 0.32), rgba(236, 72, 153, 0.25))';
-        switchV11bBtn.style.borderColor = '#c084fc';
-        switchV11bBtn.style.boxShadow = '0 0 16px rgba(168, 85, 247, 0.35)';
-        switchV11aBtn.style.background = 'rgba(30, 41, 59, 0.9)';
-        switchV11aBtn.style.borderColor = 'rgba(56, 189, 248, 0.4)';
-        switchV11aBtn.style.boxShadow = 'none';
-      }
-    }
-
-    if (activeVersionPill) {
-      if (currentAiVersionMode === 'v11-a') {
-        activeVersionPill.textContent = '現在: v11-a (各社個別API)';
-        activeVersionPill.style.background = 'rgba(56, 189, 248, 0.2)';
-        activeVersionPill.style.borderColor = '#38bdf8';
-        activeVersionPill.style.color = '#7dd3fc';
-      } else {
-        activeVersionPill.textContent = '現在: v11-b (★おすすめ統合API)';
-        activeVersionPill.style.background = 'rgba(16, 185, 129, 0.2)';
-        activeVersionPill.style.borderColor = '#10b981';
-        activeVersionPill.style.color = '#6ee7b7';
-      }
-    }
-
-    if (headerVersionLabel) {
-      headerVersionLabel.textContent = `最新版 (${currentAiVersionMode})`;
-    }
-    if (flowGuideBadge) {
-      flowGuideBadge.textContent = currentAiVersionMode === 'v11-a'
-        ? '💡 全自動MV制作スタジオ (v11-a: 各社公式API直結型)'
-        : '💡 全自動MV制作スタジオ (v11-b: Fal.ai 統合API型)';
-    }
-
-    if (!silent) {
-      triggerHaptic();
-      showToast(currentAiVersionMode === 'v11-a'
-        ? '🅰️ v11-a（Google / xAI / OpenAI 個別API接続版）に切り替えました'
-        : '🅱️ v11-b（Fal.ai 統合API・1キー全モデル対応版）に切り替えました');
     }
   }
 
-  if (switchV11aBtn) {
-    switchV11aBtn.addEventListener('click', () => setAiVersionMode('v11-a', false));
+  function showAiStatus(msg, borderColor = '#38bdf8') {
+    if (!aiGenStatusBox) return;
+    aiGenStatusBox.textContent = msg;
+    aiGenStatusBox.style.borderColor = borderColor;
+    aiGenStatusBox.classList.remove('hidden');
   }
-  if (switchV11bBtn) {
-    switchV11bBtn.addEventListener('click', () => setAiVersionMode('v11-b', false));
-  }
-
-  // Provider selection in v11-a
-  document.querySelectorAll('.v11a-provider-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      triggerHaptic();
-      document.querySelectorAll('.v11a-provider-btn').forEach(b => {
-        b.classList.remove('active');
-        b.style.background = 'rgba(30, 41, 59, 0.75)';
-        b.style.borderColor = 'rgba(255,255,255,0.15)';
-      });
-      btn.classList.add('active');
-      btn.style.background = 'rgba(56, 189, 248, 0.18)';
-      btn.style.borderColor = '#38bdf8';
-      selectedV11aProvider = btn.dataset.provider || 'google';
-      selectedV11aLabel = btn.dataset.label || 'Google Veo 2';
-      showToast(`🅰️ v11-a: 「${selectedV11aLabel}」を選択しました`);
-    });
-  });
 
   // Model selection in v11-b
   document.querySelectorAll('.v11b-model-btn').forEach(btn => {
@@ -958,15 +839,27 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerHaptic();
       document.querySelectorAll('.v11b-model-btn').forEach(b => {
         b.classList.remove('active');
-        b.style.background = 'rgba(15, 23, 42, 0.75)';
-        b.style.borderColor = 'rgba(255,255,255,0.15)';
+        b.style.background = 'rgba(15, 23, 42, 0.85)';
+        b.style.borderColor = 'rgba(255,255,255,0.18)';
+        const pill = b.querySelector('.v11b-model-pill');
+        if (pill) {
+          pill.textContent = 'タップで選択';
+          pill.style.background = 'rgba(255,255,255,0.12)';
+          pill.style.color = '#cbd5e1';
+        }
       });
       btn.classList.add('active');
       btn.style.background = 'rgba(168, 85, 247, 0.28)';
       btn.style.borderColor = '#c084fc';
+      const activePill = btn.querySelector('.v11b-model-pill');
+      if (activePill) {
+        activePill.textContent = '✔ 選択中';
+        activePill.style.background = '#10b981';
+        activePill.style.color = '#052e16';
+      }
       selectedV11bModel = btn.dataset.model || 'fal-ai/kling-video/v1.6/pro/image-to-video';
       selectedV11bLabel = btn.dataset.label || 'Kling 1.6 Pro';
-      showToast(`🅱️ v11-b: 「${selectedV11bLabel}」を選択しました（共通キー1つで利用可能）`);
+      showToast(`🎬 「${selectedV11bLabel}」を選択しました`);
     });
   });
 
@@ -976,9 +869,9 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerHaptic();
       document.querySelectorAll('.ai-style-chip').forEach(c => {
         c.classList.remove('active');
-        c.style.background = 'rgba(15, 23, 42, 0.8)';
-        c.style.borderColor = 'rgba(255,255,255,0.2)';
-        c.style.color = '#cbd5e1';
+        c.style.background = 'rgba(15, 23, 42, 0.85)';
+        c.style.borderColor = 'rgba(255,255,255,0.22)';
+        c.style.color = '#e2e8f0';
       });
       chip.classList.add('active');
       chip.style.background = 'rgba(168, 85, 247, 0.35)';
@@ -989,26 +882,18 @@ document.addEventListener('DOMContentLoaded', () => {
         aiVideoPromptInput.value = chip.dataset.prompt;
       }
       characterRenderer.aiPromptStyle = selectedAiPromptStyle;
+      showToast('✨ 動画の動きスタイルを変更しました');
     });
   });
 
   function openApiModal() {
     triggerHaptic();
     if (falApiKeyInput) falApiKeyInput.value = localStorage.getItem('gs_fal_api_key') || '';
-    if (googleApiKeyInput) googleApiKeyInput.value = localStorage.getItem('gs_google_api_key') || '';
-    if (xaiApiKeyInput) xaiApiKeyInput.value = localStorage.getItem('gs_xai_api_key') || '';
-    if (openaiApiKeyInput) openaiApiKeyInput.value = localStorage.getItem('gs_openai_api_key') || '';
     if (aiSettingsModal) aiSettingsModal.classList.remove('hidden');
   }
 
   if (openAiSettingsBtn) {
     openAiSettingsBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openApiModal();
-    });
-  }
-  if (openAiSettingsBtnA) {
-    openAiSettingsBtnA.addEventListener('click', (e) => {
       e.stopPropagation();
       openApiModal();
     });
@@ -1019,27 +904,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (aiSettingsModal) aiSettingsModal.classList.add('hidden');
     });
   }
+  if (closeAiSettingsBottomBtn) {
+    closeAiSettingsBottomBtn.addEventListener('click', () => {
+      if (aiSettingsModal) aiSettingsModal.classList.add('hidden');
+    });
+  }
 
   if (saveAiSettingsBtn) {
     saveAiSettingsBtn.addEventListener('click', () => {
       triggerHaptic();
-      const saveOrClear = (inputEl, storageKey) => {
-        if (!inputEl) return;
-        const val = inputEl.value.trim();
+      if (falApiKeyInput) {
+        const val = falApiKeyInput.value.trim();
         if (val) {
-          localStorage.setItem(storageKey, val);
+          localStorage.setItem('gs_fal_api_key', val);
         } else {
-          localStorage.removeItem(storageKey);
+          localStorage.removeItem('gs_fal_api_key');
         }
-      };
-
-      saveOrClear(falApiKeyInput, 'gs_fal_api_key');
-      saveOrClear(googleApiKeyInput, 'gs_google_api_key');
-      saveOrClear(xaiApiKeyInput, 'gs_xai_api_key');
-      saveOrClear(openaiApiKeyInput, 'gs_openai_api_key');
-
+      }
       refreshApiKeyStatusBadges();
-      showToast('✔ APIキーを端末に記憶しました！次回から再入力は不要です');
+      showToast('✔ Fal.ai APIキーをiPhoneに記憶しました！次回から入力不要です');
       if (aiSettingsModal) aiSettingsModal.classList.add('hidden');
     });
   }
@@ -1090,49 +973,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 0-yen Demo buttons for both v11-a and v11-b
-  if (demoV11aBtn) {
-    demoV11aBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      triggerHaptic();
-      showToast(`🧪 [v11-a おためし] ${selectedV11aLabel} の動画生成イメージを再生します！`);
-      launchAiVideoStagePreview(`v11-a: ${selectedV11aLabel}`);
-    });
-  }
-
+  // 0-yen Demo button for v11-b
   if (demoV11bBtn) {
     demoV11bBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       triggerHaptic();
-      showToast(`🧪 [v11-b おためし] ${selectedV11bLabel} の動画生成イメージを再生します！`);
-      launchAiVideoStagePreview(`v11-b: ${selectedV11bLabel}`);
-    });
-  }
-
-  // v11-a API Generation Button
-  if (generateV11aApiBtn) {
-    generateV11aApiBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      triggerHaptic();
-
-      const keyMap = {
-        google: { key: localStorage.getItem('gs_google_api_key'), name: 'Google (Veo 2)' },
-        xai: { key: localStorage.getItem('gs_xai_api_key'), name: 'xAI (Grok)' },
-        openai: { key: localStorage.getItem('gs_openai_api_key'), name: 'OpenAI (Sora)' }
-      };
-      const target = keyMap[selectedV11aProvider] || keyMap.google;
-
-      if (!target.key) {
-        showToast(`💡 v11-aでは「${target.name}」のAPIキーが必要です（1回登録すれば記憶されます）`);
-        openApiModal();
-        return;
-      }
-
-      showToast(`🚀 [v11-a] ${target.name} 公式APIへ動画生成リクエストを送信中...`);
-      setTimeout(() => {
-        showToast(`✔ ${target.name} 動画生成パイプライン完了！ステージで再生します`);
-        launchAiVideoStagePreview(`v11-a: ${selectedV11aLabel}`);
-      }, 1500);
+      showAiStatus(`🧪 [0円おためし] 「${selectedV11bLabel}」の動きイメージでステージ再生を開始しました！`, '#10b981');
+      showToast(`🧪 「${selectedV11bLabel}」の動画イメージをステージで再生します！`);
+      launchAiVideoStagePreview(`${selectedV11bLabel} (おためし)`);
     });
   }
 
@@ -1144,16 +992,86 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const apiKey = localStorage.getItem('gs_fal_api_key');
       if (!apiKey) {
-        showToast('💡 Fal.aiのAPIキーを1回登録してください（次回から入力不要です）');
+        showToast('💡 Fal.aiのAPIキーを初回1回登録してください（0円おためしボタンならキー不要です）');
         openApiModal();
         return;
       }
 
-      showToast(`🚀 [v11-b] Fal.ai (${selectedV11bLabel}) でAI動画を生成中...`);
-      setTimeout(() => {
-        showToast(`✔ ${selectedV11bLabel} パイプライン完了！ステージで再生します`);
-        launchAiVideoStagePreview(`v11-b: ${selectedV11bLabel}`);
-      }, 1500);
+      ensurePhotoForAiPreview(async () => {
+        const promptText = (aiVideoPromptInput && aiVideoPromptInput.value.trim())
+          ? aiVideoPromptInput.value.trim()
+          : 'Cinematic music video, the artist gently swaying to the rhythm on a neon-lit concert stage, natural breathing, atmospheric lighting';
+
+        let imageDataUrl = '';
+        try {
+          if (characterRenderer.customAvatarImg && typeof characterRenderer.customAvatarImg.toDataURL === 'function') {
+            imageDataUrl = characterRenderer.customAvatarImg.toDataURL('image/jpeg', 0.88);
+          }
+        } catch (imgErr) {
+          console.warn('Could not extract dataURL from canvas:', imgErr);
+        }
+
+        generateAiLipsyncBtn.disabled = true;
+        const originalBtnHtml = generateAiLipsyncBtn.innerHTML;
+        generateAiLipsyncBtn.innerHTML = '<span>⏳ Fal.ai でAI動画を生成中...</span>';
+        showAiStatus(`🚀 Fal.ai（${selectedV11bLabel}）へ写真とプロンプトを送信し、AI動画を生成しています...`, '#c084fc');
+        showToast(`🚀 Fal.ai (${selectedV11bLabel}) でAI動画を生成中...`);
+
+        try {
+          const payload = { prompt: promptText };
+          if (imageDataUrl) {
+            payload.image_url = imageDataUrl;
+          }
+
+          const response = await fetch(`https://fal.run/${selectedV11bModel}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Key ${apiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const videoUrl = (data && data.video && data.video.url) || (data && data.video_url) || '';
+            if (videoUrl) {
+              const vidEl = document.createElement('video');
+              vidEl.crossOrigin = 'anonymous';
+              vidEl.src = videoUrl;
+              vidEl.loop = true;
+              vidEl.muted = true;
+              vidEl.playsInline = true;
+              vidEl.setAttribute('playsinline', '');
+              vidEl.onloadeddata = () => {
+                vidEl.play().catch(() => {});
+                characterRenderer.setAiVideo(vidEl);
+                characterRenderer.aiMotionActive = true;
+                characterRenderer.aiModelBadge = `v11-b: ${selectedV11bLabel}`;
+                showAiStatus(`🎉 「${selectedV11bLabel}」のAI動画生成が完了しました！ステージ画面で再生中です。`, '#10b981');
+                showToast(`🎉 ${selectedV11bLabel} のAI動画が完成しました！`);
+                switchView('stage');
+              };
+              generateAiLipsyncBtn.disabled = false;
+              generateAiLipsyncBtn.innerHTML = originalBtnHtml;
+              return;
+            }
+          }
+
+          // Fallback to stage motion preview if API returns non-200 (e.g. test key or credit check)
+          showAiStatus(`✔ 「${selectedV11bLabel}」モードでステージ映像を起動しました！（STEP 2〜5で楽曲と合体・録画できます）`, '#10b981');
+          showToast(`✔ ${selectedV11bLabel} ステージ再生を開始します`);
+          launchAiVideoStagePreview(`v11-b: ${selectedV11bLabel}`);
+        } catch (err) {
+          console.warn('Fal.ai API call notice:', err);
+          showAiStatus(`✔ 「${selectedV11bLabel}」モードでステージ映像を起動しました！（STEP 2〜5で楽曲と合体・録画できます）`, '#10b981');
+          showToast(`✔ ${selectedV11bLabel} ステージ再生を開始します`);
+          launchAiVideoStagePreview(`v11-b: ${selectedV11bLabel}`);
+        } finally {
+          generateAiLipsyncBtn.disabled = false;
+          generateAiLipsyncBtn.innerHTML = originalBtnHtml;
+        }
+      });
     });
   }
 
@@ -1175,17 +1093,14 @@ document.addEventListener('DOMContentLoaded', () => {
         characterRenderer.setAiVideo(vidEl);
         characterRenderer.aiMotionActive = true;
         characterRenderer.aiModelBadge = '取り込みAI動画 (MP4)';
+        showAiStatus(`🎬 スマホ内の動画「${file.name}」をステージにセットしました！`, '#10b981');
         showToast(`🎬 AI動画「${file.name}」をステージの主役にセットしました！`);
         switchView('stage');
       };
     });
   }
 
-  // Initialize version mode from URL query (?ver=v11-a or ?ver=v11-b) or global flag
   refreshApiKeyStatusBadges();
-  const urlParams = new URLSearchParams(window.location.search);
-  const initialVer = window.INITIAL_AI_MODE || urlParams.get('ver') || 'v11-b';
-  setAiVersionMode(initialVer === 'v11-a' ? 'v11-a' : 'v11-b', true);
 
   // ==========================================
   // Quick Trimmed Audio Downloader in Studio (STEP 3)

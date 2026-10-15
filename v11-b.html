@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="GrooveSync MV">
   <meta name="theme-color" content="#090d16">
-  <title>GrooveSync MV Studio (v11-b: Fal.ai 統合API版)</title>
+  <title>GrooveSync MV Studio - 全自動MV制作＆ビート同期ステージ (v11)</title>
   <link rel="stylesheet" href="style.css?v=20261013_14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,57 +61,15 @@
     <!-- =============================================================== -->
     <main id="viewControls" class="main-view active-view">
 
-      <!-- ★新設: v11-a ⇔ v11-b 比較・ワンタップ切り替えバナー -->
-      <section class="version-compare-banner" style="background: linear-gradient(135deg, rgba(30, 27, 75, 0.95), rgba(15, 23, 42, 0.95)); border: 2px solid rgba(168, 85, 247, 0.55); border-radius: 18px; padding: 16px; margin-bottom: 16px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="background: #a855f7; color: #fff; font-weight: 900; font-size: 0.78rem; padding: 3px 10px; border-radius: 999px;">比較テスト用</span>
-            <strong style="color: #fff; font-size: 1rem;">v11-a と v11-b をワンタップで切り替え比較</strong>
-          </div>
-          <span id="activeVersionPill" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; font-size: 0.8rem; font-weight: 800; padding: 3px 10px; border-radius: 8px;">現在: v11-b (おすすめ)</span>
-        </div>
-
-        <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0 0 12px 0; line-height: 1.45;">
-          下の2つのボタンを押すと、<strong>① 各社公式APIを個別に繋ぐ「v11-a」</strong>と、<strong>② Fal.ai統合APIで1つのキーにまとめる「v11-b（★おすすめ）」</strong>の画面と使い勝手をその場で比較できます。
-        </p>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <button id="switchV11aBtn" type="button" style="background: rgba(30, 41, 59, 0.9); border: 2px solid rgba(56, 189, 248, 0.4); border-radius: 14px; padding: 12px 10px; color: #e2e8f0; cursor: pointer; text-align: left; transition: all 0.2s;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-              <strong style="font-size: 0.98rem; color: #38bdf8;">🅰️ v11-a を表示</strong>
-              <span id="v11aStatusTag" style="font-size: 0.72rem; background: rgba(56, 189, 248, 0.15); color: #7dd3fc; padding: 2px 6px; border-radius: 6px;">パターン①</span>
-            </div>
-            <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.35;">
-              Google / xAI / OpenAI の公式APIを<strong>3社別々のキー</strong>で直接繋ぐ方式
-            </div>
-          </button>
-
-          <button id="switchV11bBtn" type="button" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.32), rgba(236, 72, 153, 0.25)); border: 2px solid #c084fc; border-radius: 14px; padding: 12px 10px; color: #fff; cursor: pointer; text-align: left; transition: all 0.2s; box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-              <strong style="font-size: 0.98rem; color: #f0abfc;">🅱️ v11-b を表示</strong>
-              <span id="v11bStatusTag" style="font-size: 0.72rem; background: #10b981; color: #052e16; font-weight: 900; padding: 2px 6px; border-radius: 6px;">★おすすめ</span>
-            </div>
-            <div style="font-size: 0.78rem; color: #f1f5f9; line-height: 1.35;">
-              Fal.ai 統合APIで<strong>1つのキーだけ</strong>で全モデル（Kling/Veo/Luma等）を使う方式
-            </div>
-          </button>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-top: 10px; font-size: 0.78rem; justify-content: flex-end; flex-wrap: wrap;">
-          <a href="v11-a.html" style="color: #7dd3fc; text-decoration: underline;">🔗 v11-a 専用ページを開く</a>
-          <a href="v11-b.html" style="color: #f0abfc; text-decoration: underline;">🔗 v11-b 専用ページを開く</a>
-        </div>
-      </section>
-
       <!-- Step-by-Step Arrow Flow Guide Banner (矢印フロー解説) -->
       <section class="flow-guide-card">
-        <span class="flow-badge" id="flowGuideBadge">💡 全自動MV制作スタジオ (v11-b: 統合API型)</span>
+        <span class="flow-badge" id="flowGuideBadge">💡 全自動MV制作スタジオ (v11-b: Fal.ai 統合API方式)</span>
         <div class="flow-steps-row">
-          <span class="flow-chip">① 写真＆AI動画</span>
+          <span class="flow-chip highlight">① 写真＆AI動画生成</span>
           <span class="flow-arrow">➔</span>
           <span class="flow-chip">② 楽曲を選択</span>
           <span class="flow-arrow">➔</span>
-          <span class="flow-chip highlight">③ サビの長さを調整</span>
+          <span class="flow-chip">③ サビの長さを調整</span>
           <span class="flow-arrow">➔</span>
           <span class="flow-chip">④ 動作・ステージ</span>
           <span class="flow-arrow">➔</span>
@@ -146,21 +104,21 @@
           <span class="banner-icon">🎬</span>
           <div class="banner-text">
             <strong>ここを押すと「MV映像」が全画面で流れます</strong>
-            <span>あなたが設定した人物・曲・動作で歌う映像を見る</span>
+            <span>あなたが設定した人物・曲・AI動画で動く映像を見る</span>
           </div>
           <span class="banner-arrow">→</span>
         </button>
       </section>
 
       <!-- ==========================================
-           STEP 1: 人物・写真を設定する ＆ AI動画生成（リップシンクなし）
+           STEP 1: 人物・写真を設定する ＆ AI動画生成（リップシンクなし / v11-b）
            ========================================== -->
       <section class="large-section">
         <div class="section-title-wrap">
-          <span class="step-badge">1</span>
+          <span class="step-badge highlight-badge">1</span>
           <div>
-            <h3 class="section-title">人物・写真を設定 ＆ AI動画生成（ステップ1）</h3>
-            <p class="section-sub">写真を取り込み、リップシンクなしのAI動画生成を「v11-a」と「v11-b」で試せます</p>
+            <h3 class="section-title">写真を取り込む ＆ AI動画生成（ステップ1）</h3>
+            <p class="section-sub">まず人物写真をセットし、リップシンクなしのAI動画（v11-b：Fal.ai 統合API）を生成します</p>
           </div>
         </div>
 
@@ -172,159 +130,132 @@
           </div>
           <div class="action-card-text">
             <strong id="avatarCardTitle">あなたが用意した人物の写真をアップロード</strong>
-            <span id="avatarCardHint">タップしてスマホの写真ライブラリから選択（PNG, JPG等）</span>
+            <span id="avatarCardHint">ここをタップしてiPhoneの写真ライブラリから選択（JPG, PNG, HEIC対応）</span>
           </div>
         </label>
         <input type="file" id="avatarFileInput" accept="image/*" class="sr-only-input">
 
         <!-- Custom Avatar Success Banner -->
-        <div id="customAvatarBanner" class="custom-avatar-banner hidden" style="margin-bottom: 14px;">
+        <div id="customAvatarBanner" class="custom-avatar-banner hidden" style="margin-bottom: 16px;">
           <div class="custom-avatar-banner-head">
             <span class="custom-avatar-check-badge">✔</span>
             <div class="custom-avatar-banner-text">
               <strong id="customAvatarStatusTitle">あなたの写真がMVの主役にセットされました！</strong>
-              <span id="customAvatarStatusSub">下のAI動画生成パネル、または3Dビートステージで動かせます</span>
+              <span id="customAvatarStatusSub">下のAI動画生成パネル、またはステージ画面ですぐに動かせます</span>
             </div>
           </div>
-          <div class="custom-avatar-btn-row" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="viewStageFromAvatarBtn" class="avatar-action-btn primary-stage-btn" type="button" style="flex: 1; min-width: 180px;">
-              <span>🎬 3Dビートステージを見る</span>
+          <div class="custom-avatar-btn-row" style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button id="viewStageFromAvatarBtn" class="avatar-action-btn primary-stage-btn" type="button" style="flex: 1; min-width: 200px; padding: 14px; font-size: 1rem;">
+              <span>🎬 ステージ画面で動きを見る</span>
             </button>
-            <button id="changeAvatarBtn" class="avatar-action-btn secondary-btn" type="button" style="flex: 1; min-width: 150px;">
+            <button id="changeAvatarBtn" class="avatar-action-btn secondary-btn" type="button" style="flex: 1; min-width: 160px; padding: 14px; font-size: 1rem;">
               <span>🔄 別の写真に変更</span>
             </button>
           </div>
         </div>
 
         <!-- ==========================================================
-             🅰️ パネル A: v11-a（各社公式APIを個別に繋ぐバージョン）
+             🅱️ v11-b（Fal.ai 統合APIスタジオ：ステップ1 リップシンクなしAI動画生成）
              ========================================================== -->
-        <div id="panelV11a" class="ai-version-panel hidden" style="margin-top: 16px; background: rgba(15, 23, 42, 0.92); border: 2px solid rgba(56, 189, 248, 0.55); border-radius: 16px; padding: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
-            <div>
-              <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.76rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; display: inline-block; margin-bottom: 4px;">🅰️ v11-a（パターン①：各社公式API直結）</span>
-              <h4 style="color: #fff; font-size: 1.05rem; margin: 0;">Google / xAI / OpenAI 公式API 個別接続</h4>
+        <div id="panelV11b" class="ai-version-panel" style="margin-top: 18px; background: linear-gradient(145deg, rgba(30, 27, 75, 0.92), rgba(15, 23, 42, 0.96)); border: 2.5px solid rgba(192, 132, 252, 0.75); border-radius: 20px; padding: 20px;">
+          <div style="margin-bottom: 14px;">
+            <span style="background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff; font-size: 0.9rem; font-weight: 900; padding: 4px 12px; border-radius: 8px; display: inline-block; margin-bottom: 8px;">🎬 ステップ1：リップシンクなしAI動画生成 (v11-b)</span>
+            <h4 style="color: #fff; font-size: 1.25rem; margin: 0; line-height: 1.35;">1つのAPIキーで世界のトップ動画AIを切り替え利用</h4>
+          </div>
+
+          <!-- 共通APIキー記憶ステータスバー ＆ 特大設定ボタン -->
+          <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(192, 132, 252, 0.45); border-radius: 14px; padding: 14px 16px; margin-bottom: 18px;">
+            <div style="font-size: 1rem; color: #f8fafc; margin-bottom: 10px; line-height: 1.5;">
+              <strong>🔑 Fal.ai 統合APIキーの状態：</strong><br>
+              <span id="statusKeyFal" style="display: inline-block; background: rgba(255,255,255,0.12); padding: 6px 12px; border-radius: 8px; font-size: 0.95rem; font-weight: 800; margin-top: 6px; color: #fde047;">⚪ 未登録（キーなしでも下の「0円おためし」ですぐ体験できます）</span>
             </div>
-            <button id="openAiSettingsBtnA" type="button" class="btn-sub-action" style="padding: 6px 12px; font-size: 0.82rem; border-color: #38bdf8; color: #7dd3fc;">
-              <span>🔑 3社のAPIキー管理</span>
+            <button id="openAiSettingsBtn" type="button" class="giant-btn" style="width: 100%; background: rgba(168, 85, 247, 0.25); border: 2px solid #c084fc; border-radius: 12px; padding: 14px; font-size: 1.02rem; font-weight: 900; color: #f0abfc; cursor: pointer;">
+              <span>🔑 Fal.ai APIキーを登録・確認する（初回1回で自動記憶）</span>
             </button>
           </div>
 
-          <div style="background: rgba(56, 189, 248, 0.08); border-left: 3px solid #38bdf8; padding: 10px 12px; border-radius: 8px; font-size: 0.83rem; color: #cbd5e1; margin-bottom: 14px; line-height: 1.45;">
-            <strong>💡 v11-a の特徴と注意点：</strong><br>
-            Google (Veo 2)、xAI (Grok)、OpenAI (Sora) の公式APIをそれぞれ個別に呼び出します。<br>
-            ※ <strong>使う会社ごとに別々のAPIキー取得とクレジット残高管理（最大3つ）が必要</strong>になります（1回入力すればスマホに記憶されます）。
+          <!-- ① 1つのキーで選べるモデル一覧（iPhoneで見やすい1列・特大カード） -->
+          <div style="font-size: 1.05rem; font-weight: 900; color: #f3e8ff; margin-bottom: 10px;">
+            ① 使いたい動画生成AIモデルをタップして選択：
           </div>
-
-          <!-- 3社のモデル選択＆個別キー状態 -->
-          <div style="font-size: 0.85rem; font-weight: 700; color: #e2e8f0; margin-bottom: 8px;">① 使う公式API（会社）を選択：</div>
-          <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 14px;">
-            <button type="button" class="v11a-provider-btn active" data-provider="google" data-label="Google Veo 2 (公式API)" style="background: rgba(56, 189, 248, 0.18); border: 2px solid #38bdf8; border-radius: 12px; padding: 11px 12px; color: #fff; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-              <div>
-                <strong style="font-size: 0.92rem; display: block;">🔵 Google 公式：Veo 2 / Gemini Video API</strong>
-                <span style="font-size: 0.78rem; color: #cbd5e1;">Google Flowの裏側モデル（Google Cloud / AI Studio キーが必要）</span>
+          <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px;">
+            <button type="button" class="v11b-model-btn active" data-model="fal-ai/kling-video/v1.6/pro/image-to-video" data-label="Kling 1.6 Pro" style="background: rgba(168, 85, 247, 0.28); border: 2.5px solid #c084fc; border-radius: 14px; padding: 14px 16px; color: #fff; text-align: left; cursor: pointer;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <strong style="font-size: 1.1rem; color: #f0abfc;">🎬 Kling 1.6 Pro（一番人気）</strong>
+                <span class="v11b-model-pill" style="background: #10b981; color: #052e16; font-size: 0.85rem; font-weight: 900; padding: 3px 10px; border-radius: 999px;">✔ 選択中</span>
               </div>
-              <span id="statusKeyGoogle" style="font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 6px; white-space: nowrap;">⚪ キー未保存</span>
+              <span style="font-size: 0.92rem; color: #e2e8f0; line-height: 1.4; display: block;">人物の自然な揺れ・立体感・ライティングが世界最高峰（写真から動かすMVに最適）</span>
             </button>
 
-            <button type="button" class="v11a-provider-btn" data-provider="xai" data-label="xAI Grok Imagine (公式API)" style="background: rgba(30, 41, 59, 0.75); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 11px 12px; color: #fff; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-              <div>
-                <strong style="font-size: 0.92rem; display: block;">⚫ xAI 公式：Grok Imagine Video API</strong>
-                <span style="font-size: 0.78rem; color: #94a3b8;">Grokの動画・画像生成（xAI Console の専用キーが必要）</span>
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/veo2/image-to-video" data-label="Google Veo 2" style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 14px 16px; color: #fff; text-align: left; cursor: pointer;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <strong style="font-size: 1.1rem; color: #7dd3fc;">🎥 Google Veo 2</strong>
+                <span class="v11b-model-pill" style="background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.82rem; font-weight: 700; padding: 3px 10px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span id="statusKeyXai" style="font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 6px; white-space: nowrap;">⚪ キー未保存</span>
+              <span style="font-size: 0.92rem; color: #cbd5e1; line-height: 1.4; display: block;">Google Flow と同じ映画品質の動画生成AIモデル（別キー不要）</span>
             </button>
 
-            <button type="button" class="v11a-provider-btn" data-provider="openai" data-label="OpenAI Sora (公式API)" style="background: rgba(30, 41, 59, 0.75); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 11px 12px; color: #fff; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-              <div>
-                <strong style="font-size: 0.92rem; display: block;">🟢 OpenAI 公式：Sora Video API</strong>
-                <span style="font-size: 0.78rem; color: #94a3b8;">OpenAIの動画生成モデル（OpenAI Platform の専用キーが必要）</span>
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/luma-dream-machine/ray-2" data-label="Luma Ray 2" style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 14px 16px; color: #fff; text-align: left; cursor: pointer;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <strong style="font-size: 1.1rem; color: #6ee7b7;">⚡ Luma Ray 2</strong>
+                <span class="v11b-model-pill" style="background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.82rem; font-weight: 700; padding: 3px 10px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span id="statusKeyOpenai" style="font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 6px; white-space: nowrap;">⚪ キー未保存</span>
+              <span style="font-size: 0.92rem; color: #cbd5e1; line-height: 1.4; display: block;">カメラワークとステージ照明演出がダイナミックで生成が速い</span>
+            </button>
+
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/minimax/video-01" data-label="MiniMax Hailuo" style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 14px 16px; color: #fff; text-align: left; cursor: pointer;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <strong style="font-size: 1.1rem; color: #fcd34d;">🌟 MiniMax Hailuo</strong>
+                <span class="v11b-model-pill" style="background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.82rem; font-weight: 700; padding: 3px 10px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span style="font-size: 0.92rem; color: #cbd5e1; line-height: 1.4; display: block;">イラスト・実写のキャラクター表現や表情の変化が非常に滑らか</span>
             </button>
           </div>
 
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="generateV11aApiBtn" type="button" class="giant-btn" style="flex: 1; min-width: 200px; background: linear-gradient(135deg, #0284c7, #2563eb); padding: 13px; font-size: 0.95rem; border: none; border-radius: 12px; color: #fff; font-weight: 800; cursor: pointer;">
-              <span>🚀 選択した公式APIで動画生成</span>
+          <!-- ② ステップ1：リップシンクなしの動画の動きスタイル指定 -->
+          <div style="font-size: 1.05rem; font-weight: 900; color: #f3e8ff; margin-bottom: 10px;">
+            ② どんな動きの動画にするか（ワンタップ選択）：
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px;">
+            <button type="button" class="ai-style-chip active" data-style="sway" data-prompt="Cinematic music video, the artist gently swaying to the rhythm on a neon-lit concert stage, natural breathing, atmospheric lighting, high quality 4k" style="background: rgba(168, 85, 247, 0.35); border: 2px solid #c084fc; color: #fff; border-radius: 12px; padding: 12px 14px; font-size: 1rem; font-weight: 800; text-align: left; cursor: pointer;">
+              🌊 リズムに乗って自然に揺れる（王道MVスタイル）
             </button>
-            <button id="demoV11aBtn" type="button" class="giant-btn" style="flex: 1; min-width: 200px; background: rgba(56, 189, 248, 0.18); border: 1.5px solid #38bdf8; padding: 13px; font-size: 0.92rem; border-radius: 12px; color: #e0f2fe; font-weight: 800; cursor: pointer;">
-              <span>🧪 キーなしで動きをおためし (0円)</span>
+            <button type="button" class="ai-style-chip" data-style="zoom" data-prompt="Slow cinematic camera zoom-in on the artist on stage, dramatic volumetric spotlight, emotional music video atmosphere" style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255,255,255,0.22); color: #e2e8f0; border-radius: 12px; padding: 12px 14px; font-size: 1rem; font-weight: 700; text-align: left; cursor: pointer;">
+              🎥 映画風スローズーム＆ドラマチック照明（バラード・エモ系）
+            </button>
+            <button type="button" class="ai-style-chip" data-style="dynamic" data-prompt="Energetic live concert performance, dynamic stage movement, laser beams, music video masterpiece" style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255,255,255,0.22); color: #e2e8f0; border-radius: 12px; padding: 12px 14px; font-size: 1rem; font-weight: 700; text-align: left; cursor: pointer;">
+              ⚡ ダイナミックなライブ演出（アップテンポ・ロック系）
             </button>
           </div>
-        </div>
 
-        <!-- ==========================================================
-             🅱️ パネル B: v11-b（Fal.ai 統合APIバージョン ★おすすめ）
-             ========================================================== -->
-        <div id="panelV11b" class="ai-version-panel" style="margin-top: 16px; background: rgba(168, 85, 247, 0.12); border: 2px solid rgba(192, 132, 252, 0.65); border-radius: 16px; padding: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
-            <div>
-              <span style="background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff; font-size: 0.76rem; font-weight: 900; padding: 2px 9px; border-radius: 6px; display: inline-block; margin-bottom: 4px;">🅱️ v11-b（パターン②：Fal.ai 統合API ★おすすめ）</span>
-              <h4 style="color: #fff; font-size: 1.05rem; margin: 0;">1つのAPIキーで世界の全トップ動画AIを一括利用</h4>
+          <label for="aiVideoPromptInput" style="display: block; font-size: 0.92rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 700;">
+            📝 動きの指示文（そのままでOK・自由に変更もできます）：
+          </label>
+          <input type="text" id="aiVideoPromptInput" value="Cinematic music video, the artist gently swaying to the rhythm on a neon-lit concert stage, natural breathing, atmospheric lighting" placeholder="動きの指示（プロンプト）..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 14px; color: #fff; font-size: 1rem; margin-bottom: 16px;">
+
+          <!-- AI生成ステータス表示ボックス -->
+          <div id="aiGenStatusBox" class="hidden" style="background: rgba(15, 23, 42, 0.95); border: 2px solid #38bdf8; border-radius: 12px; padding: 14px; margin-bottom: 14px; color: #e0f2fe; font-size: 1rem; font-weight: 700; line-height: 1.5;">
+            ⏳ AI動画を準備しています...
+          </div>
+
+          <!-- ③ 特大アクションボタン（0円おためし ＆ 本番AI動画生成） -->
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button id="demoV11bBtn" type="button" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669); border: 2px solid #6ee7b7; padding: 18px 16px; font-size: 1.12rem; border-radius: 14px; color: #fff; font-weight: 900; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);">
+              <span>🧪 まずはキーなしで動きをおためし再生 (0円)</span>
+            </button>
+
+            <button id="generateAiLipsyncBtn" type="button" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #a855f7, #ec4899); padding: 18px 16px; font-size: 1.12rem; border: 2px solid #f0abfc; border-radius: 14px; color: #fff; font-weight: 900; cursor: pointer; box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);">
+              <span>✨ 選択したAIモデルで動画を生成する (Fal.ai)</span>
+            </button>
+          </div>
+
+          <!-- 外部AIで作った動画ファイル（MP4）を直接読み込む特大ボタン -->
+          <div style="margin-top: 18px; padding-top: 16px; border-top: 2px dashed rgba(255,255,255,0.2);">
+            <div style="font-size: 0.95rem; color: #e2e8f0; font-weight: 700; margin-bottom: 10px;">
+              💡 すでにスマホ内にAI動画（MP4等）をお持ちの場合：
             </div>
-            <button id="openAiSettingsBtn" type="button" class="btn-sub-action" style="padding: 6px 12px; font-size: 0.82rem; border-color: #c084fc; color: #f0abfc;">
-              <span>🔑 APIキー設定 (初回のみ)</span>
-            </button>
-          </div>
-
-          <!-- 共通APIキー記憶ステータスバー -->
-          <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(192, 132, 252, 0.4); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <div style="font-size: 0.83rem; color: #e2e8f0;">
-              <strong>🔑 Fal.ai 共通APIキー状態：</strong>
-              <span id="statusKeyFal" style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; margin-left: 4px;">⚪ 未登録（初回1回だけ入力すれば以後自動記憶）</span>
-            </div>
-            <span style="font-size: 0.76rem; color: #c084fc;">※LumeFlow AIと同じ仕組み</span>
-          </div>
-
-          <!-- 1つのキーで選べるモデル一覧 -->
-          <div style="font-size: 0.85rem; font-weight: 700; color: #f3e8ff; margin-bottom: 8px;">① 好きな動画生成AIモデルをワンタップ選択（すべて同じ1つのキーで動きます）：</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
-            <button type="button" class="v11b-model-btn active" data-model="fal-ai/kling-video/v1.6/pro/image-to-video" data-label="Kling 1.6 Pro" style="background: rgba(168, 85, 247, 0.28); border: 2px solid #c084fc; border-radius: 12px; padding: 10px; color: #fff; text-align: left; cursor: pointer;">
-              <strong style="font-size: 0.88rem; display: block; color: #f0abfc;">🎬 Kling 1.6 Pro ★人気</strong>
-              <span style="font-size: 0.74rem; color: #e2e8f0;">人物の自然な揺れ・動きが世界最高峰（リップシンクなし動画に最適）</span>
-            </button>
-
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/veo2/image-to-video" data-label="Google Veo 2" style="background: rgba(15, 23, 42, 0.75); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; color: #fff; text-align: left; cursor: pointer;">
-              <strong style="font-size: 0.88rem; display: block; color: #7dd3fc;">🎥 Google Veo 2</strong>
-              <span style="font-size: 0.74rem; color: #94a3b8;">Google Flowと同じ映画級モデルも別キー不要で利用可能</span>
-            </button>
-
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/luma-dream-machine/ray-2" data-label="Luma Ray 2" style="background: rgba(15, 23, 42, 0.75); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; color: #fff; text-align: left; cursor: pointer;">
-              <strong style="font-size: 0.88rem; display: block; color: #6ee7b7;">⚡ Luma Ray 2</strong>
-              <span style="font-size: 0.74rem; color: #94a3b8;">カメラワークと照明演出がダイナミックで高速</span>
-            </button>
-
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/minimax/video-01" data-label="MiniMax Hailuo" style="background: rgba(15, 23, 42, 0.75); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; color: #fff; text-align: left; cursor: pointer;">
-              <strong style="font-size: 0.88rem; display: block; color: #fcd34d;">🌟 MiniMax Hailuo</strong>
-              <span style="font-size: 0.74rem; color: #94a3b8;">イラスト・実写のキャラクター表現が非常に滑らか</span>
-            </button>
-          </div>
-
-          <!-- ステップ1：リップシンクなしの動画の動きスタイル指定 -->
-          <div style="font-size: 0.85rem; font-weight: 700; color: #f3e8ff; margin-bottom: 6px;">② どんな動きの動画にするか（リップシンクなし演出）：</div>
-          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
-            <button type="button" class="ai-style-chip active" data-style="sway" data-prompt="Cinematic music video, the artist gently swaying to the rhythm on a neon-lit concert stage, natural breathing, atmospheric lighting, high quality 4k" style="background: rgba(168, 85, 247, 0.35); border: 1.5px solid #c084fc; color: #fff; border-radius: 999px; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">🌊 リズムに乗って自然に揺れる</button>
-            <button type="button" class="ai-style-chip" data-style="zoom" data-prompt="Slow cinematic camera zoom-in on the artist on stage, dramatic volumetric spotlight, emotional music video atmosphere" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: #cbd5e1; border-radius: 999px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">🎥 映画風スローズーム＆照明</button>
-            <button type="button" class="ai-style-chip" data-style="dynamic" data-prompt="Energetic live concert performance, dynamic stage movement, laser beams, music video masterpiece" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2); color: #cbd5e1; border-radius: 999px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">⚡ ダイナミックなライブ演出</button>
-          </div>
-
-          <input type="text" id="aiVideoPromptInput" value="Cinematic music video, the artist gently swaying to the rhythm on a neon-lit concert stage, natural breathing, atmospheric lighting" placeholder="動きの指示（プロンプト）..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 10px 12px; color: #fff; font-size: 0.84rem; margin-bottom: 12px;">
-
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="generateAiLipsyncBtn" type="button" class="giant-btn" style="flex: 1; min-width: 200px; background: linear-gradient(135deg, #a855f7, #ec4899); padding: 14px; font-size: 0.96rem; border: none; border-radius: 12px; color: #fff; font-weight: 800; cursor: pointer;">
-              <span>✨ 選択モデルでAI動画を生成</span>
-            </button>
-            <button id="demoV11bBtn" type="button" class="giant-btn" style="flex: 1; min-width: 200px; background: rgba(16, 185, 129, 0.2); border: 1.5px solid #10b981; padding: 14px; font-size: 0.92rem; border-radius: 12px; color: #6ee7b7; font-weight: 800; cursor: pointer;">
-              <span>🧪 キーなしで動きをおためし (0円)</span>
-            </button>
-          </div>
-
-          <!-- 外部AIで作った動画ファイル（MP4）を直接読み込むボタン -->
-          <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.15); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <span style="font-size: 0.78rem; color: #cbd5e1;">💡 Google Flow や LumeFlow 等で作った動画(MP4)をお持ちの場合：</span>
-            <label for="aiVideoFileInput" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
-              📂 MP4動画をステージに読み込む
+            <label for="aiVideoFileInput" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-sizing: border-box; background: rgba(56, 189, 248, 0.18); border: 2px solid #38bdf8; color: #fff; padding: 15px; border-radius: 14px; font-size: 1.05rem; font-weight: 900; cursor: pointer; text-align: center;">
+              <span>📂 スマホ内の動画ファイル(MP4)をステージに読み込む</span>
             </label>
             <input type="file" id="aiVideoFileInput" accept="video/mp4,video/quicktime,video/*" class="sr-only-input">
           </div>
@@ -716,51 +647,42 @@
       </div>
     </div>
 
-    <!-- AI API Settings Modal (Supports both v11-a & v11-b with persistent memory) -->
+    <!-- AI API Settings Modal (v11-b Fal.ai Unified API Key with persistent memory) -->
     <div id="aiSettingsModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aiSettingsModalTitle">
       <div class="modal-card">
         <div class="modal-header">
           <div class="modal-title-group">
             <span class="modal-sparkle-icon">🔑</span>
-            <h3 id="aiSettingsModalTitle" class="modal-title">APIキー登録・自動記憶設定</h3>
+            <h3 id="aiSettingsModalTitle" class="modal-title">Fal.ai 統合APIキー設定</h3>
           </div>
           <button id="closeAiSettingsBtn" class="modal-close-icon" aria-label="閉じる">✕</button>
         </div>
         <div class="modal-body">
-          <div style="background: rgba(16, 185, 129, 0.14); border: 1.5px solid rgba(16, 185, 129, 0.45); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
-            <strong style="color: #6ee7b7; display: block; margin-bottom: 4px; font-size: 0.92rem;">💡 都度入力は不要です！（初回1回のみ）</strong>
-            <p style="color: #e2e8f0; font-size: 0.82rem; margin: 0; line-height: 1.45;">
-              ここで一度入力して「保存」を押せば、お使いのスマホ（ブラウザ内）に安全に記憶されます。<strong>次回からは自動で読み込まれるため、毎回入力する必要はありません。</strong>
+          <div style="background: rgba(16, 185, 129, 0.16); border: 2px solid rgba(16, 185, 129, 0.55); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px;">
+            <strong style="color: #6ee7b7; display: block; margin-bottom: 6px; font-size: 1.05rem;">💡 初回1回だけ入力すればOK（自動記憶）</strong>
+            <p style="color: #f1f5f9; font-size: 0.95rem; margin: 0; line-height: 1.55;">
+              ここで一度キーを貼り付けて「保存」を押せば、お使いのiPhone（ブラウザ内）に安全に記憶されます。<strong>次回からは自動で読み込まれるため、毎回入力する必要はありません。</strong>
             </p>
           </div>
 
-          <!-- 🅱️ v11-b 用: Fal.ai 統合APIキー (1つで全モデル対応) -->
-          <div style="background: rgba(168, 85, 247, 0.12); border: 1.5px solid rgba(192, 132, 252, 0.45); border-radius: 12px; padding: 12px; margin-bottom: 14px;">
-            <strong style="color: #f0abfc; display: block; margin-bottom: 4px; font-size: 0.92rem;">🅱️ v11-b 用：Fal.ai 統合APIキー（★おすすめ）</strong>
-            <p style="color: #cbd5e1; font-size: 0.78rem; margin: 0 0 8px 0; line-height: 1.35;">
-              このキー1つだけで Kling / Google Veo 2 / Luma / MiniMax / リップシンク まで全モデルが使えます。
+          <!-- Fal.ai 統合APIキー (1つで全モデル対応) -->
+          <div style="background: rgba(168, 85, 247, 0.14); border: 2px solid rgba(192, 132, 252, 0.6); border-radius: 14px; padding: 16px; margin-bottom: 16px;">
+            <strong style="color: #f0abfc; display: block; margin-bottom: 6px; font-size: 1.05rem;">🔑 Fal.ai 統合APIキー（v11-b 共通キー）</strong>
+            <p style="color: #e2e8f0; font-size: 0.92rem; margin: 0 0 12px 0; line-height: 1.5;">
+              このキー1つだけで <strong>Kling 1.6 Pro / Google Veo 2 / Luma Ray 2 / MiniMax</strong> から、今後の<strong>リップシンクAI（ステップ3）</strong>まですべて切り替え利用できます。
             </p>
-            <input type="password" id="falApiKeyInput" placeholder="Fal.ai APIキー (例: key_id:key_secret)" style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(192, 132, 252, 0.45); border-radius: 10px; padding: 11px; color: #fff; font-size: 0.9rem;">
+            <input type="password" id="falApiKeyInput" placeholder="ここに Fal.ai APIキーを貼り付け" style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.95); border: 2px solid #c084fc; border-radius: 12px; padding: 15px; color: #fff; font-size: 1.05rem; margin-bottom: 10px;">
+            <div style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.45;">
+              ※ まだキーをお持ちでない場合は、下の「操作画面に戻る」を押して<strong>「🧪 0円おためし再生」</strong>でキーなしのまま動きを体験できます。
+            </div>
           </div>
 
-          <!-- 🅰️ v11-a 用: 各社公式APIキー (3社個別) -->
-          <div style="background: rgba(56, 189, 248, 0.08); border: 1.5px solid rgba(56, 189, 248, 0.35); border-radius: 12px; padding: 12px; margin-bottom: 14px;">
-            <strong style="color: #7dd3fc; display: block; margin-bottom: 4px; font-size: 0.92rem;">🅰️ v11-a 用：各社公式APIキー（3社個別）</strong>
-            <p style="color: #cbd5e1; font-size: 0.78rem; margin: 0 0 8px 0; line-height: 1.35;">
-              v11-a で各社を直接呼び出す場合は、使いたい会社のAPIキーをそれぞれ入力します。
-            </p>
-            <label style="display: block; color: #cbd5e1; font-size: 0.78rem; font-weight: 700; margin-bottom: 3px;">🔵 Google (Gemini / Veo APIキー):</label>
-            <input type="password" id="googleApiKeyInput" placeholder="AIzaSy..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 9px 10px; color: #fff; font-size: 0.85rem; margin-bottom: 8px;">
+          <button id="saveAiSettingsBtn" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #a855f7, #ec4899); border: 2px solid #f0abfc; border-radius: 14px; padding: 16px; font-size: 1.08rem; color: #fff; font-weight: 900; cursor: pointer; margin-bottom: 10px;">
+            ✔ キーをiPhoneに記憶・保存する
+          </button>
 
-            <label style="display: block; color: #cbd5e1; font-size: 0.78rem; font-weight: 700; margin-bottom: 3px;">⚫ xAI (Grok APIキー):</label>
-            <input type="password" id="xaiApiKeyInput" placeholder="xai-..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 9px 10px; color: #fff; font-size: 0.85rem; margin-bottom: 8px;">
-
-            <label style="display: block; color: #cbd5e1; font-size: 0.78rem; font-weight: 700; margin-bottom: 3px;">🟢 OpenAI (Sora / OpenAI APIキー):</label>
-            <input type="password" id="openaiApiKeyInput" placeholder="sk-..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 9px 10px; color: #fff; font-size: 0.85rem;">
-          </div>
-
-          <button id="saveAiSettingsBtn" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #a855f7, #ec4899); border: none; border-radius: 12px; padding: 14px; color: #fff; font-weight: 800; cursor: pointer;">
-            ✔ キーを端末に記憶・保存する（次回から入力不要）
+          <button id="closeAiSettingsBottomBtn" type="button" class="modal-btn-sub" style="width: 100%; padding: 14px; font-size: 1rem;">
+            <span>閉じる（操作画面に戻る）</span>
           </button>
         </div>
       </div>
@@ -956,10 +878,9 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
   <script src="lame.min.js"></script>
-  <script src="audio-engine.js?v=20261015_1"></script>
-  <script src="presets.js?v=20261015_1"></script>
-  <script src="character-renderer.js?v=20261015_1"></script>
-  <script>window.INITIAL_AI_MODE = "v11-b";</script>
-  <script src="app.js?v=20261015_1"></script>
+  <script src="audio-engine.js?v=20261015_2"></script>
+  <script src="presets.js?v=20261015_2"></script>
+  <script src="character-renderer.js?v=20261015_2"></script>
+  <script src="app.js?v=20261015_2"></script>
 </body>
 </html>
