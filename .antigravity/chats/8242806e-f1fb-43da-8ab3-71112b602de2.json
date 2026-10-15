@@ -64,6 +64,18 @@
       "created_at": "2026-10-15T19:12:03.894Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "e06441ed-09aa-4da3-9956-50614488fa10",
+      "role": "agent",
+      "content": "了解です！ページの再読み込みでデフォルトに戻ってしまったんですね。\n\nゆっくり確認してみてくださいね。気になるところや修正したい点があれば、いつでも声をかけてください！お待ちしています😊",
+      "status": "completed",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "a1ed8526-a801-409c-8d3b-ad65de4e7cfa",
+      "created_at": "2026-10-15T19:12:35.222Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
