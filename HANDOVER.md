@@ -22,15 +22,15 @@
    - APIキーは初回のみユーザーが入力し、`localStorage`（`gs_fal_api_key`）に端末保存して2回目以降は入力不要とする仕組みを実装済み。
 
 ## 3. 現在のファイル構成 (`/home/agent/workspace`)
-- `index.html`: メイン画面（現在 v11-b が初期表示、STEP 1〜STEP 4構成）
-- `v11-b.html` / `v11-a.html`: 比較用ページ
-- `app.js`: UI制御・APIキー端末保存（`localStorage`）・Fal.ai API呼び出し＆デモ生成・録画保存ロジック
+- `index.html`: メイン画面（**v11-b（Fal.ai 統合API方式）** に一本化済み。v11-aや終了したSoraは完全削除し、iPhone向け特大文字・特大ボタンの1列レイアウトに整理済み）
+- `v11-b.html`: `index.html` と同一のv11-b専用画面
+- `app.js`: UI制御・APIキー端末保存（`localStorage` の `gs_fal_api_key`）・Fal.ai REST API呼び出し＆0円おためし生成・楽曲合体録画保存ロジック
 - `audio-engine.js`: Web Audio API / HTML5 Audio による楽曲読み込み・再生・周波数解析
 - `audio-cutter.js` / `audio-cutter.html`: 波形表示つき楽曲トリミング（秒数指定・サビ切り出し）
 - `character-renderer.js`: ステージCanvas描画（AI生成動画のビデオレイヤー再生対応）
 - `style.css`: スマホ特大UI・高コントラストスタイル
 
-## 4. 新規チャットでの最初のアクション
-- **v11-b（Fal.ai 統合API版）** を正式採用として、不要になった `v11-a` 比較バーを整理し、**v11-b 専用のスッキリ見やすい画面**に仕上げる。
-- ユーザー様が実際に「写真＋動きの指示（またはテキスト）」からAI動画を生成し、ご自身の楽曲（サビ切り出し）と合わせてMVを完成させられるよう、ステップ1〜2の仕上げとFal.ai連携の案内を進める。
+## 4. 現在のステータスと次の進め方
+- **【ステップ1：完了・確認中】** メイン画面（`index.html`）を **v11-b（Fal.ai 統合API版）** に一本化し、モデル選択ボタンや動き指定ボタンをiPhoneで見やすい1列・特大文字カードに拡大整理済み。
+- **【ステップ2へ進む準備完了】** 生成したAI動画（またはスマホ内のMP4動画 / 0円おためし映像）と、オリジナル楽曲（サビ切り出し区間）を合体させてMVとして保存する流れへ進める状態。
 - プレビューURL: `https://antigravity.luch.dev/site/99be14d3-31d5-4abb-884c-c3b755893105/e9856f67f45823b115dd6ebe/`
