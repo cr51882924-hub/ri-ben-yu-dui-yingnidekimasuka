@@ -651,18 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function togglePlay() {
     triggerHaptic();
     if (!audioEngine.hasAudioLoaded()) {
-      audioEngine.loadDemoTrack('jpop');
-      currentSongConfig = (typeof GROOVE_PRESETS !== 'undefined' && GROOVE_PRESETS.songs) ? GROOVE_PRESETS.songs.jpop : null;
-      if (controlSongTitle) controlSongTitle.textContent = 'Shining Beat (公式サンプル楽曲)';
-      if (stageSongTitle) stageSongTitle.textContent = 'Shining Beat (公式サンプル楽曲)';
-      trimStartSeconds = 0;
-      trimDurationSeconds = 30;
-      updateTrimmerUI();
-      audioEngine.pauseOffset = 0;
-      audioEngine.playTrim(0);
-      updatePlayUI(true);
-      updateFullPlayerUI(false);
-      showToast('🎵 サンプル楽曲（Shining Beat）の再生を開始しました');
+      showToast('まず STEP 2 であなたのオリジナル楽曲をアップロードしてください');
       return;
     }
     if (audioEngine.isPlaying) {
@@ -677,46 +666,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  mainPlayBtn.addEventListener('click', togglePlay);
-  stagePlayBtn.addEventListener('click', togglePlay);
+  if (mainPlayBtn) mainPlayBtn.addEventListener('click', togglePlay);
+  if (stagePlayBtn) stagePlayBtn.addEventListener('click', togglePlay);
 
-  stageProgressWrap.addEventListener('click', (e) => {
-    const rect = stageProgressWrap.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    audioEngine.seek(ratio);
-  });
-
-  // ==========================================
-  // Motion Presets Selection
-  // ==========================================
-  const motionCards = document.querySelectorAll('[data-motion]');
-  motionCards.forEach(card => {
-    card.addEventListener('click', () => {
-      triggerHaptic();
-      motionCards.forEach(c => {
-        c.classList.remove('active');
-        const pill = c.querySelector('.status-pill');
-        if (pill) {
-          pill.textContent = 'タップで選択';
-          pill.classList.remove('selected');
-        }
-      });
-
-      card.classList.add('active');
-      const pill = card.querySelector('.status-pill');
-      if (pill) {
-        pill.textContent = '✔ 選択中';
-        pill.classList.add('selected');
-      }
-
-      const motionId = card.dataset.motion;
-      characterRenderer.setMotion(motionId);
-      const preset = GROOVE_PRESETS.motions[motionId];
-      if (preset) {
-        showToast(`動作を「${preset.name}」に変更しました`);
-      }
+  if (stageProgressWrap) {
+    stageProgressWrap.addEventListener('click', (e) => {
+      const rect = stageProgressWrap.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      audioEngine.seek(ratio);
     });
-  });
+  }
 
   // ==========================================
   // User Photo Avatar Upload & State Management
@@ -734,51 +693,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     avatarUploadBtn.classList.add('applied');
-    avatarCardTitle.textContent = `✔ あなたの写真が適用されています`;
+    avatarCardTitle.textContent = `✔ あなたの写真がセットされています`;
     avatarCardHint.textContent = `${filename || '人物写真'} （タップで別の写真に変更）`;
 
     if (customAvatarBanner) {
       customAvatarBanner.classList.remove('hidden');
       if (customAvatarStatusTitle) {
-        customAvatarStatusTitle.textContent = `あなたの写真がMVの主役にセットされました！`;
+        customAvatarStatusTitle.textContent = `あなたの写真がセットされました！`;
       }
       if (customAvatarStatusSub) {
-        customAvatarStatusSub.textContent = `この写真がリズムに合わせて動くオリジナルのMVです`;
+        customAvatarStatusSub.textContent = `続けて STEP 2・3 で楽曲と歌わせる秒数を指定してください`;
       }
     }
-  }
-
-  // Action buttons inside customAvatarBanner
-  if (viewStageFromAvatarBtn) {
-    viewStageFromAvatarBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      triggerHaptic();
-
-      // If user hasn't uploaded audio yet, automatically use official vocal demo song!
-      if (!audioEngine.hasAudioLoaded() || audioEngine.isDemoTrack) {
-        audioEngine.loadDemoTrack('jpop');
-        currentSongConfig = (typeof GROOVE_PRESETS !== 'undefined' && GROOVE_PRESETS.songs) ? GROOVE_PRESETS.songs.jpop : null;
-        if (controlSongTitle) controlSongTitle.textContent = 'Shining Beat (サンプル歌唱で確認中)';
-        if (stageSongTitle) stageSongTitle.textContent = 'Shining Beat (サンプル歌唱で確認中)';
-        trimStartSeconds = 0;
-        trimDurationSeconds = 30;
-        updateTrimmerUI();
-
-        switchView('stage');
-        audioEngine.stop();
-        audioEngine.playTrim(0);
-        updatePlayUI(true);
-        showToast('🎵 あなたの写真が歌う姿を確認するため、サンプル歌声で再生を開始しました！');
-      } else {
-        // User has already uploaded custom audio
-        switchView('stage');
-        if (!audioEngine.isPlaying) {
-          audioEngine.playTrim();
-          updatePlayUI(true);
-        }
-        showToast('🎬 あなたの楽曲でリップシンク再生を開始しました！');
-      }
-    });
   }
 
   if (changeAvatarBtn) {
@@ -790,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // v11-b (Fal.ai Unified API) Step 1: Non-Lipsync AI Video Generation Studio
+  // v12 (Fal.ai Unified API): Full AI Lip-Sync & Singing Video Studio
   // ==========================================
   const aiSettingsModal = document.getElementById('aiSettingsModal');
   const openAiSettingsBtn = document.getElementById('openAiSettingsBtn');
@@ -799,41 +725,82 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveAiSettingsBtn = document.getElementById('saveAiSettingsBtn');
 
   const falApiKeyInput = document.getElementById('falApiKeyInput');
+  const inlineFalApiKeyInput = document.getElementById('inlineFalApiKeyInput');
+  const saveInlineApiKeyBtn = document.getElementById('saveInlineApiKeyBtn');
   const statusKeyFal = document.getElementById('statusKeyFal');
   const aiGenStatusBox = document.getElementById('aiGenStatusBox');
 
   const generateAiLipsyncBtn = document.getElementById('generateAiLipsyncBtn');
-  const demoV11bBtn = document.getElementById('demoV11bBtn');
   const aiVideoPromptInput = document.getElementById('aiVideoPromptInput');
   const aiVideoFileInput = document.getElementById('aiVideoFileInput');
 
-  let selectedV11bModel = 'fal-ai/kling-video/v1.6/pro/image-to-video';
-  let selectedV11bLabel = 'Kling 1.6 Pro';
+  const aiResultCard = document.getElementById('aiResultCard');
+  const inlineAiResultVideo = document.getElementById('inlineAiResultVideo');
+  const saveAiResultToPhotosBtn = document.getElementById('saveAiResultToPhotosBtn');
+  const downloadAiResultMp4Btn = document.getElementById('downloadAiResultMp4Btn');
+
+  let selectedV11bModel = 'fal-ai/bytedance/omnihuman/v1.5';
+  let selectedV11bMode = 'lipsync';
+  let selectedV11bLabel = 'ByteDance OmniHuman v1.5 (リップシンク)';
   let selectedAiPromptStyle = 'sway';
 
   function refreshApiKeyStatusBadges() {
     const falKey = localStorage.getItem('gs_fal_api_key') || '';
+    if (inlineFalApiKeyInput && document.activeElement !== inlineFalApiKeyInput) {
+      inlineFalApiKeyInput.value = falKey;
+    }
+    if (falApiKeyInput && document.activeElement !== falApiKeyInput) {
+      falApiKeyInput.value = falKey;
+    }
     if (statusKeyFal) {
       if (falKey) {
-        statusKeyFal.textContent = '🟢 iPhoneに記憶済み（次回から入力不要・全モデル利用可能）';
+        statusKeyFal.textContent = '🟢 登録済み（iPhoneに記憶されています・次回から入力不要）';
         statusKeyFal.style.background = 'rgba(16, 185, 129, 0.25)';
         statusKeyFal.style.color = '#6ee7b7';
       } else {
-        statusKeyFal.textContent = '⚪ 未登録（キーなしでも下の「0円おためし」ですぐ体験できます）';
+        statusKeyFal.textContent = '⚠️ 未登録（下の案内からAPIキーを取得して貼り付けてください）';
         statusKeyFal.style.background = 'rgba(255, 255, 255, 0.12)';
         statusKeyFal.style.color = '#fde047';
       }
     }
   }
 
+  function saveFalApiKey(rawKey) {
+    const val = (rawKey || '').trim();
+    if (val) {
+      localStorage.setItem('gs_fal_api_key', val);
+      refreshApiKeyStatusBadges();
+      showToast('✔ Fal.ai APIキーをiPhoneに記憶しました！次回から入力不要です');
+      return true;
+    } else {
+      localStorage.removeItem('gs_fal_api_key');
+      refreshApiKeyStatusBadges();
+      showToast('APIキーを消去しました');
+      return false;
+    }
+  }
+
+  if (saveInlineApiKeyBtn) {
+    saveInlineApiKeyBtn.addEventListener('click', () => {
+      triggerHaptic();
+      const val = inlineFalApiKeyInput ? inlineFalApiKeyInput.value : '';
+      if (!val.trim()) {
+        showToast('⚠️ Fal.ai でコピーしたAPIキーを入力欄に貼り付けてください');
+        if (inlineFalApiKeyInput) inlineFalApiKeyInput.focus();
+        return;
+      }
+      saveFalApiKey(val);
+    });
+  }
+
   function showAiStatus(msg, borderColor = '#38bdf8') {
     if (!aiGenStatusBox) return;
-    aiGenStatusBox.textContent = msg;
+    aiGenStatusBox.innerHTML = msg;
     aiGenStatusBox.style.borderColor = borderColor;
     aiGenStatusBox.classList.remove('hidden');
   }
 
-  // Model selection in v11-b
+  // Model selection in STEP 4
   document.querySelectorAll('.v11b-model-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       triggerHaptic();
@@ -857,13 +824,14 @@ document.addEventListener('DOMContentLoaded', () => {
         activePill.style.background = '#10b981';
         activePill.style.color = '#052e16';
       }
-      selectedV11bModel = btn.dataset.model || 'fal-ai/kling-video/v1.6/pro/image-to-video';
-      selectedV11bLabel = btn.dataset.label || 'Kling 1.6 Pro';
-      showToast(`🎬 「${selectedV11bLabel}」を選択しました`);
+      selectedV11bModel = btn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
+      selectedV11bMode = btn.dataset.mode || 'lipsync';
+      selectedV11bLabel = btn.dataset.label || 'ByteDance OmniHuman v1.5';
+      showToast(`🎤 「${selectedV11bLabel}」を選択しました`);
     });
   });
 
-  // Style chips in v11-b
+  // Style chips in STEP 4
   document.querySelectorAll('.ai-style-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       triggerHaptic();
@@ -882,7 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
         aiVideoPromptInput.value = chip.dataset.prompt;
       }
       characterRenderer.aiPromptStyle = selectedAiPromptStyle;
-      showToast('✨ 動画の動きスタイルを変更しました');
+      showToast('✨ 演出プロンプトを変更しました');
     });
   });
 
@@ -913,165 +881,314 @@ document.addEventListener('DOMContentLoaded', () => {
   if (saveAiSettingsBtn) {
     saveAiSettingsBtn.addEventListener('click', () => {
       triggerHaptic();
-      if (falApiKeyInput) {
-        const val = falApiKeyInput.value.trim();
-        if (val) {
-          localStorage.setItem('gs_fal_api_key', val);
-        } else {
-          localStorage.removeItem('gs_fal_api_key');
-        }
-      }
-      refreshApiKeyStatusBadges();
-      showToast('✔ Fal.ai APIキーをiPhoneに記憶しました！次回から入力不要です');
+      const val = falApiKeyInput ? falApiKeyInput.value : '';
+      saveFalApiKey(val);
       if (aiSettingsModal) aiSettingsModal.classList.add('hidden');
     });
   }
 
-  // Helper: Ensure a photo or sample vocalist is loaded for instant preview
-  function ensurePhotoForAiPreview(callback) {
-    if (characterRenderer.customAvatarImg) {
-      callback();
-      return;
+  // Helper: Convert Blob to Base64 Data URL
+  function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  // Helper: Extract Canvas as JPEG Blob
+  function canvasToJpegBlob(canvas, quality = 0.9) {
+    return new Promise((resolve) => {
+      if (canvas && typeof canvas.toBlob === 'function') {
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
+      } else {
+        resolve(null);
+      }
+    });
+  }
+
+  // Apply completed AI video URL to Inline Player, Save Modal, and Stage
+  async function handleCompletedAiVideo(videoUrl, modelLabel) {
+    showAiStatus(`🎉 <strong>「${modelLabel}」のAI動画が完成しました！</strong><br>下のビデオプレイヤーですぐに再生・カメラロール保存ができます。`, '#10b981');
+    showToast(`🎉 ${modelLabel} の生成が完了しました！`);
+
+    // 1. Show inline video player card
+    if (aiResultCard && inlineAiResultVideo) {
+      inlineAiResultVideo.src = videoUrl;
+      inlineAiResultVideo.load();
+      aiResultCard.classList.remove('hidden');
     }
-    const sampleImg = new Image();
-    sampleImg.crossOrigin = 'anonymous';
-    sampleImg.onload = () => {
-      const c = document.createElement('canvas');
-      c.width = sampleImg.naturalWidth || 720;
-      c.height = sampleImg.naturalHeight || 960;
-      c.getContext('2d').drawImage(sampleImg, 0, 0);
-      applyCustomAvatar(c, 'サンプル写真 (おためし用)');
-      callback();
-    };
-    sampleImg.onerror = () => {
-      callback();
-    };
-    sampleImg.src = 'sample-vocalist.jpg';
-  }
 
-  function launchAiVideoStagePreview(badgeLabel) {
-    ensurePhotoForAiPreview(() => {
+    // 2. Also attach to Stage Renderer (unmuted when playing standalone, or synced on stage)
+    const vidEl = document.createElement('video');
+    vidEl.crossOrigin = 'anonymous';
+    vidEl.src = videoUrl;
+    vidEl.loop = true;
+    vidEl.muted = true;
+    vidEl.playsInline = true;
+    vidEl.setAttribute('playsinline', '');
+    vidEl.onloadeddata = () => {
+      vidEl.play().catch(() => {});
+      characterRenderer.setAiVideo(vidEl);
       characterRenderer.aiMotionActive = true;
-      characterRenderer.aiModelBadge = badgeLabel;
-      characterRenderer.aiPromptStyle = selectedAiPromptStyle;
+      characterRenderer.aiModelBadge = modelLabel;
+    };
 
-      if (!audioEngine.hasAudioLoaded()) {
-        audioEngine.loadDemoTrack('jpop');
-        currentSongConfig = (typeof GROOVE_PRESETS !== 'undefined' && GROOVE_PRESETS.songs) ? GROOVE_PRESETS.songs.jpop : null;
-        if (controlSongTitle) controlSongTitle.textContent = 'Shining Beat (AI動画ステージ確認中)';
-        if (stageSongTitle) stageSongTitle.textContent = 'Shining Beat (AI動画ステージ確認中)';
-        trimStartSeconds = 0;
-        trimDurationSeconds = 30;
-        updateTrimmerUI();
+    // 3. Download MP4 Blob in background so iPhone "Save to Photos (Camera Roll)" works in 1 tap
+    try {
+      const resp = await fetch(videoUrl);
+      if (resp.ok) {
+        const mp4Blob = await resp.blob();
+        const cleanBlob = new Blob([mp4Blob], { type: 'video/mp4' });
+        const songTitle = (currentSongConfig && currentSongConfig.title) ? currentSongConfig.title : 'LipsyncMV';
+        const songNameClean = songTitle.replace(/[\s\/\\?%*:|"<>]+/g, '_');
+        const filename = `AI_Lipsync_${songNameClean}.mp4`;
+
+        if (lastRecordedUrl) {
+          try { URL.revokeObjectURL(lastRecordedUrl); } catch (e) {}
+        }
+        lastRecordedBlob = cleanBlob;
+        lastRecordedUrl = URL.createObjectURL(cleanBlob);
+        lastRecordedFilename = filename;
+        try {
+          lastRecordedFile = new File([cleanBlob], filename, { type: 'video/mp4' });
+        } catch (e) {
+          lastRecordedFile = null;
+        }
+
+        if (inlineAiResultVideo) {
+          inlineAiResultVideo.src = lastRecordedUrl;
+        }
+        openCompleteModal(lastRecordedUrl, filename, Math.round(trimDurationSeconds || 15));
       }
+    } catch (dlErr) {
+      console.warn('Could not pre-fetch MP4 blob, using direct remote URL:', dlErr);
+      lastRecordedUrl = videoUrl;
+      lastRecordedFilename = 'AI_Lipsync_MV.mp4';
+      openCompleteModal(videoUrl, 'AI_Lipsync_MV.mp4', Math.round(trimDurationSeconds || 15));
+    }
+  }
 
-      switchView('stage');
-      if (!audioEngine.isPlaying) {
-        audioEngine.playTrim(audioEngine.trimStart || 0);
-        updatePlayUI(true);
+  if (saveAiResultToPhotosBtn) {
+    saveAiResultToPhotosBtn.addEventListener('click', () => {
+      if (saveToPhotosBtn) {
+        saveToPhotosBtn.click();
+      } else if (lastRecordedUrl) {
+        window.open(lastRecordedUrl, '_blank');
       }
     });
   }
 
-  // 0-yen Demo button for v11-b
-  if (demoV11bBtn) {
-    demoV11bBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      triggerHaptic();
-      showAiStatus(`🧪 [0円おためし] 「${selectedV11bLabel}」の動きイメージでステージ再生を開始しました！`, '#10b981');
-      showToast(`🧪 「${selectedV11bLabel}」の動画イメージをステージで再生します！`);
-      launchAiVideoStagePreview(`${selectedV11bLabel} (おためし)`);
+  if (downloadAiResultMp4Btn) {
+    downloadAiResultMp4Btn.addEventListener('click', () => {
+      if (lastRecordedBlob) {
+        triggerBlobDownload(lastRecordedBlob, lastRecordedFilename || 'AI_Lipsync_MV.mp4');
+        showToast('MP4動画のダウンロードを開始しました');
+      } else if (lastRecordedUrl) {
+        window.open(lastRecordedUrl, '_blank');
+      }
     });
   }
 
-  // v11-b Fal.ai Unified API Generation Button
+  // Real Fal.ai API Lip-Sync & Video Generation Handler (No 0-yen fake fallback!)
   if (generateAiLipsyncBtn) {
     generateAiLipsyncBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       triggerHaptic();
 
-      const apiKey = localStorage.getItem('gs_fal_api_key');
+      // Check inline input first in case user pasted key but didn't click save yet
+      if (inlineFalApiKeyInput && inlineFalApiKeyInput.value.trim() && !localStorage.getItem('gs_fal_api_key')) {
+        saveFalApiKey(inlineFalApiKeyInput.value.trim());
+      }
+
+      const apiKey = (localStorage.getItem('gs_fal_api_key') || '').trim();
       if (!apiKey) {
-        showToast('💡 Fal.aiのAPIキーを初回1回登録してください（0円おためしボタンならキー不要です）');
-        openApiModal();
+        showAiStatus('⚠️ <strong>Fal.ai のAPIキーがまだ登録されていません。</strong><br>画面一番上の「🔑 Fal.ai APIキーの取得・登録」でキーを貼り付けて保存してください。', '#f59e0b');
+        showToast('🔑 まず一番上の欄に Fal.ai APIキーを貼り付けて保存してください');
+        if (inlineFalApiKeyInput) {
+          inlineFalApiKeyInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => inlineFalApiKeyInput.focus(), 400);
+        } else {
+          openApiModal();
+        }
         return;
       }
 
-      ensurePhotoForAiPreview(async () => {
-        const promptText = (aiVideoPromptInput && aiVideoPromptInput.value.trim())
-          ? aiVideoPromptInput.value.trim()
-          : 'Cinematic music video, the artist gently swaying to the rhythm on a neon-lit concert stage, natural breathing, atmospheric lighting';
+      if (!characterRenderer.customAvatarImg) {
+        showAiStatus('⚠️ <strong>STEP 1 で人物の写真がまだアップロードされていません。</strong><br>まず歌わせたい人物の写真を1枚選んでください。', '#f59e0b');
+        showToast('📷 STEP 1 で歌わせたい人物の写真をアップロードしてください');
+        avatarUploadBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
 
-        let imageDataUrl = '';
-        try {
-          if (characterRenderer.customAvatarImg && typeof characterRenderer.customAvatarImg.toDataURL === 'function') {
-            imageDataUrl = characterRenderer.customAvatarImg.toDataURL('image/jpeg', 0.88);
+      const isLipsyncMode = (selectedV11bMode === 'lipsync');
+      if (isLipsyncMode && !audioEngine.hasAudioLoaded()) {
+        showAiStatus('⚠️ <strong>STEP 2 で楽曲ファイルがまだアップロードされていません。</strong><br>リップシンク（口パク歌唱）には元になる楽曲が必要です。STEP 2 で楽曲を取り込んでください。', '#f59e0b');
+        showToast('🎵 STEP 2 であなたの楽曲ファイルをアップロードしてください');
+        audioUploadBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      const promptText = (aiVideoPromptInput && aiVideoPromptInput.value.trim())
+        ? aiVideoPromptInput.value.trim()
+        : 'Passionate music video performance, singer singing emotionally with natural head movement and expressive eyes, concert stage lighting, high quality 4k';
+
+      generateAiLipsyncBtn.disabled = true;
+      const originalBtnHtml = generateAiLipsyncBtn.innerHTML;
+      let elapsedSec = 0;
+      let progressTimer = null;
+
+      try {
+        showAiStatus(`⏳ <strong>[1/3] 写真と切り出し音源（${formatTime(audioEngine.trimStart || 0)}〜${formatTime(audioEngine.trimEnd || 15)}）を準備しています...</strong>`, '#c084fc');
+
+        // 1. Prepare Image File & Data URL
+        const imgBlob = await canvasToJpegBlob(characterRenderer.customAvatarImg, 0.9);
+        const imgDataUrl = characterRenderer.customAvatarImg.toDataURL('image/jpeg', 0.88);
+        const imgFile = imgBlob ? new File([imgBlob], 'artist_photo.jpg', { type: 'image/jpeg' }) : null;
+
+        // 2. Prepare Sliced Audio MP3 File & Data URL (if lipsync mode)
+        let audioFile = null;
+        let audioDataUrl = '';
+        if (isLipsyncMode) {
+          const srcBuf = audioEngine.ensureAudioBuffer();
+          if (!srcBuf) {
+            throw new Error('楽曲データのデコードに失敗しました。もう一度STEP 2で楽曲を選択してください。');
           }
-        } catch (imgErr) {
-          console.warn('Could not extract dataURL from canvas:', imgErr);
+          const startSec = audioEngine.trimStart || 0;
+          const endSec = Math.max(startSec + 1, audioEngine.trimEnd || (startSec + 15));
+          const slicedBuf = sliceBufferDirect(srcBuf, startSec, endSec);
+          const mp3Blob = encodeMp3Direct(slicedBuf);
+          audioFile = new File([mp3Blob], 'vocal_cut.mp3', { type: 'audio/mpeg' });
+          audioDataUrl = await blobToDataUrl(mp3Blob);
         }
 
-        generateAiLipsyncBtn.disabled = true;
-        const originalBtnHtml = generateAiLipsyncBtn.innerHTML;
-        generateAiLipsyncBtn.innerHTML = '<span>⏳ Fal.ai でAI動画を生成中...</span>';
-        showAiStatus(`🚀 Fal.ai（${selectedV11bLabel}）へ写真とプロンプトを送信し、AI動画を生成しています...`, '#c084fc');
-        showToast(`🚀 Fal.ai (${selectedV11bLabel}) でAI動画を生成中...`);
+        // Start live elapsed second counter for user feedback
+        progressTimer = setInterval(() => {
+          elapsedSec += 1;
+          generateAiLipsyncBtn.innerHTML = `<span>⏳ AIリップシンク生成中... (${elapsedSec}秒経過)</span>`;
+        }, 1000);
 
+        let finalVideoUrl = '';
+
+        // 3. Call Fal.ai via official @fal-ai/client (handles Storage Upload + Queue Polling automatically)
         try {
-          const payload = { prompt: promptText };
-          if (imageDataUrl) {
-            payload.image_url = imageDataUrl;
-          }
+          const falModule = await import('https://cdn.jsdelivr.net/npm/@fal-ai/client/+esm');
+          const createFalClient = falModule.createFalClient || (falModule.default && falModule.default.createFalClient);
 
-          const response = await fetch(`https://fal.run/${selectedV11bModel}`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Key ${apiKey}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          });
+          if (createFalClient) {
+            const falClient = createFalClient({ credentials: apiKey });
 
-          if (response.ok) {
-            const data = await response.json();
-            const videoUrl = (data && data.video && data.video.url) || (data && data.video_url) || '';
-            if (videoUrl) {
-              const vidEl = document.createElement('video');
-              vidEl.crossOrigin = 'anonymous';
-              vidEl.src = videoUrl;
-              vidEl.loop = true;
-              vidEl.muted = true;
-              vidEl.playsInline = true;
-              vidEl.setAttribute('playsinline', '');
-              vidEl.onloadeddata = () => {
-                vidEl.play().catch(() => {});
-                characterRenderer.setAiVideo(vidEl);
-                characterRenderer.aiMotionActive = true;
-                characterRenderer.aiModelBadge = `v11-b: ${selectedV11bLabel}`;
-                showAiStatus(`🎉 「${selectedV11bLabel}」のAI動画生成が完了しました！ステージ画面で再生中です。`, '#10b981');
-                showToast(`🎉 ${selectedV11bLabel} のAI動画が完成しました！`);
-                switchView('stage');
-              };
-              generateAiLipsyncBtn.disabled = false;
-              generateAiLipsyncBtn.innerHTML = originalBtnHtml;
-              return;
+            showAiStatus(`⏳ <strong>[2/3] Fal.ai サーバーへ写真と音源をアップロード中...</strong>`, '#38bdf8');
+            let uploadedImageUrl = imgDataUrl;
+            let uploadedAudioUrl = audioDataUrl;
+
+            if (imgFile && falClient.storage && typeof falClient.storage.upload === 'function') {
+              try {
+                uploadedImageUrl = await falClient.storage.upload(imgFile);
+              } catch (uErr) {
+                console.warn('Image storage upload fallback to DataURL:', uErr);
+              }
             }
-          }
+            if (isLipsyncMode && audioFile && falClient.storage && typeof falClient.storage.upload === 'function') {
+              try {
+                uploadedAudioUrl = await falClient.storage.upload(audioFile);
+              } catch (uErr) {
+                console.warn('Audio storage upload fallback to DataURL:', uErr);
+              }
+            }
 
-          // Fallback to stage motion preview if API returns non-200 (e.g. test key or credit check)
-          showAiStatus(`✔ 「${selectedV11bLabel}」モードでステージ映像を起動しました！（STEP 2〜5で楽曲と合体・録画できます）`, '#10b981');
-          showToast(`✔ ${selectedV11bLabel} ステージ再生を開始します`);
-          launchAiVideoStagePreview(`v11-b: ${selectedV11bLabel}`);
-        } catch (err) {
-          console.warn('Fal.ai API call notice:', err);
-          showAiStatus(`✔ 「${selectedV11bLabel}」モードでステージ映像を起動しました！（STEP 2〜5で楽曲と合体・録画できます）`, '#10b981');
-          showToast(`✔ ${selectedV11bLabel} ステージ再生を開始します`);
-          launchAiVideoStagePreview(`v11-b: ${selectedV11bLabel}`);
-        } finally {
-          generateAiLipsyncBtn.disabled = false;
-          generateAiLipsyncBtn.innerHTML = originalBtnHtml;
+            // Build model input payload
+            const inputPayload = {
+              image_url: uploadedImageUrl,
+              prompt: promptText
+            };
+            if (isLipsyncMode && uploadedAudioUrl) {
+              inputPayload.audio_url = uploadedAudioUrl;
+            }
+
+            showAiStatus(`🚀 <strong>[2/3] 「${selectedV11bLabel}」でAIリップシンク動画を生成中です...</strong><br><small style="color:#cbd5e1;">※ 本格的な口パク・表情生成には約1〜3分かかります。この画面のままお待ちください。</small>`, '#c084fc');
+
+            const result = await falClient.subscribe(selectedV11bModel, {
+              input: inputPayload,
+              logs: true,
+              onQueueUpdate: (statusUpdate) => {
+                if (!statusUpdate) return;
+                if (statusUpdate.status === 'IN_QUEUE') {
+                  const pos = (typeof statusUpdate.queue_position === 'number') ? ` (順番: ${statusUpdate.queue_position + 1}番目)` : '';
+                  showAiStatus(`⏳ <strong>[2/3] Fal.ai の生成キューに並びました${pos}... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">まもなくAI描画が始まります。そのままお待ちください。</small>`, '#38bdf8');
+                } else if (statusUpdate.status === 'IN_PROGRESS') {
+                  showAiStatus(`🎤 <strong>[2/3] AIがあなたの楽曲に合わせて口元のリップシンクと表情を描画しています... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成まであと少しです。画面を閉じずにお待ちください。</small>`, '#ec4899');
+                }
+              }
+            });
+
+            const resData = (result && result.data) ? result.data : result;
+            finalVideoUrl = (resData && resData.video && resData.video.url) || (resData && resData.video_url) || '';
+          }
+        } catch (sdkErr) {
+          console.warn('Fal client SDK notice, checking error or trying direct REST:', sdkErr);
+          const status = sdkErr && (sdkErr.status || (sdkErr.body && sdkErr.body.status));
+          const detailMsg = (sdkErr && sdkErr.body && (sdkErr.body.detail || sdkErr.body.message)) || (sdkErr && sdkErr.message) || '';
+          if (status === 401 || /unauthorized|invalid.*key/i.test(detailMsg)) {
+            throw new Error('APIキーが無効です（401エラー）。Fal.ai の Keys ページで発行した正しいキーかご確認ください。');
+          }
+          if (status === 402 || status === 403 || /balance|credit|exhausted|billing|payment/i.test(detailMsg)) {
+            throw new Error(`Fal.ai のクレジット残高が不足しているか、利用制限です（${detailMsg || 'Billingページでチャージをご確認ください'}）。`);
+          }
+          // Try direct REST fallback if SDK import itself had a network hiccup
+          if (!finalVideoUrl) {
+            const payload = {
+              image_url: imgDataUrl,
+              prompt: promptText
+            };
+            if (isLipsyncMode && audioDataUrl) {
+              payload.audio_url = audioDataUrl;
+            }
+            const response = await fetch(`https://fal.run/${selectedV11bModel}`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Key ${apiKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+              let errText = '';
+              try {
+                const errJson = await response.json();
+                errText = errJson.detail || errJson.message || JSON.stringify(errJson);
+              } catch (e) {
+                errText = `HTTP ${response.status}`;
+              }
+              if (response.status === 401) {
+                throw new Error('APIキーが正しくありません（401 Unauthorized）。Fal.aiのキーを再確認してください。');
+              } else if (response.status === 402 || response.status === 403) {
+                throw new Error(`Fal.ai のクレジット残高不足、または権限エラーです（${errText}）。fal.ai/dashboard/billing で残高をご確認ください。`);
+              } else {
+                throw new Error(`Fal.ai APIエラー (${response.status}): ${errText}`);
+              }
+            }
+            const data = await response.json();
+            finalVideoUrl = (data && data.video && data.video.url) || (data && data.video_url) || '';
+          }
         }
-      });
+
+        if (!finalVideoUrl) {
+          throw new Error('動画URLが返されませんでした。秒数を短く（10〜15秒）するか、別のモデルでお試しください。');
+        }
+
+        await handleCompletedAiVideo(finalVideoUrl, selectedV11bLabel);
+      } catch (err) {
+        console.error('Fal.ai Lip-Sync generation error:', err);
+        const msg = (err && err.message) ? err.message : '通信エラーが発生しました';
+        showAiStatus(`❌ <strong>生成エラー：${msg}</strong><br><small style="color:#fde047;">※ APIキーの入力ミスや、Fal.ai のクレジット残高（fal.ai/dashboard/billing）をご確認ください。</small>`, '#ef4444');
+        showToast(`❌ エラー: ${msg}`);
+      } finally {
+        if (progressTimer) clearInterval(progressTimer);
+        generateAiLipsyncBtn.disabled = false;
+        generateAiLipsyncBtn.innerHTML = originalBtnHtml;
+      }
     });
   }
 
@@ -1093,9 +1210,12 @@ document.addEventListener('DOMContentLoaded', () => {
         characterRenderer.setAiVideo(vidEl);
         characterRenderer.aiMotionActive = true;
         characterRenderer.aiModelBadge = '取り込みAI動画 (MP4)';
-        showAiStatus(`🎬 スマホ内の動画「${file.name}」をステージにセットしました！`, '#10b981');
-        showToast(`🎬 AI動画「${file.name}」をステージの主役にセットしました！`);
-        switchView('stage');
+        if (aiResultCard && inlineAiResultVideo) {
+          inlineAiResultVideo.src = vidUrl;
+          aiResultCard.classList.remove('hidden');
+        }
+        showAiStatus(`🎬 スマホ内の動画「${file.name}」を読み込みました！`, '#10b981');
+        showToast(`🎬 AI動画「${file.name}」をセットしました！`);
       };
     });
   }
