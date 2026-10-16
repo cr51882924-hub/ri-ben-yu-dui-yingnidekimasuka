@@ -396,16 +396,15 @@ document.addEventListener('DOMContentLoaded', () => {
       chip.classList.add('active');
 
       const dur = chip.dataset.dur;
-      if (dur === '15') trimDurationSeconds = 15;
-      else if (dur === '30') trimDurationSeconds = 30;
-      else if (dur === '40') trimDurationSeconds = 40;
-      else if (dur === '60') trimDurationSeconds = 60;
-      else if (dur === 'full') {
-        trimDurationSeconds = Math.max(1, audioEngine.duration - trimStartSeconds);
+      if (dur === 'full') {
+        trimDurationSeconds = Math.max(1, (audioEngine.duration || 15) - trimStartSeconds);
+      } else {
+        const parsed = parseInt(dur, 10);
+        if (parsed > 0) trimDurationSeconds = parsed;
       }
 
       updateTrimmerUI();
-      showToast(`動画の長さを「${Math.round(trimDurationSeconds)}秒」にセットしました`);
+      showToast(`リップシンク動画の長さを「${Math.round(trimDurationSeconds)}秒」にセットしました`);
     });
   });
 
@@ -1492,7 +1491,8 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerHaptic();
 
       if (!audioEngine.hasAudioLoaded()) {
-        audioEngine.loadDemoTrack('jpop');
+        showToast('まず STEP 2 であなたの楽曲ファイルをアップロードしてください');
+        return;
       }
 
       showToast('✂️ カット音声をエンコード中...');
@@ -1501,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let buf = audioEngine.ensureAudioBuffer();
         if (!buf) {
           const ctx = audioEngine.ctx || new (window.AudioContext || window.webkitAudioContext)();
-          buf = ctx.createBuffer(2, ctx.sampleRate * 30, ctx.sampleRate);
+          buf = ctx.createBuffer(2, ctx.sampleRate * 15, ctx.sampleRate);
         }
 
         const sliced = sliceBufferDirect(buf, audioEngine.trimStart, audioEngine.trimEnd);
@@ -1623,15 +1623,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (audioCompleteModal) {
     audioCompleteModal.addEventListener('click', (e) => {
       if (e.target === audioCompleteModal) closeCutAudioModal();
-    });
-  }
-
-
-  if (stageCanvas) {
-    stageCanvas.addEventListener('click', (e) => {
-      if (!characterRenderer.customAvatarImg) {
-        playOfficialSampleMV();
-      }
     });
   }
 
@@ -1757,7 +1748,7 @@ document.addEventListener('DOMContentLoaded', () => {
       savedCustomAvatarName = file.name;
       applyCustomAvatar(optCanvas, file.name);
 
-      showToast('🎉 あなたの写真をセットしました！MVの主役として表示されます');
+      showToast('🎉 あなたの写真をセットしました！');
     } catch (err) {
       console.error('Image load error:', err);
       avatarCardTitle.textContent = '写真の読み込みに失敗しました';
@@ -1820,7 +1811,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (stageSongTitle) stageSongTitle.textContent = cleanName;
         audioUploadBtn.classList.add('applied');
         if (audioCardTitle) audioCardTitle.textContent = `✔ 読込完了: ${file.name}`;
-        if (audioUploadHint) audioUploadHint.textContent = `全体の長さ: ${formatTime(res.duration)}（下で秒数確認・使う区間を調整できます）`;
+        if (audioUploadHint) audioUploadHint.textContent = `全体の長さ: ${formatTime(res.duration)}（下のSTEP 3で歌わせる区間を指定してください）`;
 
         currentSongConfig = {
           title: cleanName,
@@ -1829,26 +1820,26 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         if (stageBpmIndicator) stageBpmIndicator.textContent = `120 BPM`;
 
-        // Set trimmer defaults for user song
+        // Set trimmer defaults for user song (15s default for AI lip-sync)
         trimStartSeconds = 0;
-        trimDurationSeconds = Math.min(res.duration || 30, 30);
+        trimDurationSeconds = Math.min(res.duration || 15, 15);
         try {
           updateTrimmerUI();
         } catch (uiErr) {
           console.warn('updateTrimmerUI error:', uiErr);
         }
 
-        // Safely try starting playback in full preview mode (browsers may restrict auto-play after async file picking)
+        // Safely try starting playback in full preview mode
         try {
           audioEngine.playFull(0);
           updatePlayUI(true);
           updateFullPlayerUI(true);
-          showToast(`🎉 楽曲「${cleanName}」（全体 ${formatTime(res.duration)}）を読み込みました！曲全体のサウンドを流して秒数を確認できます。`);
+          showToast(`🎉 楽曲「${cleanName}」（全体 ${formatTime(res.duration)}）を読み込みました！STEP 3で歌わせる秒数を指定できます。`);
         } catch (playErr) {
           console.warn('Auto play blocked by browser policy:', playErr);
           updatePlayUI(false);
           updateFullPlayerUI(false);
-          showToast(`🎉 楽曲「${cleanName}」を読み込みました！下の「▶ 曲全体を再生する」を押して試聴できます。`);
+          showToast(`🎉 楽曲「${cleanName}」を読み込みました！STEP 3の「▶ 曲全体を再生して秒数を確認」を押して試聴できます。`);
         }
       } else {
         const errDetail = (res && res.error) ? res.error : '端末内の音楽または録音ファイルをお試しください';
@@ -1861,7 +1852,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Audio load error:', err);
       const msg = (err && err.message) ? err.message : '端末の設定またはファイル形式をご確認ください';
       if (audioUploadHint) {
-        audioUploadHint.innerHTML = `<span style="color:#ef4444;font-weight:700;">⚠ 読込エラー: ${msg}</span><br><small style="color:#cbd5e1;">※画面上部の【🔄 最新版に更新】を押すか、別の曲をお試しください</small>`;
+        audioUploadHint.innerHTML = `<span style="color:#ef4444;font-weight:700;">⚠ 読込エラー: ${msg}</span><br><small style="color:#cbd5e1;">※画面上部の【🔄 最新版】を押すか、別の曲をお試しください</small>`;
       }
       showToast('ファイルの読み込みに失敗しました');
     } finally {
@@ -1870,23 +1861,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
-  // Mic Toggle
+  // Mic Toggle (if present)
   // ==========================================
-  micToggleBtn.addEventListener('click', async () => {
-    triggerHaptic();
-    const active = await audioEngine.toggleMic();
-    if (active) {
-      micToggleBtn.classList.add('active');
-      micBtnTitle.textContent = '🎤 マイク入力中（タップで停止）';
-      controlSongTitle.textContent = '🎤 リアルタイムマイク歌唱中';
-      stageSongTitle.textContent = '🎤 リアルタイムマイク歌唱中';
-      showToast('マイク入力を開始しました。歌ってみてください！');
-    } else {
-      micToggleBtn.classList.remove('active');
-      micBtnTitle.textContent = 'スマホのマイクで歌唱テスト';
-      showToast('マイク入力を停止しました');
-    }
-  });
+  if (micToggleBtn) {
+    micToggleBtn.addEventListener('click', async () => {
+      triggerHaptic();
+      const active = await audioEngine.toggleMic();
+      if (active) {
+        micToggleBtn.classList.add('active');
+        if (micBtnTitle) micBtnTitle.textContent = '🎤 マイク入力中（タップで停止）';
+        showToast('マイク入力を開始しました');
+      } else {
+        micToggleBtn.classList.remove('active');
+        if (micBtnTitle) micBtnTitle.textContent = 'スマホのマイクで歌唱テスト';
+        showToast('マイク入力を停止しました');
+      }
+    });
+  }
 
   // ==========================================
   // Video Recording & Download Pipeline (Canvas + Web Audio -> MP4/WebM)
