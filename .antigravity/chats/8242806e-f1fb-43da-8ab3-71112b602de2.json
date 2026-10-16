@@ -136,6 +136,18 @@
       "created_at": "2026-10-16T11:24:33.854Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "0583ce8e-875c-48f6-a48e-f77dc6aa2ddd",
+      "role": "agent",
+      "content": "おっしゃる通りです！これから技術が進化すればするほど、本当にクオリティの高い映像・リップシンクAIは有料のAPIとして提供されますし、「リップシンク」という言葉を知っていて使いたい方に、0円の簡易おためしやサンプルの動きは不要ですね。\n\n回り道は一切やめ、**「0円おためし」「サンプル写真・サンプル曲」「旧式の動きサンプル」をすべて完全撤廃**し、**1つのAPIキーで最初から本番の「AIリップシンク歌唱動画（口パク＋表情＋上半身の動き）」まで一気に行けるスタジオ（v12）** に刷新しました！\n\n---\n\n### 📱 現在のアプリ画面（v12：本格AIリップシンク直結版）\n👉 **[ここをタップして新しいスタジオ画面（v12）を開く](https://antigravity.luch.dev/site/99be14d3-31d5-4abb-884c-c3b755893105/e9856f67f45823b115dd6ebe/)**\n\n---\n\n### 🔑 あなたのAPIキーはどこから取ればいいか（iPhoneで3分・かんたん手順）\n\nアプリの一番上にも**直通ボタン付きの手順ガイド**を設置しましたが、以下の3ステップで取得できます。\n\n#### **手順①：Fal.ai 公式ページを開いてログインする**\n1. 👉 **[Fal.ai キー発行ページ (https://fal.ai/dashboard/keys)](https://fal.ai/dashboard/keys)** をタップして開きます。\n2. 画面の **「Continue with Google（Googleでログイン）」** などを押してログインします（アカウントがなければそのまま無料作成されます）。\n\n#### **手順②：使う分だけクレジット（残高）をチャージする**\n1. 👉 **[Fal.ai チャージ画面 (https://fal.ai/dashboard/billing)](https://fal.ai/dashboard/billing)** を開きます。\n2. 月額の固定費ではなく、**使った分だけ減るプリペイド（前払い）方式**です。\n3. **「Add Credits（または設定からカード登録）」** を押し、まずはお試しで **$5〜$10（約750円〜1,500円分）** ほどチャージします。\n\n#### **手順③：APIキーを発行してコピー＆アプリに貼り付ける**\n1. もう一度 👉 **[キー発行ページ (https://fal.ai/dashboard/keys)](https://fal.ai/dashboard/keys)** を開きます。\n2. **「+ Add key」**（または **Create Key**）ボタンを押します。\n3. 画面に表示された長い英数字のキー（`xxxx:yyyy...` のような文字列）の横にある **「Copy（コピー）」** を押します。\n4. [スタジオ画面](https://antigravity.luch.dev/site/99be14d3-31d5-4abb-884c-c3b755893105/e9856f67f45823b115dd6ebe/)の一番上にある入力欄に貼り付け、**「✔ APIキーをiPhoneに記憶・保存する」** を押せば完了です！（お使いのiPhoneに記憶されるため、2回目からは入力不要です）\n\n---\n\n### 🎤 一気にリップシンク動画を作る流れ（変更点：[index.html](file:///home/agent/workspace/index.html) / [app.js](file:///home/agent/workspace/app.js)）\n\n1. **STEP 1（写真）**：歌わせたい人物の写真を1枚選びます。\n2. **STEP 2 & 3（曲と秒数）**：あなたのオリジナル楽曲を選び、歌わせたい区間（まずは **10秒** または **15秒** が生成も速くおすすめです）を指定します。\n3. **STEP 4（AIリップシンク生成）**：\n   - 世界最高峰のリップシンクモデル **「🎤 ByteDance OmniHuman v1.5」** または **「🎬 Kling AI Avatar v2 Pro / Standard」**・**「🌟 MiniMax Lip-Sync」** を選びます。\n   - **「✨ APIでAIリップシンク歌唱動画を生成する」** を押すと、指定した秒数の歌声（MP3）が自動で切り出され、写真と一緒にFal.aiへ送信されて**音声付きのAIリップシンク動画（MP4）**が完成し、そのままiPhoneの「写真（カメラロール）」に保存できます。",
+      "status": "completed",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "c2226b8c-7dda-4b12-a71d-6cda6366d696",
+      "created_at": "2026-10-16T11:35:16.322Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
