@@ -3,19 +3,19 @@
   "name": "また、メッセージが表示されないか、届いていないか、 の確認でした。 あと、 ⇩ 🔴動画かリップシンクは、 ３番を実装してください。",
   "createdAt": "2026-10-17T20:45:03.661Z",
   "filename": "0ae50140-3cfe-49a9-89da-6d1e1eed9cb1.json",
-  "geminiStarted": false,
+  "geminiStarted": true,
   "messages": [
     {
       "id": "d29c8d74-903c-453d-b000-dbbb4b0b483b",
       "role": "user",
       "content": "また、メッセージが表示されないか、届いていないか、\nの確認でした。\n\nあと、\n⇩\n\n🔴動画かリップシンクは、\n\n３番を実装してください。\n\n※これまでの画像や写真からリップシンクも残してくださち。\n\n🔴あと、いま、きづいたのですが、\n完成動画のサイズの選択は必須と思います。",
-      "status": "pending",
+      "status": "cancelled",
       "model": "gemini-3.8-flash-high",
       "client_type": "gemini-bridge",
       "parent_message_id": null,
       "created_at": "2026-10-17T20:45:05.529Z",
       "sender": "ios",
-      "is_cancelled": false
+      "is_cancelled": true
     }
   ]
 }
