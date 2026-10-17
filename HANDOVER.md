@@ -7,20 +7,18 @@
   - 小さな文字や細かすぎるボタンはNG。
   - iPhoneの音声入力（ディクテーション）を使ってチャットされることがあるため、多少の音声認識の誤変換があっても文脈から意図を汲み取って対応すること。
 
-## 2. 決定事項（v12：0円サンプル完全撤廃 ＆ 一気に本番AIリップシンク直結）
-1. **0円おためし・サンプルの完全撤廃**:
-   - 「0円で良い動画は作れない」「リップシンクを使う人は本物のAI品質を求めているため、サンプルの変な動きや0円おためしは不要」というユーザー様のご方針に基づき、0円おためしボタン・サンプル写真（`sample-vocalist.jpg`）・サンプル楽曲（`Shining Beat`）・旧2Dキャンバス動作プリセット・APIエラー時の疑似フォールバックを**すべて完全撤廃**。
-2. **Fal.ai 統合APIキー1つで、一気に本番AIリップシンク歌唱動画生成まで直結**:
-   - 段階的な回り道をせず、最初から以下の一気通貫フロー（v12）を実装済み：
-     - **🔑 STEP 0**: Fal.ai APIキーの取得手順ガイド（直通リンク付き）＆ 画面上でのワンタップ記憶保存（`localStorage` の `gs_fal_api_key`）
-     - **📷 STEP 1**: 歌わせたい人物の写真を取り込む
-     - **🎵 STEP 2 & 3**: オリジナル楽曲を取り込み、歌わせる区間（5秒 / 10秒 / 15秒 / 30秒など）を指定（アプリ内部でその区間のMP3音声を自動切り出し）
-     - **🎤 STEP 4**: Fal.ai の本格リップシンクAIモデル（`ByteDance OmniHuman v1.5`、`Kling AI Avatar v2 Pro / Standard`、`MiniMax H3 Max Lip-Sync`）へ写真と切り出し音源を送信し、音声付きリップシンクMP4動画を生成・即カメラロール保存
+## 2. 決定事項・現在の進捗（v12.1）
+1. **0円おためし・サンプル・簡易ステージ演出（⑤・ステージ画面）の完全撤廃**:
+   - サンプル音源、サンプル写真、0円おためし、および最下部の「⑤ ステージ演出を重ねて録画・保存」と上部の「ステージ画面」タブはすべて完全削除済み。
+2. **Fal.ai 統合APIキーの取得完了 ＆ 本番AIリップシンク動画生成の成功確認済み**:
+   - ユーザー様は Fal.ai でクレジットチャージ＆APIキー発行を完了し、実際に写真＋オリジナル楽曲からAIリップシンク動画の生成に成功済み。
+3. **Safari「ホーム画面に追加（PWA）」の画面サイズ崩れ修正 ＆ APIキー5重永久記憶（v12.1）**:
+   - iOSのホーム画面Webアプリ（スタンドアロン表示）で横幅のはみ出しやノッチ重なりが起きないよう `style.css` / `index.html` の safe-area / `overflow-x: hidden` / `100dvh` を修正済み。
+   - iOSの仕様でSafariとホーム画面アプリの保存領域が分離される問題に対し、`localStorage` + `sessionStorage` + `Cookie` + `CacheStorage` + `IndexedDB` + `URLハッシュ自動引き継ぎ` の多重バックアップ記憶を `app.js` に実装済み。
 
 ## 3. 現在のファイル構成 (`/home/agent/workspace`)
-- `index.html` / `v11-b.html`: v12 本格AIリップシンク歌唱動画生成スタジオ画面
-- `app.js`: Fal.ai 公式SDK（`@fal-ai/client` Storage + Queue API）＆ REST連携によるリップシンク動画生成・音声自動切り出し送信・iPhoneカメラロール保存ロジック
-- `audio-engine.js`: Web Audio API / HTML5 Audio による楽曲読み込み・再生・周波数解析
-- `audio-cutter.js` / `audio-cutter.html`: 波形表示つき楽曲トリミング専用ツール
-- `character-renderer.js`: ステージCanvas描画
-- `style.css`: スマホ特大UI・高コントラストスタイル
+- `index.html`: v12.1 本格AIリップシンク歌唱動画生成スタジオ画面
+- `app.js`: Fal.ai 公式SDK（`@fal-ai/client`）連携、5重APIキー永久記憶、音声自動切り出し、カメラロール保存ロジック
+- `audio-engine.js`: 楽曲読み込み・再生
+- `audio-cutter.js` / `audio-cutter.html`: 楽曲カッター専用ツール
+- `style.css`: iPhone & ホーム画面アプリ（PWA）完全対応の特大UIスタイル

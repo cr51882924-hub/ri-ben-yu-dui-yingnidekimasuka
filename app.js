@@ -1062,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openApiModal() {
     triggerHaptic();
-    if (falApiKeyInput) falApiKeyInput.value = localStorage.getItem('gs_fal_api_key') || '';
+    if (falApiKeyInput) falApiKeyInput.value = getSavedFalApiKey();
     if (aiSettingsModal) aiSettingsModal.classList.remove('hidden');
   }
 
@@ -1204,11 +1204,11 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerHaptic();
 
       // Check inline input first in case user pasted key but didn't click save yet
-      if (inlineFalApiKeyInput && inlineFalApiKeyInput.value.trim() && !localStorage.getItem('gs_fal_api_key')) {
+      if (inlineFalApiKeyInput && inlineFalApiKeyInput.value.trim() && !getSavedFalApiKey()) {
         saveFalApiKey(inlineFalApiKeyInput.value.trim());
       }
 
-      const apiKey = (localStorage.getItem('gs_fal_api_key') || '').trim();
+      const apiKey = getSavedFalApiKey();
       if (!apiKey) {
         showAiStatus('⚠️ <strong>Fal.ai のAPIキーがまだ登録されていません。</strong><br>画面一番上の「🔑 Fal.ai APIキーの取得・登録」でキーを貼り付けて保存してください。', '#f59e0b');
         showToast('🔑 まず一番上の欄に Fal.ai APIキーを貼り付けて保存してください');
