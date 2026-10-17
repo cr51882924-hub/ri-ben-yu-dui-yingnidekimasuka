@@ -416,34 +416,38 @@
             </div>
           </div>
 
-          <!-- ① 開始位置の分・秒 直接入力 ＆ 1秒ずらし微調整 -->
+          <!-- ① 開始位置の分・秒 直接入力 ＆ 0.5秒/1秒ずらし微調整 -->
           <div class="trim-direct-input-card">
             <div class="input-card-header">
-              <span class="input-card-title">① 歌い出し（開始位置）の調整</span>
+              <span class="input-card-title">① 歌い出し（開始位置）</span>
               <span class="input-card-badge" id="startPosBadge">00:00 からスタート</span>
             </div>
 
             <div class="min-sec-input-row">
               <div class="time-input-group">
-                <input type="number" id="trimStartMinInput" class="time-num-input" min="0" max="59" value="0" inputmode="numeric" aria-label="開始位置（分）">
+                <input type="number" id="trimStartMinInput" class="time-num-input" min="0" max="59" step="1" value="0" inputmode="numeric" aria-label="開始位置（分）">
                 <span class="time-unit">分</span>
               </div>
               <span class="time-colon">:</span>
               <div class="time-input-group">
-                <input type="number" id="trimStartSecInput" class="time-num-input" min="0" max="59" value="0" inputmode="numeric" aria-label="開始位置（秒）">
+                <input type="number" id="trimStartSecInput" class="time-num-input" min="0" max="59.5" step="0.5" value="0" inputmode="decimal" aria-label="開始位置（秒）">
                 <span class="time-unit">秒</span>
               </div>
             </div>
 
-            <!-- 開始位置の微調整ボタン（1秒単位・10秒単位） -->
+            <!-- 開始位置の微調整ボタン（0.5秒・1秒単位：終了位置は固定されます） -->
             <div class="stepper-buttons-row">
-              <button type="button" class="stepper-btn" id="startMinus10Btn">◀ -10秒</button>
               <button type="button" class="stepper-btn" id="startMinus1Btn" style="border-color: #fcd34d; color: #fde047; font-weight: 900;">◀ -1秒</button>
+              <button type="button" class="stepper-btn" id="startMinusHalfBtn" style="border-color: #fde047; color: #fef08a; font-weight: 900;">◀ -0.5秒</button>
+              <button type="button" class="stepper-btn" id="startPlusHalfBtn" style="border-color: #fde047; color: #fef08a; font-weight: 900;">+0.5秒 ▶</button>
               <button type="button" class="stepper-btn" id="startPlus1Btn" style="border-color: #fcd34d; color: #fde047; font-weight: 900;">+1秒 ▶</button>
-              <button type="button" class="stepper-btn" id="startPlus10Btn">+10秒 ▶</button>
             </div>
 
-            <input type="range" id="trimStartSlider" class="super-fat-slider" min="0" max="300" value="0" step="1" aria-label="開始秒数スライダー">
+            <div style="font-size: 0.82rem; color: #fef08a; margin: 2px 0 10px 0; line-height: 1.35;">
+              💡 開始位置をずらすと<strong>「終了位置」は固定のまま</strong>、動画の長さが自動計算されます。
+            </div>
+
+            <input type="range" id="trimStartSlider" class="super-fat-slider" min="0" max="300" value="0" step="0.5" aria-label="開始秒数スライダー">
           </div>
 
           <!-- ② 終了位置 ＆ 動画の長さ（秒数）の調整 -->
@@ -453,59 +457,55 @@
               <span class="input-card-badge" id="durationBadge">15秒間（終了: 00:15）</span>
             </div>
 
-            <!-- 終了位置（分・秒）の直接指定＆1秒ずらし -->
+            <!-- 終了位置（分・秒）の直接指定＆0.5秒/1秒ずらし -->
             <div style="background: rgba(236, 72, 153, 0.08); border: 1.5px solid rgba(244, 114, 182, 0.35); border-radius: 12px; padding: 12px; margin-bottom: 14px;">
               <div style="font-size: 1rem; font-weight: 800; color: #f472b6; margin-bottom: 8px;">
                 🏁 歌い終わりの位置（終了位置）：
               </div>
               <div class="min-sec-input-row">
-                <div class="time-input-group">
-                  <input type="number" id="trimEndMinInput" class="time-num-input" min="0" max="59" value="0" inputmode="numeric" aria-label="終了位置（分）">
+                <div class="time-input-group end-group">
+                  <input type="number" id="trimEndMinInput" class="time-num-input" min="0" max="59" step="1" value="0" inputmode="numeric" aria-label="終了位置（分）">
                   <span class="time-unit">分</span>
                 </div>
                 <span class="time-colon">:</span>
-                <div class="time-input-group">
-                  <input type="number" id="trimEndSecInput" class="time-num-input" min="0" max="59" value="15" inputmode="numeric" aria-label="終了位置（秒）">
+                <div class="time-input-group end-group">
+                  <input type="number" id="trimEndSecInput" class="time-num-input" min="0" max="59.5" step="0.5" value="15" inputmode="decimal" aria-label="終了位置（秒）">
                   <span class="time-unit">秒</span>
                 </div>
               </div>
               <div class="stepper-buttons-row" style="margin-top: 8px;">
-                <button type="button" class="stepper-btn" id="endMinus1Btn" style="border-color: #f472b6; color: #fbcfe8; font-weight: 900;">◀ 終了を -1秒</button>
-                <button type="button" class="stepper-btn" id="endPlus1Btn" style="border-color: #f472b6; color: #fbcfe8; font-weight: 900;">終了を +1秒 ▶</button>
+                <button type="button" class="stepper-btn" id="endMinus1Btn" style="border-color: #f472b6; color: #fbcfe8; font-weight: 900;">◀ 終了 -1秒</button>
+                <button type="button" class="stepper-btn" id="endMinusHalfBtn" style="border-color: #f472b6; color: #fbcfe8; font-weight: 900;">◀ -0.5秒</button>
+                <button type="button" class="stepper-btn" id="endPlusHalfBtn" style="border-color: #f472b6; color: #fbcfe8; font-weight: 900;">+0.5秒 ▶</button>
+                <button type="button" class="stepper-btn" id="endPlus1Btn" style="border-color: #f472b6; color: #fbcfe8; font-weight: 900;">終了 +1秒 ▶</button>
+              </div>
+              <div style="font-size: 0.82rem; color: #fbcfe8; margin-top: 4px; line-height: 1.35;">
+                💡 終了位置をずらすと<strong>「開始位置」は固定のまま</strong>、動画の長さが自動計算されます。
               </div>
             </div>
 
-            <!-- 動画の長さ（秒間）の直接指定＆微調整 -->
-            <div style="padding-top: 10px;">
+            <!-- 動画の長さ（秒間）の直接手入力＆0.5秒微調整 -->
+            <div style="padding-top: 6px;">
               <div style="font-size: 0.98rem; font-weight: 800; color: #e2e8f0; margin-bottom: 8px;">
-                ⏱ 動画の長さ（秒間）：
+                ⏱ 動画の長さ（秒数・直接手入力できます）：
               </div>
               <div class="duration-input-row">
-                <div class="time-input-group">
-                  <input type="number" id="trimDurationInput" class="time-num-input" min="1" max="60" value="15" inputmode="numeric" aria-label="動画の長さ（秒間）">
+                <div class="time-input-group dur-group">
+                  <input type="number" id="trimDurationInput" class="time-num-input" min="0.5" max="60" step="0.5" value="15" inputmode="decimal" aria-label="動画の長さ（秒間）">
                   <span class="time-unit">秒間</span>
                 </div>
               </div>
 
-              <!-- 長さの微調整ボタン（1秒・5秒単位） -->
-              <div class="stepper-buttons-row">
-                <button type="button" class="stepper-btn" id="durMinus5Btn">◀ -5秒</button>
+              <!-- 長さの微調整ボタン（0.5秒・1秒単位） -->
+              <div class="stepper-buttons-row" style="margin-top: 8px;">
                 <button type="button" class="stepper-btn" id="durMinus1Btn" style="border-color: #38bdf8; color: #7dd3fc; font-weight: 900;">◀ -1秒</button>
+                <button type="button" class="stepper-btn" id="durMinusHalfBtn" style="border-color: #38bdf8; color: #bae6fd; font-weight: 900;">◀ -0.5秒</button>
+                <button type="button" class="stepper-btn" id="durPlusHalfBtn" style="border-color: #38bdf8; color: #bae6fd; font-weight: 900;">+0.5秒 ▶</button>
                 <button type="button" class="stepper-btn" id="durPlus1Btn" style="border-color: #38bdf8; color: #7dd3fc; font-weight: 900;">+1秒 ▶</button>
-                <button type="button" class="stepper-btn" id="durPlus5Btn">+5秒 ▶</button>
               </div>
             </div>
 
-            <!-- ワンタッププリセットボタン（AIリップシンクに最適な秒数） -->
-            <div class="trim-presets-title">ワンタップで秒数を選ぶ（残してあります）：</div>
-            <div class="trim-presets-row">
-              <button class="trim-preset-chip" data-dur="5">⚡ 5秒 (最速テスト)</button>
-              <button class="trim-preset-chip" data-dur="10">🌟 10秒 (おすすめ)</button>
-              <button class="trim-preset-chip active" data-dur="15">🎤 15秒 (ショートMV)</button>
-              <button class="trim-preset-chip" data-dur="30">🎬 30秒 (サビ全体)</button>
-            </div>
-
-            <input type="range" id="trimDurationSlider" class="super-fat-slider" min="1" max="60" value="15" step="1" aria-label="動画の長さスライダー" style="margin-top: 14px;">
+            <input type="range" id="trimDurationSlider" class="super-fat-slider" min="0.5" max="60" value="15" step="0.5" aria-label="動画の長さスライダー" style="margin-top: 14px;">
           </div>
 
           <!-- 決定された区間の確認 ＆ 試聴ボタン -->
