@@ -1071,15 +1071,22 @@ html, body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* ★ The Sync to Start Button */
+/* ★ The Sync to Start & End Buttons */
+.set-endpoints-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
 .btn-start-sync-action {
-  flex: 1 1 200px;
-  min-height: 50px;
-  padding: 0 18px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 18px;
   background: linear-gradient(135deg, #f59e0b, #d97706);
-  border: 1.5px solid #fcd34d;
+  border: 2px solid #fcd34d;
   color: #ffffff;
-  font-size: 0.98rem;
+  font-size: 1.02rem;
   font-weight: 900;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -1096,7 +1103,34 @@ html, body {
 }
 
 .btn-start-sync-action .btn-icon {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+}
+
+.btn-end-sync-action {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  border: 2px solid #f472b6;
+  color: #ffffff;
+  font-size: 1.02rem;
+  font-weight: 900;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+  transition: all 0.15s ease;
+}
+
+.btn-end-sync-action:active {
+  transform: scale(0.96);
+}
+
+.btn-end-sync-action .btn-icon {
+  font-size: 1.25rem;
 }
 
 .preview-helper-text {
