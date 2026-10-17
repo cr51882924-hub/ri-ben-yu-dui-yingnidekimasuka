@@ -731,6 +731,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusKeyFal = document.getElementById('statusKeyFal');
   const aiGenStatusBox = document.getElementById('aiGenStatusBox');
 
+  const generateAiLipsyncBtn = document.getElementById('generateAiLipsyncBtn');
+  const aiVideoPromptInput = document.getElementById('aiVideoPromptInput');
+  const aiVideoFileInput = document.getElementById('aiVideoFileInput');
+
+  const aiResultCard = document.getElementById('aiResultCard');
+  const inlineAiResultVideo = document.getElementById('inlineAiResultVideo');
+  const saveAiResultToPhotosBtn = document.getElementById('saveAiResultToPhotosBtn');
+  const downloadAiResultMp4Btn = document.getElementById('downloadAiResultMp4Btn');
+
   let selectedV11bModel = 'fal-ai/bytedance/omnihuman/v1.5';
   let selectedV11bMode = 'lipsync';
   let selectedV11bLabel = 'ByteDance OmniHuman v1.5 (リップシンク)';
