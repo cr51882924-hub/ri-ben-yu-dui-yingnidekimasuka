@@ -752,7 +752,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     avatarUploadBtn.classList.add('applied');
     avatarCardTitle.textContent = `✔ あなたの写真がセットされています`;
-    avatarCardHint.textContent = `${filename || '人物写真'} （タップで別の写真に変更）`;
+    avatarCardHint.textContent = `${filename || '人物写真'} (${canvas.width}×${canvas.height}) — タップで別の写真に変更`;
 
     if (customAvatarBanner) {
       customAvatarBanner.classList.remove('hidden');
@@ -760,8 +760,11 @@ document.addEventListener('DOMContentLoaded', () => {
         customAvatarStatusTitle.textContent = `あなたの写真がセットされました！`;
       }
       if (customAvatarStatusSub) {
-        customAvatarStatusSub.textContent = `続けて STEP 2・3 で楽曲と歌わせる秒数を指定してください`;
+        customAvatarStatusSub.textContent = `続けて STEP 2・3 で楽曲と歌わせる秒数を指定し、STEP 4 で完成動画サイズを選んでください`;
       }
+    }
+    if (typeof updateSizeFramingPreview === 'function') {
+      updateSizeFramingPreview();
     }
   }
 
@@ -827,11 +830,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentMaterialIndicatorBadge = document.getElementById('currentMaterialIndicatorBadge');
   const step4Subtitle = document.getElementById('step4Subtitle');
 
+  // v12.5 Output Video Size & Framing Elements
+  const selectedSizeSummaryBadge = document.getElementById('selectedSizeSummaryBadge');
+  const fitModeSubBox = document.getElementById('fitModeSubBox');
+  const sizeFramingPreviewCanvas = document.getElementById('sizeFramingPreviewCanvas');
+  const sizeFramingPreviewTitle = document.getElementById('sizeFramingPreviewTitle');
+  const sizeFramingPreviewSub = document.getElementById('sizeFramingPreviewSub');
+
   let activeMaterialMode = 'photo'; // 'photo' | 'video'
   let activeVideoPattern = 'A'; // 'A' (video-to-video) | 'B' (frame capture)
   let uploadedVideoMaterialFile = null;
   let uploadedVideoMaterialUrl = null;
   let capturedVideoFrameCanvas = null;
+
+  let selectedOutputVideoSize = '9:16'; // '9:16' | '16:9' | '1:1' | 'original'
+  let selectedOutputFitMode = 'cover';  // 'cover' | 'contain_blur'
+  let selectedOutputResolution = '720p'; // '720p' | '1080p'
 
   let selectedV11bModel = 'fal-ai/bytedance/omnihuman/v1.5';
   let selectedV11bMode = 'lipsync';
