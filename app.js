@@ -137,9 +137,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const audioEngine = new window.AudioEngine();
   const characterRenderer = new window.CharacterRenderer(stageCanvas);
 
-  // Trimming State
+  // Trimming State (v12.6: Start and End positions can be independently adjusted with 0.5s precision)
   let trimStartSeconds = 0;
-  let trimDurationSeconds = 30;
+  let trimEndSeconds = 15;
+  let trimDurationSeconds = 15;
 
   // Recording State & Storage
   let mediaRecorder = null;
@@ -182,11 +183,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2800);
   }
 
-  // Format mm:ss
-  function formatTime(sec) {
+  // Format mm:ss or mm:ss.s (supports 0.5s precision)
+  function formatTime(sec, showDecimal = true) {
+    if (isNaN(sec) || sec < 0) sec = 0;
     const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    const remSec = sec % 60;
+    const roundedSec = Math.round(remSec * 10) / 10;
+    const isInt = (Math.abs(roundedSec - Math.round(roundedSec)) < 0.05);
+    const sInt = Math.floor(roundedSec);
+    const sStr = sInt < 10 ? '0' + sInt : '' + sInt;
+    if (showDecimal && !isInt) {
+      const frac = Math.round((roundedSec - sInt) * 10);
+      return `${m < 10 ? '0' : ''}${m}:${sStr}.${frac}`;
+    }
+    return `${m < 10 ? '0' : ''}${m}:${sStr}`;
+  }
+
+  function formatDurationText(sec) {
+    const rounded = Math.round((sec || 0) * 10) / 10;
+    const isInt = (Math.abs(rounded - Math.round(rounded)) < 0.05);
+    return `${isInt ? Math.round(rounded) : rounded.toFixed(1)}秒間`;
   }
 
   // ==========================================
