@@ -1938,16 +1938,18 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerHaptic();
       if (!lastCutAudioFile) return;
 
-      // Share both Audio MP3 and Lyrics TXT files together (Pattern A)
+      // Share both Audio (MP3/WAV) and Lyrics TXT files together (Pattern A)
       const filesToShare = [lastCutAudioFile, lastCutLyricsFile].filter(Boolean);
       const shareData = {
         files: filesToShare
       };
 
+      const fmtLabel = (currentCutFormat || 'mp3').toUpperCase();
+
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         try {
           await navigator.share(shareData);
-          showToast('共有メニューを開きました。「"ファイル"に保存」でMP3と歌詞が同時に保存されます');
+          showToast(`共有メニューを開きました。「"ファイル"に保存」で${fmtLabel}と歌詞が同時に保存されます`);
           return;
         } catch (err) {
           if (err.name === 'AbortError') return;
@@ -1959,7 +1961,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [lastCutAudioFile] })) {
         try {
           await navigator.share({ files: [lastCutAudioFile] });
-          showToast('音声ファイルを共有しました。歌詞は「歌詞を保存」ボタンから保存できます');
+          showToast(`${fmtLabel}音声を共有しました。歌詞は「歌詞を保存」ボタンから保存できます`);
           return;
         } catch (err) {
           if (err.name === 'AbortError') return;
@@ -1971,7 +1973,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (lastCutLyricsBlob) {
         setTimeout(() => triggerDirectAudioDownload(lastCutLyricsBlob, lastCutLyricsFilename), 600);
       }
-      showToast('ダウンロードを開始しました');
+      showToast(`${fmtLabel}音声のダウンロードを開始しました`);
     });
   }
 
@@ -1980,7 +1982,8 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerHaptic();
       if (!lastCutAudioBlob) return;
       triggerDirectAudioDownload(lastCutAudioBlob, lastCutAudioFilename);
-      showToast('MP3音声のダウンロードを開始しました');
+      const fmtLabel = (currentCutFormat || 'mp3').toUpperCase();
+      showToast(`${fmtLabel}音声のダウンロードを開始しました`);
     });
   }
 
