@@ -150,7 +150,7 @@
           <span class="step-badge highlight-badge">1</span>
           <div>
             <h3 class="section-title">歌わせたい人物の素材を取り込む</h3>
-            <p class="section-sub">「① 写真・画像」または「② 動画素材」のどちらからでもリップシンクMVを制作できます</p>
+            <p class="section-sub">「① 写真・画像からリップシンク（従来通り）」と「② 動画からリップシンク（2パターン選択）」の両方に対応しています</p>
           </div>
         </div>
 
@@ -159,16 +159,16 @@
           <button type="button" id="tabModePhoto" class="mat-tab-btn active" style="background: rgba(168, 85, 247, 0.28); border: 2.5px solid #c084fc; border-radius: 14px; padding: 14px 10px; color: #fff; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 1.8rem; flex-shrink: 0;">📷</span>
             <div style="line-height: 1.25;">
-              <strong style="font-size: 1.05rem; display: block; color: #f0abfc;">① 写真・画像</strong>
-              <small style="font-size: 0.78rem; color: #cbd5e1;">（これまでの方法・完全維持）</small>
+              <strong style="font-size: 1.05rem; display: block; color: #f0abfc;">① 写真・画像から</strong>
+              <small style="font-size: 0.78rem; color: #cbd5e1;">（これまでのリップシンク）</small>
             </div>
           </button>
 
           <button type="button" id="tabModeVideo" class="mat-tab-btn" style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 14px; padding: 14px 10px; color: #cbd5e1; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 1.8rem; flex-shrink: 0;">🎬</span>
             <div style="line-height: 1.25;">
-              <strong style="font-size: 1.05rem; display: block; color: #7dd3fc;">② 動画素材</strong>
-              <small style="font-size: 0.78rem; color: #94a3b8;">（新機能・2つのパターン）</small>
+              <strong style="font-size: 1.05rem; display: block; color: #7dd3fc;">② 動画から</strong>
+              <small style="font-size: 0.78rem; color: #94a3b8;">（2つのパターンを選択）</small>
             </div>
           </button>
         </div>
@@ -237,14 +237,14 @@
 
             <!-- Two Pattern Selection Buttons -->
             <div style="font-size: 1.05rem; font-weight: 900; color: #fbcfe8; margin-bottom: 10px;">
-              👇 どちらのパターンで動画を作りますか？（タップして選択）：
+              👇 動画からの作り方（2つのパターンからタップして選択）：
             </div>
 
             <div class="video-pattern-grid" style="display: grid; grid-template-columns: 1fr; gap: 12px;">
-              <!-- Pattern A: Video-to-Video LipSync -->
+              <!-- Pattern A (パターン①): Video-to-Video LipSync -->
               <button type="button" class="video-pattern-btn active" id="patternBtnA" style="background: rgba(168, 85, 247, 0.28); border: 2.5px solid #c084fc; border-radius: 14px; padding: 16px; text-align: left; cursor: pointer; color: #fff;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                  <strong style="font-size: 1.12rem; color: #f0abfc;">🎥 パターンA：動画のまま口元リップシンク</strong>
+                  <strong style="font-size: 1.12rem; color: #f0abfc;">🎥 パターン①：動画のまま口元だけリップシンク</strong>
                   <span class="pattern-pill" id="patternPillA" style="background: #10b981; color: #052e16; font-size: 0.85rem; font-weight: 900; padding: 4px 12px; border-radius: 999px;">✔ 選択中</span>
                 </div>
                 <p style="font-size: 0.93rem; color: #f1f5f9; margin: 0; line-height: 1.45;">
@@ -255,10 +255,10 @@
                 </div>
               </button>
 
-              <!-- Pattern B: Frame Extract to Singing Video -->
+              <!-- Pattern B (パターン②): Frame Extract to Singing Video -->
               <button type="button" class="video-pattern-btn" id="patternBtnB" style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 16px; text-align: left; cursor: pointer; color: #fff;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                  <strong style="font-size: 1.12rem; color: #7dd3fc;">📸 パターンB：動画から1コマ切り出して歌唱</strong>
+                  <strong style="font-size: 1.12rem; color: #7dd3fc;">📸 パターン②：動画から好きな1コマを切り出して歌唱</strong>
                   <span class="pattern-pill" id="patternPillB" style="background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.85rem; font-weight: 700; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
                 </div>
                 <p style="font-size: 0.93rem; color: #cbd5e1; margin: 0; line-height: 1.45;">
