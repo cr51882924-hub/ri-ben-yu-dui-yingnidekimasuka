@@ -1238,7 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (photoModelsGroup) photoModelsGroup.classList.add('hidden');
       if (aiPromptStyleWrap) aiPromptStyleWrap.classList.add('hidden');
       if (currentMaterialIndicatorBadge) {
-        currentMaterialIndicatorBadge.textContent = '🎬 動画モード（パターンA: 動画リップシンク）';
+        currentMaterialIndicatorBadge.textContent = '🎬 動画モード（パターン①: 動画リップシンク）';
         currentMaterialIndicatorBadge.style.background = 'rgba(16, 185, 129, 0.25)';
         currentMaterialIndicatorBadge.style.borderColor = '#10b981';
         currentMaterialIndicatorBadge.style.color = '#6ee7b7';
@@ -1280,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (videoModelsGroup) videoModelsGroup.classList.add('hidden');
       if (aiPromptStyleWrap) aiPromptStyleWrap.classList.remove('hidden');
       if (currentMaterialIndicatorBadge) {
-        currentMaterialIndicatorBadge.textContent = '📸 動画モード（パターンB: 1コマ切り出し歌唱）';
+        currentMaterialIndicatorBadge.textContent = '📸 動画モード（パターン②: 1コマ切り出し歌唱）';
         currentMaterialIndicatorBadge.style.background = 'rgba(56, 189, 248, 0.25)';
         currentMaterialIndicatorBadge.style.borderColor = '#38bdf8';
         currentMaterialIndicatorBadge.style.color = '#7dd3fc';
@@ -1295,6 +1295,9 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedV11bMode = activeBtn.dataset.mode || 'lipsync';
         selectedV11bLabel = activeBtn.dataset.label || 'ByteDance OmniHuman v1.5';
       }
+    }
+    if (typeof updateSizeFramingPreview === 'function') {
+      updateSizeFramingPreview();
     }
   }
 
@@ -1332,16 +1335,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (capturedFrameTimeBadge) {
       const curSec = sourceVideoPlayer.currentTime || 0;
-      capturedFrameTimeBadge.textContent = `切り出し位置: ${formatTime(curSec)}`;
+      capturedFrameTimeBadge.textContent = `切り出し位置: ${formatTime(curSec)} (${vw}×${vh})`;
     }
     if (capturedFramePreviewRow) {
       capturedFramePreviewRow.classList.remove('hidden');
     }
+    if (typeof updateSizeFramingPreview === 'function') {
+      updateSizeFramingPreview();
+    }
     return canvas;
   }
 
-  if (tabModePhoto) tabModePhoto.addEventListener('click', () => setMaterialMode('photo'));
-  if (tabModeVideo) tabModeVideo.addEventListener('click', () => setMaterialMode('video'));
+  if (tabModePhoto) {
+    tabModePhoto.addEventListener('click', () => {
+      setMaterialMode('photo');
+      if (typeof updateSizeFramingPreview === 'function') updateSizeFramingPreview();
+    });
+  }
+  if (tabModeVideo) {
+    tabModeVideo.addEventListener('click', () => {
+      setMaterialMode('video');
+      if (typeof updateSizeFramingPreview === 'function') updateSizeFramingPreview();
+    });
+  }
   if (patternBtnA) patternBtnA.addEventListener('click', () => setVideoPattern('A'));
   if (patternBtnB) {
     patternBtnB.addEventListener('click', () => {
@@ -1378,7 +1394,7 @@ document.addEventListener('DOMContentLoaded', () => {
         videoMaterialCardTitle.textContent = `✔ 読込完了: ${file.name}`;
       }
       if (videoMaterialCardHint) {
-        videoMaterialCardHint.textContent = `サイズ: ${(file.size / (1024 * 1024)).toFixed(1)}MB（下のパターンAまたはパターンBを選択してください）`;
+        videoMaterialCardHint.textContent = `サイズ: ${(file.size / (1024 * 1024)).toFixed(1)}MB（下のパターン①またはパターン②を選択してください）`;
       }
       if (videoMaterialUploadBtn) {
         videoMaterialUploadBtn.style.borderColor = '#10b981';
@@ -1388,8 +1404,10 @@ document.addEventListener('DOMContentLoaded', () => {
         sourceVideoPlayer.src = uploadedVideoMaterialUrl;
         sourceVideoPlayer.load();
         sourceVideoPlayer.onloadedmetadata = () => {
+          const vw = sourceVideoPlayer.videoWidth || 0;
+          const vh = sourceVideoPlayer.videoHeight || 0;
           if (sourceVideoDurationLabel) {
-            sourceVideoDurationLabel.textContent = `動画の長さ: ${formatTime(sourceVideoPlayer.duration || 0)}`;
+            sourceVideoDurationLabel.textContent = `長さ: ${formatTime(sourceVideoPlayer.duration || 0)}${vw && vh ? ` (${vw}×${vh})` : ''}`;
           }
           setTimeout(() => {
             try {
@@ -1428,6 +1446,260 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ==========================================
+  // v12.5: Output Video Size (Aspect Ratio, Fit Mode, Resolution) Controller
+  // ==========================================
+  function getActiveSourceDimensions() {
+    if (activeMaterialMode === 'video' && sourceVideoPlayer && sourceVideoPlayer.videoWidth && sourceVideoPlayer.videoHeight) {
+      return { width: sourceVideoPlayer.videoWidth, height: sourceVideoPlayer.videoHeight };
+    }
+    const srcImg = characterRenderer.customAvatarImg;
+    if (srcImg && (srcImg.width || srcImg.naturalWidth)) {
+      return {
+        width: srcImg.width || srcImg.naturalWidth || 720,
+        height: srcImg.height || srcImg.naturalHeight || 1280
+      };
+    }
+    return { width: 720, height: 1280 };
+  }
+
+  function getTargetVideoDimensions(sizeMode = selectedOutputVideoSize, resMode = selectedOutputResolution) {
+    const shortEdge = (resMode === '1080p') ? 1080 : 720;
+    const longEdge = (resMode === '1080p') ? 1920 : 1280;
+
+    if (sizeMode === '9:16') {
+      return { width: shortEdge, height: longEdge, label: `縦型 9:16 (${shortEdge}×${longEdge})`, aspectRatio: '9:16' };
+    }
+    if (sizeMode === '16:9') {
+      return { width: longEdge, height: shortEdge, label: `横型 16:9 (${longEdge}×${shortEdge})`, aspectRatio: '16:9' };
+    }
+    if (sizeMode === '1:1') {
+      return { width: shortEdge, height: shortEdge, label: `正方形 1:1 (${shortEdge}×${shortEdge})`, aspectRatio: '1:1' };
+    }
+    // 'original'
+    const srcDim = getActiveSourceDimensions();
+    const sw = Math.max(1, srcDim.width);
+    const sh = Math.max(1, srcDim.height);
+    let tw = sw;
+    let th = sh;
+    if (sw >= sh) {
+      tw = longEdge;
+      th = Math.max(2, Math.round((sh * longEdge) / sw));
+    } else {
+      th = longEdge;
+      tw = Math.max(2, Math.round((sw * longEdge) / sh));
+    }
+    // Ensure even pixel dimensions for H.264/MP4 compatibility
+    if (tw % 2 !== 0) tw += 1;
+    if (th % 2 !== 0) th += 1;
+    const detectedRatio = (tw > th * 1.15) ? '16:9' : (th > tw * 1.15 ? '9:16' : '1:1');
+    return { width: tw, height: th, label: `元素材の比率 (${tw}×${th})`, aspectRatio: detectedRatio };
+  }
+
+  function renderFramedCanvas(srcElement, targetW, targetH, sizeMode, fitMode) {
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = targetW;
+    outCanvas.height = targetH;
+    const ctx = outCanvas.getContext('2d');
+
+    ctx.fillStyle = '#090d16';
+    ctx.fillRect(0, 0, targetW, targetH);
+
+    if (!srcElement) return outCanvas;
+    const sw = srcElement.videoWidth || srcElement.naturalWidth || srcElement.width || targetW;
+    const sh = srcElement.videoHeight || srcElement.naturalHeight || srcElement.height || targetH;
+    if (!sw || !sh) return outCanvas;
+
+    if (sizeMode === 'original') {
+      ctx.drawImage(srcElement, 0, 0, targetW, targetH);
+      return outCanvas;
+    }
+
+    if (fitMode === 'contain_blur') {
+      // 1. iOS-compatible smooth blurred background via downscaled offscreen canvas
+      const blurCanvas = document.createElement('canvas');
+      blurCanvas.width = 48;
+      blurCanvas.height = 48;
+      const bCtx = blurCanvas.getContext('2d');
+      const bgScale = Math.max(48 / sw, 48 / sh);
+      const bgW = sw * bgScale;
+      const bgH = sh * bgScale;
+      bCtx.drawImage(srcElement, (48 - bgW) / 2, (48 - bgH) / 2, bgW, bgH);
+
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(blurCanvas, 0, 0, targetW, targetH);
+      ctx.fillStyle = 'rgba(9, 13, 22, 0.45)';
+      ctx.fillRect(0, 0, targetW, targetH);
+      ctx.restore();
+
+      // 2. Draw full image centered inside target frame without cropping
+      const scale = Math.min(targetW / sw, targetH / sh);
+      const drawW = Math.round(sw * scale);
+      const drawH = Math.round(sh * scale);
+      const dx = Math.round((targetW - drawW) / 2);
+      const dy = Math.round((targetH - drawH) / 2);
+      ctx.drawImage(srcElement, dx, dy, drawW, drawH);
+    } else {
+      // 'cover': Fill entire frame (bias vertical offset slightly toward upper-center so singer's face/head is preserved)
+      const scale = Math.max(targetW / sw, targetH / sh);
+      const drawW = Math.round(sw * scale);
+      const drawH = Math.round(sh * scale);
+      const dx = Math.round((targetW - drawW) / 2);
+      const dy = Math.round((targetH - drawH) * 0.32);
+      ctx.drawImage(srcElement, dx, dy, drawW, drawH);
+    }
+
+    return outCanvas;
+  }
+
+  function updateSizeFramingPreview() {
+    const dim = getTargetVideoDimensions(selectedOutputVideoSize, selectedOutputResolution);
+    const iconMap = { '9:16': '📱', '16:9': '📺', '1:1': '🟦', 'original': '🖼️' };
+    const icon = iconMap[selectedOutputVideoSize] || '📐';
+
+    if (selectedSizeSummaryBadge) {
+      selectedSizeSummaryBadge.textContent = `${icon} ${dim.label}`;
+    }
+
+    if (fitModeSubBox) {
+      if (selectedOutputVideoSize === 'original') {
+        fitModeSubBox.style.opacity = '0.5';
+      } else {
+        fitModeSubBox.style.opacity = '1';
+      }
+    }
+
+    if (sizeFramingPreviewTitle) {
+      sizeFramingPreviewTitle.textContent = `完成サイズ: ${dim.label}`;
+    }
+    if (sizeFramingPreviewSub) {
+      const fitText = selectedOutputVideoSize === 'original'
+        ? '元の写真・動画の縦横比をそのまま維持します'
+        : (selectedOutputFitMode === 'contain_blur' ? '写真全体を表示（余白は背景ぼかし）' : '画面いっぱいに拡大（余白なし）');
+      sizeFramingPreviewSub.textContent = `${fitText} — 左の枠の形で動画が生成されます`;
+    }
+
+    // Also keep stageCanvas dimensions synced with selected output size
+    if (stageCanvas) {
+      stageCanvas.width = dim.width;
+      stageCanvas.height = dim.height;
+    }
+
+    if (sizeFramingPreviewCanvas) {
+      // Scale preview canvas inside 68x68 box while preserving exact aspect ratio
+      const maxThumb = 64;
+      let pw = maxThumb;
+      let ph = maxThumb;
+      if (dim.width >= dim.height) {
+        pw = maxThumb;
+        ph = Math.max(20, Math.round((dim.height * maxThumb) / dim.width));
+      } else {
+        ph = maxThumb;
+        pw = Math.max(20, Math.round((dim.width * maxThumb) / dim.height));
+      }
+      sizeFramingPreviewCanvas.width = pw * 2;
+      sizeFramingPreviewCanvas.height = ph * 2;
+      sizeFramingPreviewCanvas.style.width = `${pw}px`;
+      sizeFramingPreviewCanvas.style.height = `${ph}px`;
+
+      const srcEl = (activeMaterialMode === 'video' && capturedVideoFrameCanvas)
+        ? capturedVideoFrameCanvas
+        : (characterRenderer.customAvatarImg || characterRenderer.defaultSampleImg || null);
+
+      const pCtx = sizeFramingPreviewCanvas.getContext('2d');
+      if (srcEl) {
+        const framed = renderFramedCanvas(srcEl, pw * 2, ph * 2, selectedOutputVideoSize, selectedOutputFitMode);
+        pCtx.drawImage(framed, 0, 0);
+      } else {
+        pCtx.fillStyle = '#1e293b';
+        pCtx.fillRect(0, 0, pw * 2, ph * 2);
+        pCtx.fillStyle = '#7dd3fc';
+        pCtx.font = 'bold 20px sans-serif';
+        pCtx.textAlign = 'center';
+        pCtx.textBaseline = 'middle';
+        pCtx.fillText(selectedOutputVideoSize === 'original' ? 'AUTO' : selectedOutputVideoSize, pw, ph);
+      }
+    }
+  }
+
+  // Event Listeners for Output Video Size Buttons
+  document.querySelectorAll('.video-size-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      triggerHaptic();
+      document.querySelectorAll('.video-size-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.background = 'rgba(15, 23, 42, 0.85)';
+        b.style.borderColor = 'rgba(255,255,255,0.18)';
+        const pill = b.querySelector('.size-pill');
+        if (pill) {
+          pill.textContent = 'タップで選択';
+          pill.style.background = 'rgba(255,255,255,0.12)';
+          pill.style.color = '#cbd5e1';
+        }
+      });
+      btn.classList.add('active');
+      btn.style.background = 'rgba(56, 189, 248, 0.28)';
+      btn.style.borderColor = '#38bdf8';
+      const activePill = btn.querySelector('.size-pill');
+      if (activePill) {
+        activePill.textContent = '✔ 選択中';
+        activePill.style.background = '#10b981';
+        activePill.style.color = '#052e16';
+      }
+      selectedOutputVideoSize = btn.dataset.size || '9:16';
+      updateSizeFramingPreview();
+      const dim = getTargetVideoDimensions();
+      showToast(`📐 完成動画サイズを「${dim.label}」に設定しました`);
+    });
+  });
+
+  // Event Listeners for Fit Mode Buttons
+  document.querySelectorAll('.video-fit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      triggerHaptic();
+      document.querySelectorAll('.video-fit-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.background = 'rgba(15, 23, 42, 0.85)';
+        b.style.borderColor = 'rgba(255,255,255,0.2)';
+        b.style.color = '#cbd5e1';
+      });
+      btn.classList.add('active');
+      btn.style.background = 'rgba(168, 85, 247, 0.32)';
+      btn.style.borderColor = '#c084fc';
+      btn.style.color = '#fff';
+      selectedOutputFitMode = btn.dataset.fit || 'cover';
+      updateSizeFramingPreview();
+      showToast(selectedOutputFitMode === 'contain_blur'
+        ? '✨ 写真全体を入れる（背景ぼかし余白）に切り替えました'
+        : '🔍 画面いっぱいに拡大（余白なし）に切り替えました');
+    });
+  });
+
+  // Event Listeners for Resolution Buttons (720p / 1080p)
+  document.querySelectorAll('.video-res-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      triggerHaptic();
+      document.querySelectorAll('.video-res-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.background = 'rgba(15, 23, 42, 0.85)';
+        b.style.borderColor = 'rgba(255,255,255,0.2)';
+        b.style.color = '#cbd5e1';
+      });
+      btn.classList.add('active');
+      btn.style.background = 'rgba(16, 185, 129, 0.25)';
+      btn.style.borderColor = '#10b981';
+      btn.style.color = '#fff';
+      selectedOutputResolution = btn.dataset.res || '720p';
+      updateSizeFramingPreview();
+      const dim = getTargetVideoDimensions();
+      showToast(`🎞️ 解像度を「${selectedOutputResolution.toUpperCase()} (${dim.width}×${dim.height})」に設定しました`);
+    });
+  });
+
+  // Initialize size preview on load
+  setTimeout(() => updateSizeFramingPreview(), 150);
 
   // Style chips in STEP 4
   document.querySelectorAll('.ai-style-chip').forEach(chip => {
@@ -1508,7 +1780,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Apply completed AI video URL to Inline Player, Save Modal, and Stage
   async function handleCompletedAiVideo(videoUrl, modelLabel) {
-    showAiStatus(`🎉 <strong>「${modelLabel}」のAI動画が完成しました！</strong><br>下のビデオプレイヤーですぐに再生・カメラロール保存ができます。`, '#10b981');
+    const dim = getTargetVideoDimensions();
+    showAiStatus(`🎉 <strong>「${modelLabel}」のAI動画（${dim.label}）が完成しました！</strong><br>下のビデオプレイヤーですぐに再生・カメラロール保存ができます。`, '#10b981');
     showToast(`🎉 ${modelLabel} の生成が完了しました！`);
 
     // 1. Show inline video player card
@@ -1541,7 +1814,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const cleanBlob = new Blob([mp4Blob], { type: 'video/mp4' });
         const songTitle = (currentSongConfig && currentSongConfig.title) ? currentSongConfig.title : 'LipsyncMV';
         const songNameClean = songTitle.replace(/[\s\/\\?%*:|"<>]+/g, '_');
-        const filename = `AI_Lipsync_${songNameClean}.mp4`;
+        const sizeTag = selectedOutputVideoSize === 'original' ? 'orig' : selectedOutputVideoSize.replace(':', 'x');
+        const filename = `AI_Lipsync_${songNameClean}_${sizeTag}.mp4`;
 
         if (lastRecordedUrl) {
           try { URL.revokeObjectURL(lastRecordedUrl); } catch (e) {}
@@ -1653,8 +1927,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let progressTimer = null;
 
       try {
+        const targetDim = getTargetVideoDimensions(selectedOutputVideoSize, selectedOutputResolution);
         const materialLabel = isVideoToVideo ? '動画' : '写真';
-        showAiStatus(`⏳ <strong>[1/3] ${materialLabel}と切り出し音源（${formatTime(audioEngine.trimStart || 0)}〜${formatTime(audioEngine.trimEnd || 15)}）を準備しています...</strong>`, '#c084fc');
+        showAiStatus(`⏳ <strong>[1/3] 完成サイズ「${targetDim.label}」で${materialLabel}と切り出し音源（${formatTime(audioEngine.trimStart || 0)}〜${formatTime(audioEngine.trimEnd || 15)}）を準備しています...</strong>`, '#c084fc');
 
         // 1. Prepare Sliced Audio MP3 File & Data URL
         const srcBuf = audioEngine.ensureAudioBuffer();
@@ -1668,14 +1943,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const audioFile = new File([mp3Blob], 'vocal_cut.mp3', { type: 'audio/mpeg' });
         const audioDataUrl = await blobToDataUrl(mp3Blob);
 
-        // 2. Prepare Image File if Photo / Pattern B mode
+        // 2. Prepare Formatted Image File matching selected Output Video Size (9:16, 16:9, 1:1, or original)
         let imgBlob = null;
         let imgDataUrl = '';
         let imgFile = null;
         if (!isVideoToVideo) {
-          imgBlob = await canvasToJpegBlob(characterRenderer.customAvatarImg, 0.9);
-          imgDataUrl = characterRenderer.customAvatarImg.toDataURL('image/jpeg', 0.88);
-          imgFile = imgBlob ? new File([imgBlob], 'artist_photo.jpg', { type: 'image/jpeg' }) : null;
+          const formattedCanvas = renderFramedCanvas(
+            characterRenderer.customAvatarImg,
+            targetDim.width,
+            targetDim.height,
+            selectedOutputVideoSize,
+            selectedOutputFitMode
+          );
+          imgBlob = await canvasToJpegBlob(formattedCanvas, 0.92);
+          imgDataUrl = formattedCanvas.toDataURL('image/jpeg', 0.9);
+          imgFile = imgBlob ? new File([imgBlob], `artist_${targetDim.width}x${targetDim.height}.jpg`, { type: 'image/jpeg' }) : null;
         }
 
         // Start live elapsed second counter for user feedback
@@ -1694,7 +1976,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (createFalClient) {
             const falClient = createFalClient({ credentials: apiKey });
 
-            showAiStatus(`⏳ <strong>[2/3] Fal.ai サーバーへ${materialLabel}と音源をアップロード中...</strong>`, '#38bdf8');
+            showAiStatus(`⏳ <strong>[2/3] Fal.ai サーバーへ${materialLabel}（${targetDim.label}）と音源をアップロード中...</strong>`, '#38bdf8');
             let uploadedAudioUrl = audioDataUrl;
 
             if (falClient.storage && typeof falClient.storage.upload === 'function') {
@@ -1722,7 +2004,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sync_mode: 'cut_off'
               };
             } else {
-              // Image LipSync (OmniHuman / Kling AI Avatar / MiniMax)
+              // Image LipSync (OmniHuman / Kling AI Avatar / MiniMax / Kling 1.6)
               let uploadedImageUrl = imgDataUrl;
               if (imgFile && falClient.storage && typeof falClient.storage.upload === 'function') {
                 try {
@@ -1736,12 +2018,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 image_url: uploadedImageUrl,
                 prompt: promptText
               };
-              if (uploadedAudioUrl) {
+              if (uploadedAudioUrl && selectedV11bMode !== 'video') {
                 inputPayload.audio_url = uploadedAudioUrl;
+              }
+              if (selectedV11bMode === 'video' && targetDim.aspectRatio) {
+                inputPayload.aspect_ratio = targetDim.aspectRatio;
               }
             }
 
-            showAiStatus(`🚀 <strong>[2/3] 「${selectedV11bLabel}」で${isVideoToVideo ? '動画の口元リップシンク' : 'AI歌唱動画'}を生成中です...</strong><br><small style="color:#cbd5e1;">※ 口元の同期描画には約1〜3分かかります。この画面のままお待ちください。</small>`, '#c084fc');
+            showAiStatus(`🚀 <strong>[2/3] 「${selectedV11bLabel}」で完成サイズ「${targetDim.label}」のAI動画を生成中です...</strong><br><small style="color:#cbd5e1;">※ 口元の同期描画には約1〜3分かかります。この画面のままお待ちください。</small>`, '#c084fc');
 
             const result = await falClient.subscribe(selectedV11bModel, {
               input: inputPayload,
@@ -1750,9 +2035,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!statusUpdate) return;
                 if (statusUpdate.status === 'IN_QUEUE') {
                   const pos = (typeof statusUpdate.queue_position === 'number') ? ` (順番: ${statusUpdate.queue_position + 1}番目)` : '';
-                  showAiStatus(`⏳ <strong>[2/3] Fal.ai の生成キューに並びました${pos}... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">まもなくAI描画が始まります。そのままお待ちください。</small>`, '#38bdf8');
+                  showAiStatus(`⏳ <strong>[2/3] Fal.ai の生成キューに並びました${pos}... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成サイズ: ${targetDim.label} / まもなくAI描画が始まります。</small>`, '#38bdf8');
                 } else if (statusUpdate.status === 'IN_PROGRESS') {
-                  showAiStatus(`🎤 <strong>[2/3] AIがあなたの楽曲に合わせて口元を同期描画しています... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成まであと少しです。画面を閉じずにお待ちください。</small>`, '#ec4899');
+                  showAiStatus(`🎤 <strong>[2/3] AIがあなたの楽曲に合わせて口元を同期描画しています... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成サイズ: ${targetDim.label} / 完成まであと少しです。</small>`, '#ec4899');
                 }
               }
             });
