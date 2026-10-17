@@ -528,6 +528,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ★ The Sync to End Button (一発で終了位置を合わせるボタン)
+  if (setEndFromCurrentBtn) {
+    setEndFromCurrentBtn.addEventListener('click', () => {
+      triggerHaptic();
+      const curSec = Math.floor(audioEngine.currentTime || 0);
+      if (curSec <= trimStartSeconds) {
+        showToast('⚠️ 終了位置は歌い出し位置（開始）より後ろで指定してください');
+        return;
+      }
+      trimDurationSeconds = Math.max(1, Math.min(60, curSec - trimStartSeconds));
+      updateTrimmerUI();
+      showToast(`🏁 現在の秒数「${formatTime(curSec)}」を終了位置にセットしました！（長さ: ${Math.round(trimDurationSeconds)}秒間）`);
+    });
+  }
+
   // Test Play Trimmed Section
   previewTrimBtn.addEventListener('click', () => {
     triggerHaptic();
