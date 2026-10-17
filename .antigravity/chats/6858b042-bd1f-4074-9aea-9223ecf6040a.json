@@ -112,6 +112,18 @@
       "created_at": "2026-10-17T15:34:31.984Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "9a11fe1e-d1c1-4f62-b0b0-7a10bf042b1f",
+      "role": "agent",
+      "content": "It is saved. The changes have been committed with the exact message:\n\n`Prevent crash when chat deleted twice`",
+      "status": "completed",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "fdc669de-ac5b-46d7-b97e-b50c86b31cbe",
+      "created_at": "2026-10-17T15:35:29.838Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
