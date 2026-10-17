@@ -460,6 +460,18 @@
       "created_at": "2026-10-17T11:40:42.269Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "524eb1fd-3ded-4d6e-b455-5847a0736888",
+      "role": "user",
+      "content": "最新メッセージを表示してください。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-17T11:49:17.313Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
