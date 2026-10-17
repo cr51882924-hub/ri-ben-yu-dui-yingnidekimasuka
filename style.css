@@ -2422,6 +2422,50 @@ body.zoom-huge .toast {
   transform: scale(0.94);
 }
 
+/* ==========================================================================
+   v12.4: STEP 1 素材選択タブ & 動画パターン選択ボタン
+   ========================================================================== */
+.mat-tab-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+  -webkit-tap-highlight-color: transparent;
+}
 
+.mat-tab-btn:active {
+  transform: scale(0.97);
+}
 
+.mat-tab-btn.active {
+  box-shadow: 0 0 20px rgba(192, 132, 252, 0.45);
+}
 
+.video-pattern-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.video-pattern-btn:active {
+  transform: scale(0.98);
+}
+
+.video-pattern-btn.active {
+  box-shadow: 0 0 22px rgba(168, 85, 247, 0.5);
+}
+
+/* Super Zoom Support */
+body.zoom-huge .mat-tab-btn strong {
+  font-size: 1.25rem !important;
+}
+
+body.zoom-huge .mat-tab-btn small {
+  font-size: 0.95rem !important;
+}
+
+body.zoom-huge .video-pattern-btn strong {
+  font-size: 1.3rem !important;
+}
+
+body.zoom-huge .video-pattern-btn p {
+  font-size: 1.08rem !important;
+}

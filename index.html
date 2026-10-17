@@ -50,11 +50,11 @@
 
       <!-- Step-by-Step Arrow Flow Guide Banner (矢印フロー解説) -->
       <section class="flow-guide-card">
-        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v12.3: 切り出し音声のMP3/WAV保存形式選択に対応)</span>
+        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v12.4: 写真・動画の素材両対応 ＆ 2つの動画パターン選択)</span>
         <div class="flow-steps-row">
           <span class="flow-chip highlight">🔑 APIキー登録</span>
           <span class="flow-arrow">➔</span>
-          <span class="flow-chip">① 写真をセット</span>
+          <span class="flow-chip" id="flowStep1Chip">① 写真 or 動画をセット</span>
           <span class="flow-arrow">➔</span>
           <span class="flow-chip">② 曲と秒数を指定</span>
           <span class="flow-arrow">➔</span>
@@ -143,43 +143,158 @@
       </section>
 
       <!-- ==========================================
-           STEP 1: 歌わせたい人物の写真を取り込む
+           STEP 1: 歌わせたい人物の素材（写真 または 動画）を取り込む
            ========================================== -->
-      <section class="large-section">
+      <section class="large-section" id="sectionStep1">
         <div class="section-title-wrap">
           <span class="step-badge highlight-badge">1</span>
           <div>
-            <h3 class="section-title">歌わせたい人物の写真を取り込む</h3>
-            <p class="section-sub">リップシンク（口パク歌唱）させたい人物・アーティストの写真を1枚選んでください</p>
+            <h3 class="section-title">歌わせたい人物の素材を取り込む</h3>
+            <p class="section-sub">「① 写真・画像」または「② 動画素材」のどちらからでもリップシンクMVを制作できます</p>
           </div>
         </div>
 
-        <!-- Big Photo Upload Button -->
-        <label for="avatarFileInput" class="giant-action-card photo-upload-card" id="avatarUploadBtn" role="button" tabindex="0" aria-label="あなたが用意した人物の写真をアップロード">
-          <div class="avatar-preview-wrap" id="avatarPreviewWrap">
-            <span class="action-card-icon" id="avatarCardIcon">📷</span>
-            <img id="avatarPreviewImg" class="avatar-preview-img hidden" alt="アップロードした写真">
-          </div>
-          <div class="action-card-text">
-            <strong id="avatarCardTitle">あなたが用意した人物の写真をアップロード</strong>
-            <span id="avatarCardHint">ここをタップしてiPhoneの写真ライブラリから選択（JPG, PNG, HEIC対応）</span>
-          </div>
-        </label>
-        <input type="file" id="avatarFileInput" accept="image/*" class="sr-only-input">
+        <!-- 素材切り替えタブ（特大ボタンスタイル） -->
+        <div class="material-mode-tabs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+          <button type="button" id="tabModePhoto" class="mat-tab-btn active" style="background: rgba(168, 85, 247, 0.28); border: 2.5px solid #c084fc; border-radius: 14px; padding: 14px 10px; color: #fff; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.8rem; flex-shrink: 0;">📷</span>
+            <div style="line-height: 1.25;">
+              <strong style="font-size: 1.05rem; display: block; color: #f0abfc;">① 写真・画像</strong>
+              <small style="font-size: 0.78rem; color: #cbd5e1;">（これまでの方法・完全維持）</small>
+            </div>
+          </button>
 
-        <!-- Custom Avatar Success Banner -->
-        <div id="customAvatarBanner" class="custom-avatar-banner hidden" style="margin-top: 14px;">
-          <div class="custom-avatar-banner-head">
-            <span class="custom-avatar-check-badge">✔</span>
-            <div class="custom-avatar-banner-text">
-              <strong id="customAvatarStatusTitle">あなたの写真がセットされました！</strong>
-              <span id="customAvatarStatusSub">続けてSTEP 2で楽曲を取り込み、歌わせる区間を決めてください</span>
+          <button type="button" id="tabModeVideo" class="mat-tab-btn" style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 14px; padding: 14px 10px; color: #cbd5e1; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.8rem; flex-shrink: 0;">🎬</span>
+            <div style="line-height: 1.25;">
+              <strong style="font-size: 1.05rem; display: block; color: #7dd3fc;">② 動画素材</strong>
+              <small style="font-size: 0.78rem; color: #94a3b8;">（新機能・2つのパターン）</small>
+            </div>
+          </button>
+        </div>
+
+        <!-- =====================================
+             【モード①】写真・画像から作る（これまでのUI・機能を100%完全維持）
+             ===================================== -->
+        <div id="materialPhotoBox">
+          <!-- Big Photo Upload Button -->
+          <label for="avatarFileInput" class="giant-action-card photo-upload-card" id="avatarUploadBtn" role="button" tabindex="0" aria-label="あなたが用意した人物の写真をアップロード">
+            <div class="avatar-preview-wrap" id="avatarPreviewWrap">
+              <span class="action-card-icon" id="avatarCardIcon">📷</span>
+              <img id="avatarPreviewImg" class="avatar-preview-img hidden" alt="アップロードした写真">
+            </div>
+            <div class="action-card-text">
+              <strong id="avatarCardTitle">あなたが用意した人物の写真をアップロード</strong>
+              <span id="avatarCardHint">ここをタップしてiPhoneの写真ライブラリから選択（JPG, PNG, HEIC対応）</span>
+            </div>
+          </label>
+          <input type="file" id="avatarFileInput" accept="image/*" class="sr-only-input">
+
+          <!-- Custom Avatar Success Banner -->
+          <div id="customAvatarBanner" class="custom-avatar-banner hidden" style="margin-top: 14px;">
+            <div class="custom-avatar-banner-head">
+              <span class="custom-avatar-check-badge">✔</span>
+              <div class="custom-avatar-banner-text">
+                <strong id="customAvatarStatusTitle">あなたの写真がセットされました！</strong>
+                <span id="customAvatarStatusSub">続けてSTEP 2で楽曲を取り込み、歌わせる区間を決めてください</span>
+              </div>
+            </div>
+            <div class="custom-avatar-btn-row" style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
+              <button id="changeAvatarBtn" class="avatar-action-btn secondary-btn" type="button" style="flex: 1; min-width: 160px; padding: 14px; font-size: 1rem;">
+                <span>🔄 別の写真に変更する</span>
+              </button>
             </div>
           </div>
-          <div class="custom-avatar-btn-row" style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button id="changeAvatarBtn" class="avatar-action-btn secondary-btn" type="button" style="flex: 1; min-width: 160px; padding: 14px; font-size: 1rem;">
-              <span>🔄 別の写真に変更する</span>
-            </button>
+        </div>
+
+        <!-- =====================================
+             【モード②】動画素材から作る（新設：2つのパターン選択）
+             ===================================== -->
+        <div id="materialVideoBox" class="hidden">
+          <!-- Big Video Upload Button -->
+          <label for="videoMaterialFileInput" class="giant-action-card photo-upload-card" id="videoMaterialUploadBtn" role="button" tabindex="0" aria-label="あなたが撮影・用意した人物動画をアップロード" style="border-color: #38bdf8;">
+            <div class="avatar-preview-wrap" id="videoMaterialPreviewWrap">
+              <span class="action-card-icon" id="videoMaterialCardIcon">🎬</span>
+              <video id="videoMaterialThumb" class="avatar-preview-img hidden" muted playsinline></video>
+            </div>
+            <div class="action-card-text">
+              <strong id="videoMaterialCardTitle">あなたが撮影・用意した人物動画をアップロード</strong>
+              <span id="videoMaterialCardHint">ここをタップしてiPhoneの写真・ビデオから選択（MP4, MOV対応）</span>
+            </div>
+          </label>
+          <input type="file" id="videoMaterialFileInput" accept="video/*,.mp4,.mov,.m4v,.webm" class="sr-only-input">
+
+          <!-- Video Loaded & Pattern Selection Box -->
+          <div id="videoPatternSection" class="hidden" style="margin-top: 16px;">
+            <!-- Video Player Preview with Time & Seek -->
+            <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(56, 189, 248, 0.55); border-radius: 16px; padding: 14px; margin-bottom: 16px;">
+              <div style="font-size: 1rem; font-weight: 800; color: #7dd3fc; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <span>🎥 読み込んだ元動画プレビュー:</span>
+                <span id="sourceVideoDurationLabel" style="font-size: 0.9rem; color: #fde047; font-weight: 800;">再生時間: --:--</span>
+              </div>
+              <video id="sourceVideoPlayer" controls playsinline style="width: 100%; max-height: 280px; border-radius: 12px; background: #000; outline: none;"></video>
+            </div>
+
+            <!-- Two Pattern Selection Buttons -->
+            <div style="font-size: 1.05rem; font-weight: 900; color: #fbcfe8; margin-bottom: 10px;">
+              👇 どちらのパターンで動画を作りますか？（タップして選択）：
+            </div>
+
+            <div class="video-pattern-grid" style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+              <!-- Pattern A: Video-to-Video LipSync -->
+              <button type="button" class="video-pattern-btn active" id="patternBtnA" style="background: rgba(168, 85, 247, 0.28); border: 2.5px solid #c084fc; border-radius: 14px; padding: 16px; text-align: left; cursor: pointer; color: #fff;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                  <strong style="font-size: 1.12rem; color: #f0abfc;">🎥 パターンA：動画のまま口元リップシンク</strong>
+                  <span class="pattern-pill" id="patternPillA" style="background: #10b981; color: #052e16; font-size: 0.85rem; font-weight: 900; padding: 4px 12px; border-radius: 999px;">✔ 選択中</span>
+                </div>
+                <p style="font-size: 0.93rem; color: #f1f5f9; margin: 0; line-height: 1.45;">
+                  元動画の全身の動き・カメラワーク・背景を100%そのまま活かし、<strong>口の動きだけを切り出した楽曲に合わせて歌声に同期（アテレコ）</strong>させます。
+                </p>
+                <div style="margin-top: 8px; font-size: 0.84rem; color: #cbd5e1; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 8px;">
+                  ⚡ 使用AI: Sync Lipsync v3 / LatentSync（動画専用リップシンク）
+                </div>
+              </button>
+
+              <!-- Pattern B: Frame Extract to Singing Video -->
+              <button type="button" class="video-pattern-btn" id="patternBtnB" style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 16px; text-align: left; cursor: pointer; color: #fff;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                  <strong style="font-size: 1.12rem; color: #7dd3fc;">📸 パターンB：動画から1コマ切り出して歌唱</strong>
+                  <span class="pattern-pill" id="patternPillB" style="background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.85rem; font-weight: 700; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+                </div>
+                <p style="font-size: 0.93rem; color: #cbd5e1; margin: 0; line-height: 1.45;">
+                  動画の中からお気に入りの瞬間を<strong>写真（静止画）として自動切り出し</strong>、OmniHuman v1.5 等の最新AIで<strong>表情豊かに1から歌唱動画を生成</strong>します。
+                </p>
+                <div style="margin-top: 8px; font-size: 0.84rem; color: #cbd5e1; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 8px;">
+                  🌟 使用AI: ByteDance OmniHuman v1.5 / Kling AI Avatar
+                </div>
+              </button>
+            </div>
+
+            <!-- Frame capture controller (shown when Pattern B is selected) -->
+            <div id="patternBFrameBox" class="hidden" style="margin-top: 14px; background: rgba(2, 132, 199, 0.15); border: 2px solid #38bdf8; border-radius: 14px; padding: 14px;">
+              <div style="font-size: 0.98rem; font-weight: 800; color: #7dd3fc; margin-bottom: 8px;">
+                📸 写真として切り出すタイミングの指定：
+              </div>
+              <p style="font-size: 0.88rem; color: #e0f2fe; margin: 0 0 10px 0; line-height: 1.4;">
+                上のプレビュー動画を再生し、歌わせたいベストな表情のところで一時停止して下のボタンを押してください（動画読み込み時に最初の1コマが自動セットされています）。
+              </p>
+              <button type="button" id="captureVideoFrameBtn" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #0284c7, #2563eb); border: 2px solid #7dd3fc; border-radius: 12px; padding: 14px; font-size: 1.05rem; font-weight: 900; color: #fff; cursor: pointer;">
+                <span>📸 現在の再生位置の1コマを写真としてセットする</span>
+              </button>
+              <div id="capturedFramePreviewRow" class="hidden" style="margin-top: 12px; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.35); padding: 10px 12px; border-radius: 10px; border: 1.5px solid rgba(56, 189, 248, 0.4);">
+                <img id="capturedFrameThumb" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #38bdf8;" alt="切り出した1コマ">
+                <div>
+                  <strong style="color: #6ee7b7; font-size: 0.95rem; display: block;">✔ 1コマを写真としてセット完了！</strong>
+                  <span id="capturedFrameTimeBadge" style="font-size: 0.84rem; color: #cbd5e1;">切り出し位置: 00:00</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 14px; display: flex; gap: 10px;">
+              <button id="changeVideoMaterialBtn" class="avatar-action-btn secondary-btn" type="button" style="flex: 1; padding: 14px; font-size: 1rem;">
+                <span>🔄 別の動画に変更する</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -443,17 +558,19 @@
           <span class="step-badge highlight-badge">4</span>
           <div>
             <h3 class="section-title">AIリップシンク歌唱動画を生成する</h3>
-            <p class="section-sub">STEP 1の写真とSTEP 3の切り出し楽曲をFal.aiへ送信し、本物のリップシンク動画を生成します</p>
+            <p class="section-sub" id="step4Subtitle">STEP 1の素材（写真または動画）とSTEP 3の切り出し楽曲をFal.aiへ送信し、本物のリップシンク動画を生成します</p>
           </div>
         </div>
 
         <div id="panelV11b" class="ai-version-panel">
-          <!-- ① 1つのキーで選べるリップシンク＆動画生成AIモデル一覧（1列・特大カード） -->
-          <div style="font-size: 1.08rem; font-weight: 900; color: #fbcfe8; margin-bottom: 12px;">
-            ① 使用するAIモデルをタップして選択：
+          <!-- ① 使用するAIモデル一覧 -->
+          <div style="font-size: 1.08rem; font-weight: 900; color: #fbcfe8; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <span>① 使用するAIモデルをタップして選択：</span>
+            <span id="currentMaterialIndicatorBadge" style="background: rgba(168, 85, 247, 0.35); border: 1px solid #c084fc; color: #f0abfc; font-size: 0.85rem; font-weight: 800; padding: 3px 10px; border-radius: 999px;">📷 写真モード</span>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px;">
 
+          <!-- A. 写真／1コマ切り出し用AIモデル群（Photo または 動画パターンB） -->
+          <div id="photoModelsGroup" style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px;">
             <!-- Model 1: ByteDance OmniHuman v1.5 (Lip-Sync + Full Performance) -->
             <button type="button" class="v11b-model-btn active" data-model="fal-ai/bytedance/omnihuman/v1.5" data-mode="lipsync" data-label="ByteDance OmniHuman v1.5 (リップシンク)" style="background: rgba(168, 85, 247, 0.28); border: 2.5px solid #c084fc; border-radius: 14px; padding: 16px; color: #fff; text-align: left; cursor: pointer;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
@@ -500,9 +617,32 @@
             </button>
           </div>
 
+          <!-- B. 動画そのまま口元リップシンク用AIモデル群（動画パターンA） -->
+          <div id="videoModelsGroup" class="hidden" style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px;">
+            <!-- Model V1: Sync Lipsync v3 -->
+            <button type="button" class="v11b-model-btn active" data-model="fal-ai/sync-lipsync/v3" data-mode="videolipsync" data-label="Sync Lipsync v3 (動画口パク同期)" style="background: rgba(168, 85, 247, 0.28); border: 2.5px solid #c084fc; border-radius: 14px; padding: 16px; color: #fff; text-align: left; cursor: pointer;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.15rem; color: #f0abfc;">🎥 Sync Lipsync v3（最新動画リップシンク・おすすめ）</strong>
+                <span class="v11b-model-pill" style="background: #10b981; color: #052e16; font-size: 0.88rem; font-weight: 900; padding: 4px 12px; border-radius: 999px;">✔ 選択中</span>
+              </div>
+              <span style="font-size: 0.96rem; color: #f1f5f9; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】元動画の画質・動き・カメラワーク・背景を100%保持し、口元の動きだけを曲に合わせて超高精度に再描画同期</span>
+            </button>
+
+            <!-- Model V2: LatentSync -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/latentsync" data-mode="videolipsync" data-label="LatentSync (高精度動画リップシンク)" style="background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.18); border-radius: 14px; padding: 16px; color: #fff; text-align: left; cursor: pointer;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.15rem; color: #7dd3fc;">⚡ LatentSync（高精度リップシンク）</strong>
+                <span class="v11b-model-pill" style="background: rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.85rem; font-weight: 700; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span style="font-size: 0.96rem; color: #cbd5e1; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】拡散モデルベースの高精度動画リップシンクAI。人物の口元を自然な発音形状にモーフィング</span>
+            </button>
+          </div>
+
           <!-- ② 歌い方・表情・演出スタイルの指定 -->
-          <div style="font-size: 1.05rem; font-weight: 900; color: #f3e8ff; margin-bottom: 10px;">
-            ② 歌い方・演出スタイルの指定（ワンタップ選択）：
+          <div id="aiPromptStyleWrap">
+            <div style="font-size: 1.05rem; font-weight: 900; color: #f3e8ff; margin-bottom: 10px;">
+              ② 歌い方・演出スタイルの指定（ワンタップ選択）：
+            </div>
           </div>
           <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 14px;">
             <button type="button" class="ai-style-chip active" data-style="sway" data-prompt="Passionate music video performance, singer singing emotionally with natural head movement and expressive eyes, concert stage lighting, high quality 4k" style="background: rgba(168, 85, 247, 0.35); border: 2px solid #c084fc; color: #fff; border-radius: 12px; padding: 14px; font-size: 1.02rem; font-weight: 800; text-align: left; cursor: pointer;">
@@ -812,9 +952,9 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
   <script src="lame.min.js"></script>
-  <script src="audio-engine.js?v=20261017_3"></script>
-  <script src="presets.js?v=20261017_3"></script>
-  <script src="character-renderer.js?v=20261017_3"></script>
-  <script src="app.js?v=20261017_3"></script>
+  <script src="audio-engine.js?v=20261017_4"></script>
+  <script src="presets.js?v=20261017_4"></script>
+  <script src="character-renderer.js?v=20261017_4"></script>
+  <script src="app.js?v=20261017_4"></script>
 </body>
 </html>
