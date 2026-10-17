@@ -1099,11 +1099,12 @@ document.addEventListener('DOMContentLoaded', () => {
     aiGenStatusBox.classList.remove('hidden');
   }
 
-  // Model selection in STEP 4
+  // Model selection in STEP 4 (supports both photoModelsGroup and videoModelsGroup)
   document.querySelectorAll('.v11b-model-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       triggerHaptic();
-      document.querySelectorAll('.v11b-model-btn').forEach(b => {
+      const parentContainer = btn.closest('#photoModelsGroup, #videoModelsGroup') || btn.parentElement;
+      parentContainer.querySelectorAll('.v11b-model-btn').forEach(b => {
         b.classList.remove('active');
         b.style.background = 'rgba(15, 23, 42, 0.85)';
         b.style.borderColor = 'rgba(255,255,255,0.18)';
@@ -1129,6 +1130,290 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(`🎤 「${selectedV11bLabel}」を選択しました`);
     });
   });
+
+  // Material Mode & Video Pattern Controllers (v12.4)
+  function setMaterialMode(mode) {
+    activeMaterialMode = mode;
+    triggerHaptic();
+    if (mode === 'photo') {
+      if (tabModePhoto) {
+        tabModePhoto.classList.add('active');
+        tabModePhoto.style.background = 'rgba(168, 85, 247, 0.28)';
+        tabModePhoto.style.borderColor = '#c084fc';
+      }
+      if (tabModeVideo) {
+        tabModeVideo.classList.remove('active');
+        tabModeVideo.style.background = 'rgba(15, 23, 42, 0.85)';
+        tabModeVideo.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+      }
+      if (materialPhotoBox) materialPhotoBox.classList.remove('hidden');
+      if (materialVideoBox) materialVideoBox.classList.add('hidden');
+
+      if (photoModelsGroup) photoModelsGroup.classList.remove('hidden');
+      if (videoModelsGroup) videoModelsGroup.classList.add('hidden');
+      if (aiPromptStyleWrap) aiPromptStyleWrap.classList.remove('hidden');
+      if (currentMaterialIndicatorBadge) {
+        currentMaterialIndicatorBadge.textContent = '📷 写真モード';
+        currentMaterialIndicatorBadge.style.background = 'rgba(168, 85, 247, 0.35)';
+        currentMaterialIndicatorBadge.style.borderColor = '#c084fc';
+        currentMaterialIndicatorBadge.style.color = '#f0abfc';
+      }
+      if (generateAiLipsyncBtn) {
+        generateAiLipsyncBtn.innerHTML = '<span>✨ APIでAIリップシンク歌唱動画を生成する</span>';
+      }
+
+      const activeBtn = photoModelsGroup ? photoModelsGroup.querySelector('.v11b-model-btn.active') : null;
+      if (activeBtn) {
+        selectedV11bModel = activeBtn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
+        selectedV11bMode = activeBtn.dataset.mode || 'lipsync';
+        selectedV11bLabel = activeBtn.dataset.label || 'ByteDance OmniHuman v1.5';
+      }
+      showToast('📷 「写真・画像」モードに切り替えました');
+    } else {
+      if (tabModeVideo) {
+        tabModeVideo.classList.add('active');
+        tabModeVideo.style.background = 'rgba(56, 189, 248, 0.25)';
+        tabModeVideo.style.borderColor = '#38bdf8';
+      }
+      if (tabModePhoto) {
+        tabModePhoto.classList.remove('active');
+        tabModePhoto.style.background = 'rgba(15, 23, 42, 0.85)';
+        tabModePhoto.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+      }
+      if (materialVideoBox) materialVideoBox.classList.remove('hidden');
+      if (materialPhotoBox) materialPhotoBox.classList.add('hidden');
+
+      updateVideoPatternUI();
+      showToast('🎬 「動画素材」モードに切り替えました');
+    }
+  }
+
+  function setVideoPattern(pattern) {
+    activeVideoPattern = pattern;
+    triggerHaptic();
+    updateVideoPatternUI();
+  }
+
+  function updateVideoPatternUI() {
+    if (activeMaterialMode !== 'video') return;
+
+    if (activeVideoPattern === 'A') {
+      if (patternBtnA) {
+        patternBtnA.classList.add('active');
+        patternBtnA.style.background = 'rgba(168, 85, 247, 0.28)';
+        patternBtnA.style.borderColor = '#c084fc';
+      }
+      if (patternPillA) {
+        patternPillA.textContent = '✔ 選択中';
+        patternPillA.style.background = '#10b981';
+        patternPillA.style.color = '#052e16';
+      }
+      if (patternBtnB) {
+        patternBtnB.classList.remove('active');
+        patternBtnB.style.background = 'rgba(15, 23, 42, 0.85)';
+        patternBtnB.style.borderColor = 'rgba(255, 255, 255, 0.18)';
+      }
+      if (patternPillB) {
+        patternPillB.textContent = 'タップで選択';
+        patternPillB.style.background = 'rgba(255, 255, 255, 0.12)';
+        patternPillB.style.color = '#cbd5e1';
+      }
+      if (patternBFrameBox) patternBFrameBox.classList.add('hidden');
+
+      if (videoModelsGroup) videoModelsGroup.classList.remove('hidden');
+      if (photoModelsGroup) photoModelsGroup.classList.add('hidden');
+      if (aiPromptStyleWrap) aiPromptStyleWrap.classList.add('hidden');
+      if (currentMaterialIndicatorBadge) {
+        currentMaterialIndicatorBadge.textContent = '🎬 動画モード（パターンA: 動画リップシンク）';
+        currentMaterialIndicatorBadge.style.background = 'rgba(16, 185, 129, 0.25)';
+        currentMaterialIndicatorBadge.style.borderColor = '#10b981';
+        currentMaterialIndicatorBadge.style.color = '#6ee7b7';
+      }
+      if (generateAiLipsyncBtn) {
+        generateAiLipsyncBtn.innerHTML = '<span>✨ APIで動画の口元をリップシンク生成する</span>';
+      }
+
+      const activeBtn = videoModelsGroup ? videoModelsGroup.querySelector('.v11b-model-btn.active') : null;
+      if (activeBtn) {
+        selectedV11bModel = activeBtn.dataset.model || 'fal-ai/sync-lipsync/v3';
+        selectedV11bMode = activeBtn.dataset.mode || 'videolipsync';
+        selectedV11bLabel = activeBtn.dataset.label || 'Sync Lipsync v3 (動画口パク同期)';
+      }
+    } else {
+      if (patternBtnB) {
+        patternBtnB.classList.add('active');
+        patternBtnB.style.background = 'rgba(2, 132, 199, 0.25)';
+        patternBtnB.style.borderColor = '#38bdf8';
+      }
+      if (patternPillB) {
+        patternPillB.textContent = '✔ 選択中';
+        patternPillB.style.background = '#10b981';
+        patternPillB.style.color = '#052e16';
+      }
+      if (patternBtnA) {
+        patternBtnA.classList.remove('active');
+        patternBtnA.style.background = 'rgba(15, 23, 42, 0.85)';
+        patternBtnA.style.borderColor = 'rgba(255, 255, 255, 0.18)';
+      }
+      if (patternPillA) {
+        patternPillA.textContent = 'タップで選択';
+        patternPillA.style.background = 'rgba(255, 255, 255, 0.12)';
+        patternPillA.style.color = '#cbd5e1';
+      }
+      if (patternBFrameBox) patternBFrameBox.classList.remove('hidden');
+
+      if (photoModelsGroup) photoModelsGroup.classList.remove('hidden');
+      if (videoModelsGroup) videoModelsGroup.classList.add('hidden');
+      if (aiPromptStyleWrap) aiPromptStyleWrap.classList.remove('hidden');
+      if (currentMaterialIndicatorBadge) {
+        currentMaterialIndicatorBadge.textContent = '📸 動画モード（パターンB: 1コマ切り出し歌唱）';
+        currentMaterialIndicatorBadge.style.background = 'rgba(56, 189, 248, 0.25)';
+        currentMaterialIndicatorBadge.style.borderColor = '#38bdf8';
+        currentMaterialIndicatorBadge.style.color = '#7dd3fc';
+      }
+      if (generateAiLipsyncBtn) {
+        generateAiLipsyncBtn.innerHTML = '<span>✨ APIでAIリップシンク歌唱動画を生成する</span>';
+      }
+
+      const activeBtn = photoModelsGroup ? photoModelsGroup.querySelector('.v11b-model-btn.active') : null;
+      if (activeBtn) {
+        selectedV11bModel = activeBtn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
+        selectedV11bMode = activeBtn.dataset.mode || 'lipsync';
+        selectedV11bLabel = activeBtn.dataset.label || 'ByteDance OmniHuman v1.5';
+      }
+    }
+  }
+
+  function captureFrameFromSourceVideo() {
+    if (!sourceVideoPlayer || !sourceVideoPlayer.videoWidth || !sourceVideoPlayer.videoHeight) {
+      return null;
+    }
+    const vw = sourceVideoPlayer.videoWidth;
+    const vh = sourceVideoPlayer.videoHeight;
+    const maxDim = 1280;
+    let targetW = vw;
+    let targetH = vh;
+    if (vw > maxDim || vh > maxDim) {
+      if (vw > vh) {
+        targetW = maxDim;
+        targetH = Math.round((vh * maxDim) / vw);
+      } else {
+        targetH = maxDim;
+        targetW = Math.round((vw * maxDim) / vh);
+      }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(sourceVideoPlayer, 0, 0, targetW, targetH);
+    capturedVideoFrameCanvas = canvas;
+
+    characterRenderer.setCustomAvatar(canvas);
+
+    if (capturedFrameThumb) {
+      try {
+        capturedFrameThumb.src = canvas.toDataURL('image/jpeg', 0.85);
+      } catch (e) {}
+    }
+    if (capturedFrameTimeBadge) {
+      const curSec = sourceVideoPlayer.currentTime || 0;
+      capturedFrameTimeBadge.textContent = `切り出し位置: ${formatTime(curSec)}`;
+    }
+    if (capturedFramePreviewRow) {
+      capturedFramePreviewRow.classList.remove('hidden');
+    }
+    return canvas;
+  }
+
+  if (tabModePhoto) tabModePhoto.addEventListener('click', () => setMaterialMode('photo'));
+  if (tabModeVideo) tabModeVideo.addEventListener('click', () => setMaterialMode('video'));
+  if (patternBtnA) patternBtnA.addEventListener('click', () => setVideoPattern('A'));
+  if (patternBtnB) {
+    patternBtnB.addEventListener('click', () => {
+      setVideoPattern('B');
+      if (!capturedVideoFrameCanvas) captureFrameFromSourceVideo();
+    });
+  }
+
+  if (videoMaterialUploadBtn && videoMaterialFileInput) {
+    videoMaterialUploadBtn.addEventListener('click', () => {
+      triggerHaptic();
+      videoMaterialFileInput.click();
+    });
+    videoMaterialUploadBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        triggerHaptic();
+        videoMaterialFileInput.click();
+      }
+    });
+
+    videoMaterialFileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      triggerHaptic();
+
+      uploadedVideoMaterialFile = file;
+      if (uploadedVideoMaterialUrl) {
+        try { URL.revokeObjectURL(uploadedVideoMaterialUrl); } catch (e) {}
+      }
+      uploadedVideoMaterialUrl = URL.createObjectURL(file);
+
+      if (videoMaterialCardTitle) {
+        videoMaterialCardTitle.textContent = `✔ 読込完了: ${file.name}`;
+      }
+      if (videoMaterialCardHint) {
+        videoMaterialCardHint.textContent = `サイズ: ${(file.size / (1024 * 1024)).toFixed(1)}MB（下のパターンAまたはパターンBを選択してください）`;
+      }
+      if (videoMaterialUploadBtn) {
+        videoMaterialUploadBtn.style.borderColor = '#10b981';
+      }
+
+      if (sourceVideoPlayer) {
+        sourceVideoPlayer.src = uploadedVideoMaterialUrl;
+        sourceVideoPlayer.load();
+        sourceVideoPlayer.onloadedmetadata = () => {
+          if (sourceVideoDurationLabel) {
+            sourceVideoDurationLabel.textContent = `動画の長さ: ${formatTime(sourceVideoPlayer.duration || 0)}`;
+          }
+          setTimeout(() => {
+            try {
+              sourceVideoPlayer.currentTime = 0.1;
+              sourceVideoPlayer.onseeked = () => {
+                captureFrameFromSourceVideo();
+                sourceVideoPlayer.onseeked = null;
+              };
+            } catch (e) {}
+          }, 300);
+        };
+      }
+
+      if (videoPatternSection) {
+        videoPatternSection.classList.remove('hidden');
+      }
+
+      showToast(`🎬 動画「${file.name}」を読み込みました！`);
+    });
+  }
+
+  if (changeVideoMaterialBtn && videoMaterialFileInput) {
+    changeVideoMaterialBtn.addEventListener('click', () => {
+      triggerHaptic();
+      videoMaterialFileInput.click();
+    });
+  }
+
+  if (captureVideoFrameBtn) {
+    captureVideoFrameBtn.addEventListener('click', () => {
+      triggerHaptic();
+      const canvas = captureFrameFromSourceVideo();
+      if (canvas) {
+        const curSec = sourceVideoPlayer ? sourceVideoPlayer.currentTime : 0;
+        showToast(`📸 動画の ${formatTime(curSec)} の1コマを写真としてセットしました！`);
+      }
+    });
+  }
 
   // Style chips in STEP 4
   document.querySelectorAll('.ai-style-chip').forEach(chip => {
@@ -1314,15 +1599,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      if (!characterRenderer.customAvatarImg) {
-        showAiStatus('⚠️ <strong>STEP 1 で人物の写真がまだアップロードされていません。</strong><br>まず歌わせたい人物の写真を1枚選んでください。', '#f59e0b');
-        showToast('📷 STEP 1 で歌わせたい人物の写真をアップロードしてください');
-        avatarUploadBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
+      const isVideoToVideo = (activeMaterialMode === 'video' && activeVideoPattern === 'A');
+
+      if (isVideoToVideo) {
+        if (!uploadedVideoMaterialFile) {
+          showAiStatus('⚠️ <strong>STEP 1 で人物の動画がまだアップロードされていません。</strong><br>まず歌わせたい人物の動画（MP4またはMOV）を選んでください。', '#f59e0b');
+          showToast('🎬 STEP 1 で人物の動画をアップロードしてください');
+          if (videoMaterialUploadBtn) videoMaterialUploadBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+      } else {
+        if (!characterRenderer.customAvatarImg) {
+          if (activeMaterialMode === 'video' && activeVideoPattern === 'B' && sourceVideoPlayer) {
+            captureFrameFromSourceVideo();
+          }
+        }
+        if (!characterRenderer.customAvatarImg) {
+          showAiStatus('⚠️ <strong>STEP 1 で人物の写真または動画の切り出しがセットされていません。</strong><br>まず歌わせたい人物の写真（または動画）をセットしてください。', '#f59e0b');
+          showToast('📷 STEP 1 で歌わせたい人物の写真をアップロードしてください');
+          if (avatarUploadBtn) avatarUploadBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
       }
 
-      const isLipsyncMode = (selectedV11bMode === 'lipsync');
-      if (isLipsyncMode && !audioEngine.hasAudioLoaded()) {
+      if (!audioEngine.hasAudioLoaded()) {
         showAiStatus('⚠️ <strong>STEP 2 で楽曲ファイルがまだアップロードされていません。</strong><br>リップシンク（口パク歌唱）には元になる楽曲が必要です。STEP 2 で楽曲を取り込んでください。', '#f59e0b');
         showToast('🎵 STEP 2 であなたの楽曲ファイルをアップロードしてください');
         audioUploadBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1339,27 +1639,29 @@ document.addEventListener('DOMContentLoaded', () => {
       let progressTimer = null;
 
       try {
-        showAiStatus(`⏳ <strong>[1/3] 写真と切り出し音源（${formatTime(audioEngine.trimStart || 0)}〜${formatTime(audioEngine.trimEnd || 15)}）を準備しています...</strong>`, '#c084fc');
+        const materialLabel = isVideoToVideo ? '動画' : '写真';
+        showAiStatus(`⏳ <strong>[1/3] ${materialLabel}と切り出し音源（${formatTime(audioEngine.trimStart || 0)}〜${formatTime(audioEngine.trimEnd || 15)}）を準備しています...</strong>`, '#c084fc');
 
-        // 1. Prepare Image File & Data URL
-        const imgBlob = await canvasToJpegBlob(characterRenderer.customAvatarImg, 0.9);
-        const imgDataUrl = characterRenderer.customAvatarImg.toDataURL('image/jpeg', 0.88);
-        const imgFile = imgBlob ? new File([imgBlob], 'artist_photo.jpg', { type: 'image/jpeg' }) : null;
+        // 1. Prepare Sliced Audio MP3 File & Data URL
+        const srcBuf = audioEngine.ensureAudioBuffer();
+        if (!srcBuf) {
+          throw new Error('楽曲データのデコードに失敗しました。もう一度STEP 2で楽曲を選択してください。');
+        }
+        const startSec = audioEngine.trimStart || 0;
+        const endSec = Math.max(startSec + 1, audioEngine.trimEnd || (startSec + 15));
+        const slicedBuf = sliceBufferDirect(srcBuf, startSec, endSec);
+        const mp3Blob = encodeMp3Direct(slicedBuf);
+        const audioFile = new File([mp3Blob], 'vocal_cut.mp3', { type: 'audio/mpeg' });
+        const audioDataUrl = await blobToDataUrl(mp3Blob);
 
-        // 2. Prepare Sliced Audio MP3 File & Data URL (if lipsync mode)
-        let audioFile = null;
-        let audioDataUrl = '';
-        if (isLipsyncMode) {
-          const srcBuf = audioEngine.ensureAudioBuffer();
-          if (!srcBuf) {
-            throw new Error('楽曲データのデコードに失敗しました。もう一度STEP 2で楽曲を選択してください。');
-          }
-          const startSec = audioEngine.trimStart || 0;
-          const endSec = Math.max(startSec + 1, audioEngine.trimEnd || (startSec + 15));
-          const slicedBuf = sliceBufferDirect(srcBuf, startSec, endSec);
-          const mp3Blob = encodeMp3Direct(slicedBuf);
-          audioFile = new File([mp3Blob], 'vocal_cut.mp3', { type: 'audio/mpeg' });
-          audioDataUrl = await blobToDataUrl(mp3Blob);
+        // 2. Prepare Image File if Photo / Pattern B mode
+        let imgBlob = null;
+        let imgDataUrl = '';
+        let imgFile = null;
+        if (!isVideoToVideo) {
+          imgBlob = await canvasToJpegBlob(characterRenderer.customAvatarImg, 0.9);
+          imgDataUrl = characterRenderer.customAvatarImg.toDataURL('image/jpeg', 0.88);
+          imgFile = imgBlob ? new File([imgBlob], 'artist_photo.jpg', { type: 'image/jpeg' }) : null;
         }
 
         // Start live elapsed second counter for user feedback
@@ -1370,7 +1672,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let finalVideoUrl = '';
 
-        // 3. Call Fal.ai via official @fal-ai/client (handles Storage Upload + Queue Polling automatically)
+        // 3. Call Fal.ai via official @fal-ai/client
         try {
           const falModule = await import('https://cdn.jsdelivr.net/npm/@fal-ai/client/+esm');
           const createFalClient = falModule.createFalClient || (falModule.default && falModule.default.createFalClient);
@@ -1378,18 +1680,10 @@ document.addEventListener('DOMContentLoaded', () => {
           if (createFalClient) {
             const falClient = createFalClient({ credentials: apiKey });
 
-            showAiStatus(`⏳ <strong>[2/3] Fal.ai サーバーへ写真と音源をアップロード中...</strong>`, '#38bdf8');
-            let uploadedImageUrl = imgDataUrl;
+            showAiStatus(`⏳ <strong>[2/3] Fal.ai サーバーへ${materialLabel}と音源をアップロード中...</strong>`, '#38bdf8');
             let uploadedAudioUrl = audioDataUrl;
 
-            if (imgFile && falClient.storage && typeof falClient.storage.upload === 'function') {
-              try {
-                uploadedImageUrl = await falClient.storage.upload(imgFile);
-              } catch (uErr) {
-                console.warn('Image storage upload fallback to DataURL:', uErr);
-              }
-            }
-            if (isLipsyncMode && audioFile && falClient.storage && typeof falClient.storage.upload === 'function') {
+            if (falClient.storage && typeof falClient.storage.upload === 'function') {
               try {
                 uploadedAudioUrl = await falClient.storage.upload(audioFile);
               } catch (uErr) {
@@ -1397,16 +1691,43 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             }
 
-            // Build model input payload
-            const inputPayload = {
-              image_url: uploadedImageUrl,
-              prompt: promptText
-            };
-            if (isLipsyncMode && uploadedAudioUrl) {
-              inputPayload.audio_url = uploadedAudioUrl;
+            let inputPayload = {};
+
+            if (isVideoToVideo) {
+              // Video-to-Video LipSync (Sync-3 Lipsync / LatentSync)
+              let uploadedVideoUrl = '';
+              if (falClient.storage && typeof falClient.storage.upload === 'function') {
+                uploadedVideoUrl = await falClient.storage.upload(uploadedVideoMaterialFile);
+              } else {
+                throw new Error('動画ファイルのアップロード機能が利用できません。ネットワークをご確認ください。');
+              }
+
+              inputPayload = {
+                video_url: uploadedVideoUrl,
+                audio_url: uploadedAudioUrl,
+                sync_mode: 'cut_off'
+              };
+            } else {
+              // Image LipSync (OmniHuman / Kling AI Avatar / MiniMax)
+              let uploadedImageUrl = imgDataUrl;
+              if (imgFile && falClient.storage && typeof falClient.storage.upload === 'function') {
+                try {
+                  uploadedImageUrl = await falClient.storage.upload(imgFile);
+                } catch (uErr) {
+                  console.warn('Image storage upload fallback to DataURL:', uErr);
+                }
+              }
+
+              inputPayload = {
+                image_url: uploadedImageUrl,
+                prompt: promptText
+              };
+              if (uploadedAudioUrl) {
+                inputPayload.audio_url = uploadedAudioUrl;
+              }
             }
 
-            showAiStatus(`🚀 <strong>[2/3] 「${selectedV11bLabel}」でAIリップシンク動画を生成中です...</strong><br><small style="color:#cbd5e1;">※ 本格的な口パク・表情生成には約1〜3分かかります。この画面のままお待ちください。</small>`, '#c084fc');
+            showAiStatus(`🚀 <strong>[2/3] 「${selectedV11bLabel}」で${isVideoToVideo ? '動画の口元リップシンク' : 'AI歌唱動画'}を生成中です...</strong><br><small style="color:#cbd5e1;">※ 口元の同期描画には約1〜3分かかります。この画面のままお待ちください。</small>`, '#c084fc');
 
             const result = await falClient.subscribe(selectedV11bModel, {
               input: inputPayload,
@@ -1417,7 +1738,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   const pos = (typeof statusUpdate.queue_position === 'number') ? ` (順番: ${statusUpdate.queue_position + 1}番目)` : '';
                   showAiStatus(`⏳ <strong>[2/3] Fal.ai の生成キューに並びました${pos}... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">まもなくAI描画が始まります。そのままお待ちください。</small>`, '#38bdf8');
                 } else if (statusUpdate.status === 'IN_PROGRESS') {
-                  showAiStatus(`🎤 <strong>[2/3] AIがあなたの楽曲に合わせて口元のリップシンクと表情を描画しています... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成まであと少しです。画面を閉じずにお待ちください。</small>`, '#ec4899');
+                  showAiStatus(`🎤 <strong>[2/3] AIがあなたの楽曲に合わせて口元を同期描画しています... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成まであと少しです。画面を閉じずにお待ちください。</small>`, '#ec4899');
                 }
               }
             });
@@ -1435,15 +1756,13 @@ document.addEventListener('DOMContentLoaded', () => {
           if (status === 402 || status === 403 || /balance|credit|exhausted|billing|payment/i.test(detailMsg)) {
             throw new Error(`Fal.ai のクレジット残高が不足しているか、利用制限です（${detailMsg || 'Billingページでチャージをご確認ください'}）。`);
           }
-          // Try direct REST fallback if SDK import itself had a network hiccup
-          if (!finalVideoUrl) {
+          // Try direct REST fallback if SDK import itself had a network hiccup (for image mode)
+          if (!finalVideoUrl && !isVideoToVideo) {
             const payload = {
               image_url: imgDataUrl,
-              prompt: promptText
+              prompt: promptText,
+              audio_url: audioDataUrl
             };
-            if (isLipsyncMode && audioDataUrl) {
-              payload.audio_url = audioDataUrl;
-            }
             const response = await fetch(`https://fal.run/${selectedV11bModel}`, {
               method: 'POST',
               headers: {

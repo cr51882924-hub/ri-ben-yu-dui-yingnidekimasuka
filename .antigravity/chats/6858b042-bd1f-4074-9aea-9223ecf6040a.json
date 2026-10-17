@@ -285,13 +285,13 @@
       "id": "0245da6c-4cb0-45bd-9050-c74bfbc134bb",
       "role": "user",
       "content": "返事を送ったメッセージはそちらには届いてますか？",
-      "status": "pending",
+      "status": "cancelled",
       "model": "gemini-3.8-flash-high",
       "client_type": "gemini-bridge",
       "parent_message_id": null,
       "created_at": "2026-10-17T20:39:58.771Z",
       "sender": "ios",
-      "is_cancelled": false
+      "is_cancelled": true
     }
   ]
 }
