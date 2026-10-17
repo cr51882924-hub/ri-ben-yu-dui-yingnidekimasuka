@@ -46,21 +46,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportSummaryTitle = document.getElementById('exportSummaryTitle');
   const exportSummaryDesc = document.getElementById('exportSummaryDesc');
 
-  // Direct Min/Sec Inputs & Steppers
+  // Direct Min/Sec Inputs & Steppers (v12.6 with 0.5s precision)
   const trimStartMinInput = document.getElementById('trimStartMinInput');
   const trimStartSecInput = document.getElementById('trimStartSecInput');
-  const startMinus10Btn = document.getElementById('startMinus10Btn');
   const startMinus1Btn = document.getElementById('startMinus1Btn');
+  const startMinusHalfBtn = document.getElementById('startMinusHalfBtn');
+  const startPlusHalfBtn = document.getElementById('startPlusHalfBtn');
   const startPlus1Btn = document.getElementById('startPlus1Btn');
-  const startPlus10Btn = document.getElementById('startPlus10Btn');
   const trimDurationInput = document.getElementById('trimDurationInput');
-  const durMinus5Btn = document.getElementById('durMinus5Btn');
   const durMinus1Btn = document.getElementById('durMinus1Btn');
+  const durMinusHalfBtn = document.getElementById('durMinusHalfBtn');
+  const durPlusHalfBtn = document.getElementById('durPlusHalfBtn');
   const durPlus1Btn = document.getElementById('durPlus1Btn');
-  const durPlus5Btn = document.getElementById('durPlus5Btn');
   const trimEndMinInput = document.getElementById('trimEndMinInput');
   const trimEndSecInput = document.getElementById('trimEndSecInput');
   const endMinus1Btn = document.getElementById('endMinus1Btn');
+  const endMinusHalfBtn = document.getElementById('endMinusHalfBtn');
+  const endPlusHalfBtn = document.getElementById('endPlusHalfBtn');
   const endPlus1Btn = document.getElementById('endPlus1Btn');
   const startPosBadge = document.getElementById('startPosBadge');
   const durationBadge = document.getElementById('durationBadge');
