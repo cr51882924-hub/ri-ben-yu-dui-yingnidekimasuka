@@ -485,60 +485,19 @@
             </div>
           </div>
 
-          <!-- すでにスマホ内にあるMP4動画を読み込むボタン -->
-          <div style="margin-top: 20px; padding-top: 16px; border-top: 2px dashed rgba(255,255,255,0.2);">
-            <div style="font-size: 0.95rem; color: #e2e8f0; font-weight: 700; margin-bottom: 10px;">
-              💡 すでに生成済みの動画（MP4等）をステージに読み込む場合：
-            </div>
-            <label for="aiVideoFileInput" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-sizing: border-box; background: rgba(56, 189, 248, 0.18); border: 2px solid #38bdf8; color: #fff; padding: 15px; border-radius: 14px; font-size: 1.05rem; font-weight: 900; cursor: pointer; text-align: center;">
-              <span>📂 スマホ内の動画ファイル(MP4)を読み込む</span>
-            </label>
-            <input type="file" id="aiVideoFileInput" accept="video/mp4,video/quicktime,video/*" class="sr-only-input">
-          </div>
-        </div>
-      </section>
-
-      <!-- ==========================================
-           STEP 5: ステージ照明・レーザー演出と合体して録画保存（任意）
-           ========================================== -->
-      <section class="large-section">
-        <div class="section-title-wrap">
-          <span class="step-badge">5</span>
-          <div>
-            <h3 class="section-title">ステージ演出を重ねて録画・保存（任意）</h3>
-            <p class="section-sub">生成した動画にライブステージの照明・レーザー・イコライザーを重ねて録画したい場合はこちら</p>
-          </div>
-        </div>
-
-        <div class="export-banner-card">
-          <div class="export-banner-head">
-            <span class="export-big-icon">🎬</span>
-            <div>
-              <h4 id="exportSummaryTitle">ステージ合成MVを録画します</h4>
-              <p id="exportSummaryDesc">STEP 4で生成したAIリップシンク動画はそのまま保存できますが、ステージ照明を重ねて録画することも可能です</p>
-            </div>
-          </div>
-
-          <div class="master-btn-row" style="margin-top: 14px;">
-            <button id="mainPlayBtn" class="giant-btn giant-play-btn">
-              <span id="mainPlayIcon" class="giant-icon">▶</span>
-              <span id="mainPlayText">ステージ音楽を再生</span>
-            </button>
-
-            <button id="finalRecordBtn" class="giant-btn giant-rec-btn">
-              <span class="rec-dot"></span>
-              <span id="finalRecText">● ステージ画面を録画して保存</span>
-            </button>
-          </div>
-
-          <!-- 非表示互換用要素 -->
+          <!-- 旧ステージ用読み込み・STEP 5（チープな2Dステージ重ね録画）は完全撤廃・非表示 -->
           <div class="hidden">
-            <h2 id="controlSongTitle">楽曲未設定</h2>
-            <span id="controlTrimRangeBadge">再生区間: 未設定</span>
-            <span id="controlSongTime">00:00 / 00:00</span>
-            <button id="mainRecordBtn"><span id="mainRecText">録画</span></button>
-            <button id="jumpToStageBtn">ステージへ</button>
-            <button id="openAiSettingsBtn">設定</button>
+            <input type="file" id="aiVideoFileInput" accept="video/mp4,video/quicktime,video/*">
+            <h4 id="exportSummaryTitle"></h4>
+            <p id="exportSummaryDesc"></p>
+            <button id="mainPlayBtn"><span id="mainPlayIcon">▶</span><span id="mainPlayText"></span></button>
+            <button id="finalRecordBtn"><span id="finalRecText"></span></button>
+            <h2 id="controlSongTitle"></h2>
+            <span id="controlTrimRangeBadge"></span>
+            <span id="controlSongTime"></span>
+            <button id="mainRecordBtn"><span id="mainRecText"></span></button>
+            <button id="jumpToStageBtn"></button>
+            <button id="openAiSettingsBtn"></button>
           </div>
         </div>
       </section>
