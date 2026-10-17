@@ -724,6 +724,18 @@
       "created_at": "2026-10-17T14:32:22.770Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "16e65dfd-d416-4408-8443-33662ce83bd2",
+      "role": "user",
+      "content": "メッセージが途中から反映していない。\n前からだけど。対策を。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-17T14:39:12.767Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
