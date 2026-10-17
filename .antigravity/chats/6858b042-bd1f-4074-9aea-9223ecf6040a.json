@@ -148,6 +148,30 @@
       "created_at": "2026-10-17T15:36:48.207Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "5bd5e45c-34de-4b24-b0ce-6ba463567a30",
+      "role": "user",
+      "content": "まだiPhone Xの設定のほうほうはなかったです。そういう言語設定っていうのなかったです。猫のiPhoneのね純正のほらおかしいんですよ。ちょっとやっぱしゃべってることをちゃんと文字にならないジェミニって思っていいですよ。わかりました。この件は",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-17T15:43:50.638Z",
+      "sender": "ios",
+      "is_cancelled": false
+    },
+    {
+      "id": "04eaf998-9b58-4376-869a-1cc5e1dfe57c",
+      "role": "agent",
+      "content": "設定をご確認いただき、ありがとうございました！\nやはりアプリ側にはまだ言語の切り替え設定が用意されていなかったのですね。\n\nまた、iPhone純正の音声入力でも「しゃべった通りに文字にならないこと（今回の『猫の』などのクスッと笑えるような誤変換も笑）」があると思いますが、**まったく気にせずそのまま送信していただいて大歓迎です！**\n\n多少文字が崩れていたり誤変換があっても、前後の文脈やこれまでの開発の流れから**「こういうことを伝えたいんだな！」と私がすべてしっかり汲み取って対応いたします**ので、どうぞご安心ください。\n\n---\n\n現在、MV制作スタジオは **v12.2**（終了位置の一発セットボタン、1秒ずらし微調整、APIキー伏せ字など）まで反映されています。\n\n実際に触ってみて「ここをもっとこうしたい」「次のステップに進めたい」などご要望がありましたら、いつでもお気軽に音声入力でお声がけください！",
+      "status": "completed",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "5bd5e45c-34de-4b24-b0ce-6ba463567a30",
+      "created_at": "2026-10-17T15:44:00.611Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
