@@ -241,7 +241,14 @@ html, body {
    ========================================================================== */
 .main-view {
   display: none;
-  padding: 16px 16px 80px;
+  padding-top: 16px;
+  padding-left: max(14px, env(safe-area-inset-left, 14px));
+  padding-right: max(14px, env(safe-area-inset-right, 14px));
+  padding-bottom: calc(90px + env(safe-area-inset-bottom, 20px));
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -1475,23 +1482,30 @@ html, body {
 /* Toast */
 .toast {
   position: fixed;
-  bottom: calc(30px + env(safe-area-inset-bottom, 20px));
+  bottom: calc(24px + env(safe-area-inset-bottom, 20px));
   left: 50%;
   transform: translateX(-50%);
   background: rgba(15, 23, 42, 0.98);
   border: 2px solid var(--accent-primary);
   box-shadow: 0 6px 30px rgba(0, 0, 0, 0.9);
   color: #ffffff;
-  padding: 14px 28px;
-  border-radius: var(--radius-full);
-  font-size: 1rem;
+  padding: 14px 20px;
+  border-radius: 18px;
+  font-size: 0.98rem;
   font-weight: 800;
   z-index: 1000;
   transition: opacity 0.25s, transform 0.25s;
-  white-space: nowrap;
+  width: max-content;
+  max-width: calc(100vw - 28px);
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  line-height: 1.45;
+  box-sizing: border-box;
 }
 
 .toast.hidden {
+  display: none !important;
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 20px);
