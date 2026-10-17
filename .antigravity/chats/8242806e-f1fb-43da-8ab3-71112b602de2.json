@@ -580,6 +580,18 @@
       "created_at": "2026-10-17T12:15:35.477Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "050bb234-38d8-4f22-9034-2772d2692420",
+      "role": "user",
+      "content": "画像からリップシンク動画、上手くいった。\n\nほかの演出ためしてみる。\n\nその前に、⑤をこのまま23秒動画でやると時間かかるからやめたほうがよい？\n\nその場合、推奨時間ある？",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-17T12:24:34.476Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
