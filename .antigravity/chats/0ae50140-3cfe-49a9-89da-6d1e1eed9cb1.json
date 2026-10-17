@@ -16,6 +16,18 @@
       "created_at": "2026-10-17T20:45:05.529Z",
       "sender": "ios",
       "is_cancelled": true
+    },
+    {
+      "id": "cd537d2c-41f1-4f96-831b-bfbfca7331bd",
+      "role": "user",
+      "content": "また、メッセージが表示されないか、届いていないか、\nの確認でした。\n\nあと、\n⇩\n\n🔴動画かリップシンクは、\n\n３番を実装してください。\n\n※これまでの画像や写真からリップシンクも残してくださち。\n\n🔴あと、いま、きづいたのですが、\n完成動画のサイズの選択は必須と思います。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-17T20:47:16.555Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
