@@ -799,6 +799,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveAiResultToPhotosBtn = document.getElementById('saveAiResultToPhotosBtn');
   const downloadAiResultMp4Btn = document.getElementById('downloadAiResultMp4Btn');
 
+  // v12.4 Material Mode & Video Pattern Elements
+  const tabModePhoto = document.getElementById('tabModePhoto');
+  const tabModeVideo = document.getElementById('tabModeVideo');
+  const materialPhotoBox = document.getElementById('materialPhotoBox');
+  const materialVideoBox = document.getElementById('materialVideoBox');
+  const videoMaterialUploadBtn = document.getElementById('videoMaterialUploadBtn');
+  const videoMaterialFileInput = document.getElementById('videoMaterialFileInput');
+  const videoMaterialCardTitle = document.getElementById('videoMaterialCardTitle');
+  const videoMaterialCardHint = document.getElementById('videoMaterialCardHint');
+  const videoPatternSection = document.getElementById('videoPatternSection');
+  const sourceVideoPlayer = document.getElementById('sourceVideoPlayer');
+  const sourceVideoDurationLabel = document.getElementById('sourceVideoDurationLabel');
+  const patternBtnA = document.getElementById('patternBtnA');
+  const patternBtnB = document.getElementById('patternBtnB');
+  const patternPillA = document.getElementById('patternPillA');
+  const patternPillB = document.getElementById('patternPillB');
+  const patternBFrameBox = document.getElementById('patternBFrameBox');
+  const captureVideoFrameBtn = document.getElementById('captureVideoFrameBtn');
+  const capturedFramePreviewRow = document.getElementById('capturedFramePreviewRow');
+  const capturedFrameThumb = document.getElementById('capturedFrameThumb');
+  const capturedFrameTimeBadge = document.getElementById('capturedFrameTimeBadge');
+  const changeVideoMaterialBtn = document.getElementById('changeVideoMaterialBtn');
+  const photoModelsGroup = document.getElementById('photoModelsGroup');
+  const videoModelsGroup = document.getElementById('videoModelsGroup');
+  const aiPromptStyleWrap = document.getElementById('aiPromptStyleWrap');
+  const currentMaterialIndicatorBadge = document.getElementById('currentMaterialIndicatorBadge');
+  const step4Subtitle = document.getElementById('step4Subtitle');
+
+  let activeMaterialMode = 'photo'; // 'photo' | 'video'
+  let activeVideoPattern = 'A'; // 'A' (video-to-video) | 'B' (frame capture)
+  let uploadedVideoMaterialFile = null;
+  let uploadedVideoMaterialUrl = null;
+  let capturedVideoFrameCanvas = null;
+
   let selectedV11bModel = 'fal-ai/bytedance/omnihuman/v1.5';
   let selectedV11bMode = 'lipsync';
   let selectedV11bLabel = 'ByteDance OmniHuman v1.5 (リップシンク)';
