@@ -388,6 +388,18 @@
       "created_at": "2026-10-17T11:11:16.195Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "5b2e52d3-ec4a-48f0-9f3f-d4c306b980ca",
+      "role": "user",
+      "content": "選びました。\nあと、あなたに画像がアップできなたあ。プラスボタンを押しているが選択肢にでてこない。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-17T11:33:03.513Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
