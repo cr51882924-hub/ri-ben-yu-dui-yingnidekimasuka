@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const durMinus1Btn = document.getElementById('durMinus1Btn');
   const durPlus1Btn = document.getElementById('durPlus1Btn');
   const durPlus5Btn = document.getElementById('durPlus5Btn');
+  const trimEndMinInput = document.getElementById('trimEndMinInput');
+  const trimEndSecInput = document.getElementById('trimEndSecInput');
+  const endMinus1Btn = document.getElementById('endMinus1Btn');
+  const endPlus1Btn = document.getElementById('endPlus1Btn');
   const startPosBadge = document.getElementById('startPosBadge');
   const durationBadge = document.getElementById('durationBadge');
   const confirmStartTxt = document.getElementById('confirmStartTxt');
@@ -79,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fullPlayLabel = document.getElementById('fullPlayLabel');
   const fullPlayRewindBtn = document.getElementById('fullPlayRewindBtn');
   const setStartFromCurrentBtn = document.getElementById('setStartFromCurrentBtn');
+  const setEndFromCurrentBtn = document.getElementById('setEndFromCurrentBtn');
 
   // Fullscreen Stage Player Elements
   const stagePlayBtn = document.getElementById('stagePlayBtn');
@@ -241,6 +246,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (trimStartSecInput && document.activeElement !== trimStartSecInput) {
       trimStartSecInput.value = Math.floor(trimStartSeconds % 60);
     }
+    if (trimEndMinInput && document.activeElement !== trimEndMinInput) {
+      trimEndMinInput.value = Math.floor(endSeconds / 60);
+    }
+    if (trimEndSecInput && document.activeElement !== trimEndSecInput) {
+      trimEndSecInput.value = Math.floor(endSeconds % 60);
+    }
     if (trimDurationInput && document.activeElement !== trimDurationInput) {
       trimDurationInput.value = Math.round(trimDurationSeconds);
     }
@@ -373,6 +384,39 @@ document.addEventListener('DOMContentLoaded', () => {
     durPlus5Btn.addEventListener('click', () => {
       triggerHaptic();
       trimDurationSeconds = trimDurationSeconds + 5;
+      updateTrimmerUI();
+    });
+  }
+
+  // End position input & steppers (1秒ずらし対応)
+  const onEndChange = () => {
+    const m = parseInt(trimEndMinInput ? trimEndMinInput.value : 0, 10) || 0;
+    const s = parseInt(trimEndSecInput ? trimEndSecInput.value : 0, 10) || 0;
+    const targetEnd = m * 60 + s;
+    if (targetEnd > trimStartSeconds) {
+      trimDurationSeconds = Math.min(60, targetEnd - trimStartSeconds);
+      updateTrimmerUI();
+    }
+  };
+  if (trimEndMinInput) {
+    trimEndMinInput.addEventListener('input', onEndChange);
+    trimEndMinInput.addEventListener('change', onEndChange);
+  }
+  if (trimEndSecInput) {
+    trimEndSecInput.addEventListener('input', onEndChange);
+    trimEndSecInput.addEventListener('change', onEndChange);
+  }
+  if (endMinus1Btn) {
+    endMinus1Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimDurationSeconds = Math.max(1, trimDurationSeconds - 1);
+      updateTrimmerUI();
+    });
+  }
+  if (endPlus1Btn) {
+    endPlus1Btn.addEventListener('click', () => {
+      triggerHaptic();
+      trimDurationSeconds = Math.min(60, trimDurationSeconds + 1);
       updateTrimmerUI();
     });
   }
