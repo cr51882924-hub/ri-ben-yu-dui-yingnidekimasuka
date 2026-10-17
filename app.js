@@ -726,25 +726,160 @@ document.addEventListener('DOMContentLoaded', () => {
   const falApiKeyInput = document.getElementById('falApiKeyInput');
   const inlineFalApiKeyInput = document.getElementById('inlineFalApiKeyInput');
   const saveInlineApiKeyBtn = document.getElementById('saveInlineApiKeyBtn');
+  const pasteAndSaveApiKeyBtn = document.getElementById('pasteAndSaveApiKeyBtn');
+  const toggleKeyVisibilityBtn = document.getElementById('toggleKeyVisibilityBtn');
   const statusKeyFal = document.getElementById('statusKeyFal');
   const aiGenStatusBox = document.getElementById('aiGenStatusBox');
-
-  const generateAiLipsyncBtn = document.getElementById('generateAiLipsyncBtn');
-  const aiVideoPromptInput = document.getElementById('aiVideoPromptInput');
-  const aiVideoFileInput = document.getElementById('aiVideoFileInput');
-
-  const aiResultCard = document.getElementById('aiResultCard');
-  const inlineAiResultVideo = document.getElementById('inlineAiResultVideo');
-  const saveAiResultToPhotosBtn = document.getElementById('saveAiResultToPhotosBtn');
-  const downloadAiResultMp4Btn = document.getElementById('downloadAiResultMp4Btn');
 
   let selectedV11bModel = 'fal-ai/bytedance/omnihuman/v1.5';
   let selectedV11bMode = 'lipsync';
   let selectedV11bLabel = 'ByteDance OmniHuman v1.5 (リップシンク)';
   let selectedAiPromptStyle = 'sway';
 
+  // --- 5-Layer Persistent Key Vault (Safari + iOS Home Screen Web App) ---
+  function setKeyCookie(val) {
+    try {
+      const encoded = encodeURIComponent(val || '');
+      document.cookie = `gs_fal_api_key=${encoded}; path=/; max-age=315360000; SameSite=Lax`;
+    } catch (e) {}
+  }
+
+  function getKeyCookie() {
+    try {
+      const match = document.cookie.match(/(?:^|;\s*)gs_fal_api_key=([^;]*)/);
+      return match ? decodeURIComponent(match[1]) : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function setKeyUrlHash(val) {
+    try {
+      const url = new URL(window.location.href);
+      if (val) {
+        url.hash = `gs_key=${encodeURIComponent(btoa(unescape(encodeURIComponent(val))))}`;
+      } else if (url.hash.includes('gs_key=')) {
+        url.hash = '';
+      }
+      window.history.replaceState(null, '', url.toString());
+    } catch (e) {}
+  }
+
+  function getKeyFromUrlHash() {
+    try {
+      const hash = window.location.hash || '';
+      const match = hash.match(/gs_key=([^&]+)/);
+      if (match && match[1]) {
+        return decodeURIComponent(escape(atob(decodeURIComponent(match[1]))));
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  async function saveKeyToVaultAsync(val) {
+    // CacheStorage backup
+    try {
+      if ('caches' in window) {
+        const cache = await caches.open('gs-key-vault-v1');
+        await cache.put('/__gs_fal_key__', new Response(val || '', { headers: { 'Content-Type': 'text/plain' } }));
+      }
+    } catch (e) {}
+
+    // IndexedDB backup
+    try {
+      if ('indexedDB' in window) {
+        const req = indexedDB.open('GrooveSyncVaultDB', 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains('keys')) {
+            db.createObjectStore('keys');
+          }
+        };
+        req.onsuccess = () => {
+          try {
+            const db = req.result;
+            const tx = db.transaction('keys', 'readwrite');
+            tx.objectStore('keys').put(val || '', 'gs_fal_api_key');
+          } catch (e) {}
+        };
+      }
+    } catch (e) {}
+  }
+
+  async function restoreKeyFromVaultAsync() {
+    let found = '';
+    // 1. Try CacheStorage
+    try {
+      if ('caches' in window) {
+        const cache = await caches.open('gs-key-vault-v1');
+        const resp = await cache.match('/__gs_fal_key__');
+        if (resp) {
+          const txt = (await resp.text()).trim();
+          if (txt) found = txt;
+        }
+      }
+    } catch (e) {}
+
+    // 2. Try IndexedDB
+    if (!found) {
+      try {
+        if ('indexedDB' in window) {
+          found = await new Promise((resolve) => {
+            const req = indexedDB.open('GrooveSyncVaultDB', 1);
+            req.onupgradeneeded = () => {
+              const db = req.result;
+              if (!db.objectStoreNames.contains('keys')) {
+                db.createObjectStore('keys');
+              }
+            };
+            req.onsuccess = () => {
+              try {
+                const db = req.result;
+                const tx = db.transaction('keys', 'readonly');
+                const getReq = tx.objectStore('keys').get('gs_fal_api_key');
+                getReq.onsuccess = () => resolve((getReq.result || '').trim());
+                getReq.onerror = () => resolve('');
+              } catch (e) {
+                resolve('');
+              }
+            };
+            req.onerror = () => resolve('');
+          });
+        }
+      } catch (e) {}
+    }
+
+    if (found) {
+      try { localStorage.setItem('gs_fal_api_key', found); } catch (e) {}
+      try { sessionStorage.setItem('gs_fal_api_key', found); } catch (e) {}
+      setKeyCookie(found);
+      setKeyUrlHash(found);
+      refreshApiKeyStatusBadges();
+    }
+  }
+
+  function getSavedFalApiKey() {
+    let key = '';
+    try { key = (localStorage.getItem('gs_fal_api_key') || '').trim(); } catch (e) {}
+    if (!key) {
+      try { key = (sessionStorage.getItem('gs_fal_api_key') || '').trim(); } catch (e) {}
+    }
+    if (!key) {
+      key = (getKeyCookie() || '').trim();
+    }
+    if (!key) {
+      key = (getKeyFromUrlHash() || '').trim();
+    }
+    if (key) {
+      try { localStorage.setItem('gs_fal_api_key', key); } catch (e) {}
+      try { sessionStorage.setItem('gs_fal_api_key', key); } catch (e) {}
+      setKeyCookie(key);
+    }
+    return key;
+  }
+
   function refreshApiKeyStatusBadges() {
-    const falKey = localStorage.getItem('gs_fal_api_key') || '';
+    const falKey = getSavedFalApiKey();
     if (inlineFalApiKeyInput && document.activeElement !== inlineFalApiKeyInput) {
       inlineFalApiKeyInput.value = falKey;
     }
@@ -753,11 +888,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (statusKeyFal) {
       if (falKey) {
-        statusKeyFal.textContent = '🟢 登録済み（iPhoneに記憶されています・次回から入力不要）';
+        const masked = falKey.length > 10 ? `${falKey.slice(0, 6)}...${falKey.slice(-4)}` : '登録済';
+        statusKeyFal.textContent = `🟢 登録済み（${masked} / ホーム画面＆iPhoneに5重記憶済）`;
         statusKeyFal.style.background = 'rgba(16, 185, 129, 0.25)';
         statusKeyFal.style.color = '#6ee7b7';
       } else {
-        statusKeyFal.textContent = '⚠️ 未登録（下の案内からAPIキーを取得して貼り付けてください）';
+        statusKeyFal.textContent = '⚠️ 未登録（下のボタンで貼り付けて保存してください）';
         statusKeyFal.style.background = 'rgba(255, 255, 255, 0.12)';
         statusKeyFal.style.color = '#fde047';
       }
@@ -767,16 +903,75 @@ document.addEventListener('DOMContentLoaded', () => {
   function saveFalApiKey(rawKey) {
     const val = (rawKey || '').trim();
     if (val) {
-      localStorage.setItem('gs_fal_api_key', val);
+      try { localStorage.setItem('gs_fal_api_key', val); } catch (e) {}
+      try { sessionStorage.setItem('gs_fal_api_key', val); } catch (e) {}
+      setKeyCookie(val);
+      setKeyUrlHash(val);
+      saveKeyToVaultAsync(val);
       refreshApiKeyStatusBadges();
-      showToast('✔ Fal.ai APIキーをiPhoneに記憶しました！次回から入力不要です');
+      showToast('✔ APIキーをiPhone＆ホーム画面用に5重記憶しました！');
       return true;
     } else {
-      localStorage.removeItem('gs_fal_api_key');
+      try { localStorage.removeItem('gs_fal_api_key'); } catch (e) {}
+      try { sessionStorage.removeItem('gs_fal_api_key'); } catch (e) {}
+      setKeyCookie('');
+      setKeyUrlHash('');
+      saveKeyToVaultAsync('');
       refreshApiKeyStatusBadges();
       showToast('APIキーを消去しました');
       return false;
     }
+  }
+
+  if (toggleKeyVisibilityBtn && inlineFalApiKeyInput) {
+    toggleKeyVisibilityBtn.addEventListener('click', () => {
+      triggerHaptic();
+      if (inlineFalApiKeyInput.type === 'password') {
+        inlineFalApiKeyInput.type = 'text';
+        toggleKeyVisibilityBtn.innerHTML = '<span>🙈 隠す</span>';
+      } else {
+        inlineFalApiKeyInput.type = 'password';
+        toggleKeyVisibilityBtn.innerHTML = '<span>👁 表示</span>';
+      }
+    });
+  }
+
+  if (pasteAndSaveApiKeyBtn) {
+    pasteAndSaveApiKeyBtn.addEventListener('click', async () => {
+      triggerHaptic();
+      try {
+        if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+          const clipText = (await navigator.clipboard.readText() || '').trim();
+          if (clipText) {
+            if (inlineFalApiKeyInput) inlineFalApiKeyInput.value = clipText;
+            saveFalApiKey(clipText);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Clipboard read requires manual paste on iOS:', e);
+      }
+      if (inlineFalApiKeyInput && inlineFalApiKeyInput.value.trim()) {
+        saveFalApiKey(inlineFalApiKeyInput.value.trim());
+      } else {
+        if (inlineFalApiKeyInput) inlineFalApiKeyInput.focus();
+        showToast('入力欄を長押しして「ペースト」を押し、保存ボタンを押してください');
+      }
+    });
+  }
+
+  if (inlineFalApiKeyInput) {
+    inlineFalApiKeyInput.addEventListener('input', () => {
+      const val = inlineFalApiKeyInput.value.trim();
+      if (val.length >= 16 && val.includes(':')) {
+        // Auto-save immediately when a valid Fal.ai key format (xxxx:yyyy) is pasted!
+        saveFalApiKey(val);
+      }
+    });
+    inlineFalApiKeyInput.addEventListener('change', () => {
+      const val = inlineFalApiKeyInput.value.trim();
+      if (val) saveFalApiKey(val);
+    });
   }
 
   if (saveInlineApiKeyBtn) {
@@ -791,6 +986,9 @@ document.addEventListener('DOMContentLoaded', () => {
       saveFalApiKey(val);
     });
   }
+
+  // Restore from IndexedDB / CacheStorage on startup if needed
+  restoreKeyFromVaultAsync();
 
   function showAiStatus(msg, borderColor = '#38bdf8') {
     if (!aiGenStatusBox) return;
