@@ -2,13 +2,13 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="GrooveSync MV">
   <meta name="theme-color" content="#090d16">
-  <title>GrooveSync MV Studio - 本格AIリップシンク歌唱動画生成スタジオ (v12)</title>
-  <link rel="stylesheet" href="style.css?v=20261016_1">
+  <title>GrooveSync MV Studio - 本格AIリップシンク歌唱動画生成スタジオ (v12.1)</title>
+  <link rel="stylesheet" href="style.css?v=20261017_2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
@@ -25,20 +25,20 @@
 
       <!-- ユーティリティバー（文字拡大 ＆ 音声カッター直通 ＆ バージョン更新ボタン） -->
       <div class="header-accessibility-bar">
-        <a href="audio-cutter.html" class="app-reload-btn" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.25)); border-color: #a855f7; color: #fff; text-decoration: none;" title="楽曲切り出し専用ツールを開く">
-          <span>✂️</span>
-          <span>楽曲カッター</span>
-        </a>
-
         <button id="zoomToggleBtn" class="zoom-toggle-btn" aria-label="文字とボタンを特大サイズに拡大します">
           <span class="zoom-icon">🔍</span>
           <span id="zoomBtnText">文字を特大にする</span>
           <span id="zoomStatusBadge" class="zoom-status-badge">標準</span>
         </button>
 
+        <a href="audio-cutter.html" class="app-reload-btn" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.25)); border-color: #a855f7; color: #fff; text-decoration: none;" title="楽曲切り出し専用ツールを開く">
+          <span>✂️</span>
+          <span>楽曲カッター</span>
+        </a>
+
         <button id="appReloadBtn" class="app-reload-btn" aria-label="アプリを最新状態に更新・リロードします" title="最新バージョンを再読み込み">
           <span class="reload-icon">🔄</span>
-          <span id="headerVersionLabel">最新版 (v12)</span>
+          <span id="headerVersionLabel">最新版 (v12.1)</span>
         </button>
       </div>
     </header>
@@ -50,7 +50,7 @@
 
       <!-- Step-by-Step Arrow Flow Guide Banner (矢印フロー解説) -->
       <section class="flow-guide-card">
-        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v12: Fal.ai API直結・サンプル完全撤廃)</span>
+        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v12.1: ホーム画面アプリ対応＆APIキー5重永久記憶)</span>
         <div class="flow-steps-row">
           <span class="flow-chip highlight">🔑 APIキー登録</span>
           <span class="flow-arrow">➔</span>
@@ -70,26 +70,42 @@
           <span class="step-badge highlight-badge">🔑</span>
           <div>
             <h3 class="section-title">最初に1回だけ：Fal.ai APIキーの取得・登録</h3>
-            <p class="section-sub">このキー1つで、世界最高峰のリップシンクAI（OmniHuman / Kling Avatar / MiniMax）がすべて使えます</p>
+            <p class="section-sub">ホーム画面に追加したアプリでも消えない「5重バックアップ記憶」対応！1回保存すれば次回から自動復元されます</p>
           </div>
         </div>
 
         <!-- 現在のキー登録状態 -->
         <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(192, 132, 252, 0.5); border-radius: 14px; padding: 16px; margin-bottom: 16px;">
-          <div style="font-size: 1.05rem; color: #f8fafc; margin-bottom: 10px; line-height: 1.5;">
+          <div style="font-size: 1.05rem; color: #f8fafc; margin-bottom: 12px; line-height: 1.5;">
             <strong>現在のAPIキー状態：</strong><br>
-            <span id="statusKeyFal" style="display: inline-block; background: rgba(255,255,255,0.12); padding: 8px 14px; border-radius: 10px; font-size: 1rem; font-weight: 900; margin-top: 6px; color: #fde047;">⚠️ 未登録（下の案内からキーを取得して貼り付けてください）</span>
+            <span id="statusKeyFal" style="display: inline-block; background: rgba(255,255,255,0.12); padding: 8px 14px; border-radius: 10px; font-size: 1rem; font-weight: 900; margin-top: 6px; color: #fde047; word-break: break-word;">⚠️ 未登録（下の案内からキーを取得して貼り付けてください）</span>
           </div>
 
-          <!-- 直接入力＆保存フォーム（ポップアップを開かなくてもここで即保存可能） -->
+          <!-- 直接入力＆保存フォーム（ホーム画面アプリでも消えない5重保存＋ワンタップ貼り付け） -->
           <label for="inlineFalApiKeyInput" style="display: block; font-size: 0.98rem; font-weight: 800; color: #f0abfc; margin-bottom: 8px;">
-            👇 取得した Fal.ai APIキーをここに貼り付けて保存（初回1回でiPhoneに自動記憶）：
+            👇 取得した Fal.ai APIキーをここに貼り付けて保存（ホーム画面アプリにも自動記憶）：
           </label>
           <div style="display: flex; flex-direction: column; gap: 10px;">
-            <input type="password" id="inlineFalApiKeyInput" placeholder="例: 12345678-abcd-efgh:xxxxxxxxxxxxxxxx" style="width: 100%; box-sizing: border-box; background: #090d16; border: 2px solid #c084fc; border-radius: 12px; padding: 16px; color: #fff; font-size: 1.08rem; font-weight: 700;">
-            <button id="saveInlineApiKeyBtn" type="button" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #a855f7, #ec4899); border: 2px solid #f0abfc; border-radius: 12px; padding: 16px; font-size: 1.08rem; font-weight: 900; color: #fff; cursor: pointer;">
-              <span>✔ APIキーをiPhoneに記憶・保存する</span>
+            <div style="display: flex; gap: 8px; align-items: stretch; width: 100%;">
+              <input type="text" id="inlineFalApiKeyInput" name="fal_api_key" autocomplete="on" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="例: 12345678-abcd-efgh:xxxxxxxx" style="flex: 1; min-width: 0; box-sizing: border-box; background: #090d16; border: 2px solid #c084fc; border-radius: 12px; padding: 15px 12px; color: #fff; font-size: 1.02rem; font-weight: 700; font-family: ui-monospace, SFMono-Regular, monospace;">
+              <button id="toggleKeyVisibilityBtn" type="button" style="background: #1e293b; border: 2px solid rgba(192, 132, 252, 0.6); border-radius: 12px; padding: 0 14px; color: #e2e8f0; font-size: 0.9rem; font-weight: 800; cursor: pointer; flex-shrink: 0; white-space: nowrap;" title="キーの表示・非表示を切り替え">
+                <span>🙈 隠す</span>
+              </button>
+            </div>
+
+            <button id="pasteAndSaveApiKeyBtn" type="button" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #0284c7, #2563eb); border: 2px solid #7dd3fc; border-radius: 12px; padding: 15px 12px; font-size: 1.05rem; font-weight: 900; color: #fff; cursor: pointer;">
+              <span>📋 コピーしたAPIキーを1タップで貼り付け＆保存</span>
             </button>
+
+            <button id="saveInlineApiKeyBtn" type="button" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #a855f7, #ec4899); border: 2px solid #f0abfc; border-radius: 12px; padding: 16px 12px; font-size: 1.08rem; font-weight: 900; color: #fff; cursor: pointer;">
+              <span>✔ APIキーをiPhone＆ホーム画面用に永久記憶する</span>
+            </button>
+          </div>
+
+          <div style="margin-top: 12px; background: rgba(56, 189, 248, 0.12); border: 1.5px solid rgba(56, 189, 248, 0.4); border-radius: 10px; padding: 10px 12px; font-size: 0.9rem; color: #e0f2fe; line-height: 1.5;">
+            💡 <strong>ホーム画面に追加する時のコツ：</strong><br>
+            ① この画面でAPIキーを保存してからSafariの<strong>「ホーム画面に追加」</strong>を押すと、ホーム画面アイコンにもキーが自動で引き継がれます。<br>
+            ② すでにホーム画面に追加済みの場合は、ホーム画面アプリを開いて一度だけキーを保存すれば、アプリ内に<strong>5重バックアップ記憶</strong>され消えなくなります！
           </div>
         </div>
 
