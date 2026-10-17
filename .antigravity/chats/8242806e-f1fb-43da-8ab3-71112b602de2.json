@@ -316,6 +316,18 @@
       "created_at": "2026-10-17T11:03:11.631Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "513716f8-9747-4080-9bc9-435913d64ab1",
+      "role": "user",
+      "content": "I attached an image: images/photo-1792235034-1.jpg.\n\n上まで戻りました。各種登録済み。決済をするのに\nどれをクリックするのかわからない",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-17T11:04:44.625Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
