@@ -16,24 +16,11 @@
 <body>
   <div id="app" class="app-root">
 
-    <!-- Top Mode Switch Bar (旧2Dステージ画面タブは完全非表示) -->
+    <!-- Top Header Bar -->
     <header class="top-mode-header">
-      <div class="mode-switch-container hidden">
-        <button id="tabBtnControls" class="main-mode-btn active" role="tab" aria-selected="true">
-          <span class="mode-btn-icon">🎛️</span>
-          <div class="mode-btn-text">
-            <strong id="tabControlsTitle">制作スタジオ</strong>
-            <span id="tabControlsSub">✔ 現在表示中</span>
-          </div>
-        </button>
-
-        <button id="tabBtnStage" class="main-mode-btn" role="tab" aria-selected="false">
-          <span class="mode-btn-icon">🎬</span>
-          <div class="mode-btn-text">
-            <strong id="tabStageTitle">ステージ画面</strong>
-            <span id="tabStageSub">照明演出で見る →</span>
-          </div>
-        </button>
+      <div style="display: none !important;" aria-hidden="true">
+        <button id="tabBtnControls" type="button"><strong id="tabControlsTitle"></strong><span id="tabControlsSub"></span></button>
+        <button id="tabBtnStage" type="button"><strong id="tabStageTitle"></strong><span id="tabStageSub"></span></button>
       </div>
 
       <!-- ユーティリティバー（文字拡大 ＆ 音声カッター直通 ＆ バージョン更新ボタン） -->
