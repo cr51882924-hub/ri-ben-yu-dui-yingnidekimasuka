@@ -484,6 +484,18 @@
       "created_at": "2026-10-17T11:49:50.417Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "80b5f9fb-bb55-4c9b-9f04-60f2cfe03321",
+      "role": "user",
+      "content": "I attached an image: images/photo-1792237900-1.jpg.\n\nこうなります。\n\n再度やりますたが、同じ結果になります。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-17T11:52:21.666Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
