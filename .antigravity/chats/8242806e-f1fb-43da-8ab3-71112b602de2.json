@@ -352,6 +352,18 @@
       "created_at": "2026-10-17T11:07:45.402Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "bfc8f3ca-4584-45ab-8c5b-a20225d1d61f",
+      "role": "agent",
+      "content": "いま開いているメニューの上から4番目、\n\n👉 **「＄ クレジット」（右端に `0.00ドル` と書いてあるところ）**\n\nをタップしてください！そこがチャージ画面です。\n\n---\n💡 **ちなみにそのすぐ上（上から3番目）にある：**\n👉 **「🔑 APIキー」**\nが、チャージの次に開く「APIキー発行画面」です！両方ともこのメニューから行けます！",
+      "status": "completed",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "0efb733f-7df3-4900-b4b2-59e7d6a13fa8",
+      "created_at": "2026-10-17T11:08:15.739Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
