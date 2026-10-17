@@ -436,6 +436,18 @@
       "created_at": "2026-10-17T11:36:42.793Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "cf367780-cbf0-4287-88b7-7316b96b26d1",
+      "role": "user",
+      "content": "I attached images: images/photo-1792237157-1.jpg, images/photo-1792237157-2.jpg, images/photo-1792237157-3.jpg, images/photo-1792237157-4.jpg, images/photo-1792237162-5.jpg.\n\nめちゃくちゃ長いページですが。どうすればよいですか？",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-17T11:39:53.873Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
