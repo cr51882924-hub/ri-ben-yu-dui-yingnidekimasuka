@@ -229,32 +229,34 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Constrain start
+    // Ensure valid bounds
     trimStartSeconds = Math.max(0, Math.min(trimStartSeconds, totalDuration - 0.5));
-    // Constrain duration
-    trimDurationSeconds = Math.max(0.5, Math.min(trimDurationSeconds, totalDuration - trimStartSeconds));
+    trimStartSeconds = Math.round(trimStartSeconds * 2) / 2;
 
-    const endSeconds = trimStartSeconds + trimDurationSeconds;
+    trimEndSeconds = Math.max(trimStartSeconds + 0.5, Math.min(trimEndSeconds, totalDuration));
+    trimEndSeconds = Math.round(trimEndSeconds * 2) / 2;
+
+    trimDurationSeconds = Math.max(0.5, Math.round((trimEndSeconds - trimStartSeconds) * 10) / 10);
 
     // Apply to AudioEngine
-    audioEngine.setTrimRange(trimStartSeconds, endSeconds);
+    audioEngine.setTrimRange(trimStartSeconds, trimEndSeconds);
 
     // Readouts
     if (trimStartReadout) trimStartReadout.textContent = formatTime(trimStartSeconds);
-    if (trimEndReadout) trimEndReadout.textContent = formatTime(endSeconds);
-    if (trimDurationReadout) trimDurationReadout.textContent = `${Math.round(trimDurationSeconds)}秒間`;
+    if (trimEndReadout) trimEndReadout.textContent = formatTime(trimEndSeconds);
+    if (trimDurationReadout) trimDurationReadout.textContent = formatDurationText(trimDurationSeconds);
 
     if (startSliderVal) startSliderVal.textContent = formatTime(trimStartSeconds);
-    if (durationSliderVal) durationSliderVal.textContent = `${Math.round(trimDurationSeconds)}秒`;
+    if (durationSliderVal) durationSliderVal.textContent = formatDurationText(trimDurationSeconds).replace('間', '');
 
     if (trimStartSlider) {
       trimStartSlider.value = trimStartSeconds;
-      trimStartSlider.max = Math.max(1, Math.floor(totalDuration - 1));
+      trimStartSlider.max = Math.max(0.5, Math.round((totalDuration - 0.5) * 2) / 2);
     }
 
     if (trimDurationSlider) {
       trimDurationSlider.value = trimDurationSeconds;
-      trimDurationSlider.max = Math.max(1, Math.floor(totalDuration));
+      trimDurationSlider.max = Math.max(0.5, Math.min(60, Math.round(totalDuration * 2) / 2));
     }
 
     // Direct Min / Sec Inputs (avoid cursor jumping if currently focused)
@@ -262,31 +264,34 @@ document.addEventListener('DOMContentLoaded', () => {
       trimStartMinInput.value = Math.floor(trimStartSeconds / 60);
     }
     if (trimStartSecInput && document.activeElement !== trimStartSecInput) {
-      trimStartSecInput.value = Math.floor(trimStartSeconds % 60);
+      const secRem = Math.round((trimStartSeconds % 60) * 10) / 10;
+      trimStartSecInput.value = (secRem % 1 === 0) ? secRem : secRem.toFixed(1);
     }
     if (trimEndMinInput && document.activeElement !== trimEndMinInput) {
-      trimEndMinInput.value = Math.floor(endSeconds / 60);
+      trimEndMinInput.value = Math.floor(trimEndSeconds / 60);
     }
     if (trimEndSecInput && document.activeElement !== trimEndSecInput) {
-      trimEndSecInput.value = Math.floor(endSeconds % 60);
+      const endSecRem = Math.round((trimEndSeconds % 60) * 10) / 10;
+      trimEndSecInput.value = (endSecRem % 1 === 0) ? endSecRem : endSecRem.toFixed(1);
     }
     if (trimDurationInput && document.activeElement !== trimDurationInput) {
-      trimDurationInput.value = Math.round(trimDurationSeconds);
+      const durVal = Math.round(trimDurationSeconds * 10) / 10;
+      trimDurationInput.value = (durVal % 1 === 0) ? durVal : durVal.toFixed(1);
     }
 
     if (startPosBadge) {
       startPosBadge.textContent = `${formatTime(trimStartSeconds)} からスタート`;
     }
     if (durationBadge) {
-      durationBadge.textContent = `${Math.round(trimDurationSeconds)}秒間（終了: ${formatTime(endSeconds)}）`;
+      durationBadge.textContent = `${formatDurationText(trimDurationSeconds)}（終了: ${formatTime(trimEndSeconds)}）`;
     }
 
     if (confirmStartTxt) confirmStartTxt.textContent = formatTime(trimStartSeconds);
-    if (confirmEndTxt) confirmEndTxt.textContent = formatTime(endSeconds);
-    if (confirmDurTxt) confirmDurTxt.textContent = `${Math.round(trimDurationSeconds)}秒間`;
+    if (confirmEndTxt) confirmEndTxt.textContent = formatTime(trimEndSeconds);
+    if (confirmDurTxt) confirmDurTxt.textContent = formatDurationText(trimDurationSeconds);
 
     if (previewTrimLabel) {
-      previewTrimLabel.textContent = `この区間（${formatTime(trimStartSeconds)}〜${formatTime(endSeconds)}）を試聴する`;
+      previewTrimLabel.textContent = `この区間（${formatTime(trimStartSeconds)}〜${formatTime(trimEndSeconds)} / ${formatDurationText(trimDurationSeconds)}）を試聴する`;
     }
 
     // Update Full Song Preview Timeline labels & range
@@ -311,164 +316,208 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Badges & Summaries
     if (controlTrimRangeBadge) {
-      controlTrimRangeBadge.textContent = `再生区間: ${formatTime(trimStartSeconds)} 〜 ${formatTime(endSeconds)} (${Math.round(trimDurationSeconds)}秒間)`;
+      controlTrimRangeBadge.textContent = `再生区間: ${formatTime(trimStartSeconds)} 〜 ${formatTime(trimEndSeconds)} (${formatDurationText(trimDurationSeconds)})`;
     }
     if (exportSummaryTitle) {
-      exportSummaryTitle.textContent = `${Math.round(trimDurationSeconds)}秒間のリップシンクMVを作成します`;
+      exportSummaryTitle.textContent = `${formatDurationText(trimDurationSeconds)}のリップシンクMVを作成します`;
     }
     if (exportSummaryDesc) {
-      exportSummaryDesc.textContent = `開始: ${formatTime(trimStartSeconds)} 〜 終了: ${formatTime(endSeconds)} の動画ファイルが作成されます`;
+      exportSummaryDesc.textContent = `開始: ${formatTime(trimStartSeconds)} 〜 終了: ${formatTime(trimEndSeconds)} の動画ファイルが作成されます`;
     }
   }
 
-  // Helper to read min/sec direct input
-  function readMinSecInputs() {
-    const min = Math.max(0, parseInt(trimStartMinInput ? trimStartMinInput.value : 0, 10) || 0);
-    const sec = Math.max(0, parseInt(trimStartSecInput ? trimStartSecInput.value : 0, 10) || 0);
-    trimStartSeconds = min * 60 + sec;
+  // Setters preserving endpoints independence
+  function setTrimStart(newStart) {
+    const totalDuration = audioEngine.duration || 300;
+    let s = Math.max(0, Math.round(newStart * 2) / 2);
+    if (s >= trimEndSeconds) {
+      if (s + 0.5 <= totalDuration) {
+        trimEndSeconds = Math.round((s + 0.5) * 2) / 2;
+      } else {
+        s = Math.max(0, trimEndSeconds - 0.5);
+      }
+    }
+    trimStartSeconds = s;
+    // Keep End fixed, recalculate duration
+    trimDurationSeconds = Math.max(0.5, Math.round((trimEndSeconds - trimStartSeconds) * 10) / 10);
     updateTrimmerUI();
   }
 
-  if (trimStartMinInput) {
-    trimStartMinInput.addEventListener('input', readMinSecInputs);
-    trimStartMinInput.addEventListener('change', readMinSecInputs);
-  }
-  if (trimStartSecInput) {
-    trimStartSecInput.addEventListener('input', readMinSecInputs);
-    trimStartSecInput.addEventListener('change', readMinSecInputs);
+  function setTrimEnd(newEnd) {
+    const totalDuration = audioEngine.duration || 300;
+    let e = Math.min(totalDuration, Math.round(newEnd * 2) / 2);
+    if (e <= trimStartSeconds) {
+      if (e - 0.5 >= 0) {
+        trimStartSeconds = Math.round((e - 0.5) * 2) / 2;
+      } else {
+        e = trimStartSeconds + 0.5;
+      }
+    }
+    trimEndSeconds = e;
+    // Keep Start fixed, recalculate duration
+    trimDurationSeconds = Math.max(0.5, Math.round((trimEndSeconds - trimStartSeconds) * 10) / 10);
+    updateTrimmerUI();
   }
 
-  // Steppers for Start Time
-  if (startMinus10Btn) {
-    startMinus10Btn.addEventListener('click', () => {
-      triggerHaptic();
-      trimStartSeconds = Math.max(0, trimStartSeconds - 10);
-      updateTrimmerUI();
-    });
+  function setTrimDuration(newDur) {
+    const totalDuration = audioEngine.duration || 300;
+    let d = Math.max(0.5, Math.min(60, Math.round(newDur * 2) / 2));
+    if (trimStartSeconds + d > totalDuration) {
+      d = Math.max(0.5, Math.round((totalDuration - trimStartSeconds) * 2) / 2);
+    }
+    trimDurationSeconds = d;
+    // Start fixed, move End
+    trimEndSeconds = Math.round((trimStartSeconds + trimDurationSeconds) * 10) / 10;
+    updateTrimmerUI();
   }
+
+  // Start input direct typing
+  const onStartInputsChange = () => {
+    const min = Math.max(0, parseInt(trimStartMinInput ? trimStartMinInput.value : 0, 10) || 0);
+    const sec = Math.max(0, parseFloat(trimStartSecInput ? trimStartSecInput.value : 0) || 0);
+    setTrimStart(min * 60 + sec);
+  };
+  if (trimStartMinInput) {
+    trimStartMinInput.addEventListener('input', onStartInputsChange);
+    trimStartMinInput.addEventListener('change', onStartInputsChange);
+  }
+  if (trimStartSecInput) {
+    trimStartSecInput.addEventListener('input', onStartInputsChange);
+    trimStartSecInput.addEventListener('change', onStartInputsChange);
+  }
+
+  // Steppers for Start Time (0.5s & 1s) - End is LOCKED
   if (startMinus1Btn) {
     startMinus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      trimStartSeconds = Math.max(0, trimStartSeconds - 1);
-      updateTrimmerUI();
+      setTrimStart(trimStartSeconds - 1);
+    });
+  }
+  if (startMinusHalfBtn) {
+    startMinusHalfBtn.addEventListener('click', () => {
+      triggerHaptic();
+      setTrimStart(trimStartSeconds - 0.5);
+    });
+  }
+  if (startPlusHalfBtn) {
+    startPlusHalfBtn.addEventListener('click', () => {
+      triggerHaptic();
+      setTrimStart(trimStartSeconds + 0.5);
     });
   }
   if (startPlus1Btn) {
     startPlus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      trimStartSeconds = trimStartSeconds + 1;
-      updateTrimmerUI();
-    });
-  }
-  if (startPlus10Btn) {
-    startPlus10Btn.addEventListener('click', () => {
-      triggerHaptic();
-      trimStartSeconds = trimStartSeconds + 10;
-      updateTrimmerUI();
+      setTrimStart(trimStartSeconds + 1);
     });
   }
 
-  // Duration input & steppers
+  // Duration input & steppers (0.5s & 1s) - Start is LOCKED, End moves
   if (trimDurationInput) {
-    const onDurChange = () => {
-      trimDurationSeconds = Math.max(1, parseFloat(trimDurationInput.value) || 30);
-      updateTrimmerUI();
+    const onDurInputChange = () => {
+      const dur = Math.max(0.5, parseFloat(trimDurationInput.value) || 0.5);
+      setTrimDuration(dur);
     };
-    trimDurationInput.addEventListener('input', onDurChange);
-    trimDurationInput.addEventListener('change', onDurChange);
-  }
-  if (durMinus5Btn) {
-    durMinus5Btn.addEventListener('click', () => {
-      triggerHaptic();
-      trimDurationSeconds = Math.max(1, trimDurationSeconds - 5);
-      updateTrimmerUI();
-    });
+    trimDurationInput.addEventListener('input', onDurInputChange);
+    trimDurationInput.addEventListener('change', onDurInputChange);
   }
   if (durMinus1Btn) {
     durMinus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      trimDurationSeconds = Math.max(1, trimDurationSeconds - 1);
-      updateTrimmerUI();
+      setTrimDuration(trimDurationSeconds - 1);
+    });
+  }
+  if (durMinusHalfBtn) {
+    durMinusHalfBtn.addEventListener('click', () => {
+      triggerHaptic();
+      setTrimDuration(trimDurationSeconds - 0.5);
+    });
+  }
+  if (durPlusHalfBtn) {
+    durPlusHalfBtn.addEventListener('click', () => {
+      triggerHaptic();
+      setTrimDuration(trimDurationSeconds + 0.5);
     });
   }
   if (durPlus1Btn) {
     durPlus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      trimDurationSeconds = trimDurationSeconds + 1;
-      updateTrimmerUI();
-    });
-  }
-  if (durPlus5Btn) {
-    durPlus5Btn.addEventListener('click', () => {
-      triggerHaptic();
-      trimDurationSeconds = trimDurationSeconds + 5;
-      updateTrimmerUI();
+      setTrimDuration(trimDurationSeconds + 1);
     });
   }
 
-  // End position input & steppers (1秒ずらし対応)
-  const onEndChange = () => {
-    const m = parseInt(trimEndMinInput ? trimEndMinInput.value : 0, 10) || 0;
-    const s = parseInt(trimEndSecInput ? trimEndSecInput.value : 0, 10) || 0;
-    const targetEnd = m * 60 + s;
-    if (targetEnd > trimStartSeconds) {
-      trimDurationSeconds = Math.min(60, targetEnd - trimStartSeconds);
-      updateTrimmerUI();
-    }
+  // End position input & steppers (0.5s & 1s) - Start is LOCKED
+  const onEndInputsChange = () => {
+    const min = Math.max(0, parseInt(trimEndMinInput ? trimEndMinInput.value : 0, 10) || 0);
+    const sec = Math.max(0, parseFloat(trimEndSecInput ? trimEndSecInput.value : 0) || 0);
+    setTrimEnd(min * 60 + sec);
   };
   if (trimEndMinInput) {
-    trimEndMinInput.addEventListener('input', onEndChange);
-    trimEndMinInput.addEventListener('change', onEndChange);
+    trimEndMinInput.addEventListener('input', onEndInputsChange);
+    trimEndMinInput.addEventListener('change', onEndInputsChange);
   }
   if (trimEndSecInput) {
-    trimEndSecInput.addEventListener('input', onEndChange);
-    trimEndSecInput.addEventListener('change', onEndChange);
+    trimEndSecInput.addEventListener('input', onEndInputsChange);
+    trimEndSecInput.addEventListener('change', onEndInputsChange);
   }
   if (endMinus1Btn) {
     endMinus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      trimDurationSeconds = Math.max(1, trimDurationSeconds - 1);
-      updateTrimmerUI();
+      setTrimEnd(trimEndSeconds - 1);
+    });
+  }
+  if (endMinusHalfBtn) {
+    endMinusHalfBtn.addEventListener('click', () => {
+      triggerHaptic();
+      setTrimEnd(trimEndSeconds - 0.5);
+    });
+  }
+  if (endPlusHalfBtn) {
+    endPlusHalfBtn.addEventListener('click', () => {
+      triggerHaptic();
+      setTrimEnd(trimEndSeconds + 0.5);
     });
   }
   if (endPlus1Btn) {
     endPlus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      trimDurationSeconds = Math.min(60, trimDurationSeconds + 1);
-      updateTrimmerUI();
+      setTrimEnd(trimEndSeconds + 1);
     });
   }
 
   // Trimmer Sliders
-  trimStartSlider.addEventListener('input', (e) => {
-    trimStartSeconds = parseFloat(e.target.value);
-    updateTrimmerUI();
-  });
-
-  trimDurationSlider.addEventListener('input', (e) => {
-    trimDurationSeconds = parseFloat(e.target.value);
-    updateTrimmerUI();
-  });
-
-  // Preset Chips
-  trimPresetChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      triggerHaptic();
-      trimPresetChips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-
-      const dur = chip.dataset.dur;
-      if (dur === 'full') {
-        trimDurationSeconds = Math.max(1, (audioEngine.duration || 15) - trimStartSeconds);
-      } else {
-        const parsed = parseInt(dur, 10);
-        if (parsed > 0) trimDurationSeconds = parsed;
-      }
-
-      updateTrimmerUI();
-      showToast(`リップシンク動画の長さを「${Math.round(trimDurationSeconds)}秒」にセットしました`);
+  if (trimStartSlider) {
+    trimStartSlider.addEventListener('input', (e) => {
+      setTrimStart(parseFloat(e.target.value));
     });
-  });
+  }
+
+  if (trimDurationSlider) {
+    trimDurationSlider.addEventListener('input', (e) => {
+      setTrimDuration(parseFloat(e.target.value));
+    });
+  }
+
+  // Preset Chips (if present)
+  if (trimPresetChips && trimPresetChips.length > 0) {
+    trimPresetChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        triggerHaptic();
+        trimPresetChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+
+        const dur = chip.dataset.dur;
+        if (dur === 'full') {
+          const totalDuration = audioEngine.duration || 15;
+          setTrimDuration(totalDuration - trimStartSeconds);
+        } else {
+          const parsed = parseFloat(dur);
+          if (parsed > 0) setTrimDuration(parsed);
+        }
+        showToast(`リップシンク動画の長さを「${formatDurationText(trimDurationSeconds)}」にセットしました`);
+      });
+    });
+  }
 
   // Full Song Preview Player Controls
   function updateFullPlayerUI(isPlaying) {
@@ -539,10 +588,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (setStartFromCurrentBtn) {
     setStartFromCurrentBtn.addEventListener('click', () => {
       triggerHaptic();
-      const curSec = Math.floor(audioEngine.currentTime || 0);
-      trimStartSeconds = curSec;
-      updateTrimmerUI();
-      showToast(`📍 現在の秒数「${formatTime(curSec)}」を開始位置にセットしました！`);
+      const cur = audioEngine.currentTime || 0;
+      const curSec = Math.round(cur * 2) / 2;
+      setTrimStart(curSec);
+      showToast(`📍 現在の秒数「${formatTime(curSec)}」を開始位置にセットしました！（終了: ${formatTime(trimEndSeconds)}、長さ: ${formatDurationText(trimDurationSeconds)}）`);
     });
   }
 
@@ -550,14 +599,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (setEndFromCurrentBtn) {
     setEndFromCurrentBtn.addEventListener('click', () => {
       triggerHaptic();
-      const curSec = Math.floor(audioEngine.currentTime || 0);
+      const cur = audioEngine.currentTime || 0;
+      const curSec = Math.round(cur * 2) / 2;
       if (curSec <= trimStartSeconds) {
         showToast('⚠️ 終了位置は歌い出し位置（開始）より後ろで指定してください');
         return;
       }
-      trimDurationSeconds = Math.max(1, Math.min(60, curSec - trimStartSeconds));
-      updateTrimmerUI();
-      showToast(`🏁 現在の秒数「${formatTime(curSec)}」を終了位置にセットしました！（長さ: ${Math.round(trimDurationSeconds)}秒間）`);
+      setTrimEnd(curSec);
+      showToast(`🏁 現在の秒数「${formatTime(curSec)}」を終了位置にセットしました！（開始: ${formatTime(trimStartSeconds)}、長さ: ${formatDurationText(trimDurationSeconds)}）`);
     });
   }
 
@@ -579,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
       updatePlayUI(true);
       updateFullPlayerUI(false);
       if (previewTrimIcon) previewTrimIcon.textContent = '⏸';
-      showToast(`▶ 設定区間（${formatTime(trimStartSeconds)} 〜 ${formatTime(trimStartSeconds + trimDurationSeconds)}）を試聴中`);
+      showToast(`▶ 設定区間（${formatTime(trimStartSeconds)} 〜 ${formatTime(trimEndSeconds)} / ${formatDurationText(trimDurationSeconds)}）を試聴中`);
     }
   });
 
@@ -1955,7 +2004,7 @@ document.addEventListener('DOMContentLoaded', () => {
           throw new Error('楽曲データのデコードに失敗しました。もう一度STEP 2で楽曲を選択してください。');
         }
         const startSec = audioEngine.trimStart || 0;
-        const endSec = Math.max(startSec + 1, audioEngine.trimEnd || (startSec + 15));
+        const endSec = Math.max(startSec + 0.5, audioEngine.trimEnd || (startSec + 15));
         const slicedBuf = sliceBufferDirect(srcBuf, startSec, endSec);
         const mp3Blob = encodeMp3Direct(slicedBuf);
         const audioFile = new File([mp3Blob], 'vocal_cut.mp3', { type: 'audio/mpeg' });
@@ -2838,7 +2887,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Register late duration update callback
   window.onAudioDurationResolved = (newDur) => {
     if (newDur && newDur > 0) {
-      trimDurationSeconds = Math.min(newDur, trimDurationSeconds);
+      if (trimEndSeconds > newDur) {
+        trimEndSeconds = Math.round(newDur * 2) / 2;
+        trimDurationSeconds = Math.max(0.5, Math.round((trimEndSeconds - trimStartSeconds) * 10) / 10);
+      }
       try { updateTrimmerUI(); } catch (e) {}
     }
   };
@@ -2870,6 +2922,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set trimmer defaults for user song (15s default for AI lip-sync)
         trimStartSeconds = 0;
         trimDurationSeconds = Math.min(res.duration || 15, 15);
+        trimEndSeconds = trimStartSeconds + trimDurationSeconds;
         try {
           updateTrimmerUI();
         } catch (uiErr) {
@@ -3314,7 +3367,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (stageSongTitle) stageSongTitle.textContent = '楽曲未選択';
   if (controlTrimRangeBadge) controlTrimRangeBadge.textContent = '再生区間: 未設定';
   trimStartSeconds = 0;
-  trimDurationSeconds = 0;
+  trimEndSeconds = 15;
+  trimDurationSeconds = 15;
   updateTrimmerUI();
 
   // ==========================================
