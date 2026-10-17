@@ -405,12 +405,32 @@
             </button>
           </div>
 
-          <!-- カット音声単体のダウンロード ＆ カッター専用ツールへの直通リンク -->
-          <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
-            <button id="quickDownloadTrimmedBtn" class="giant-btn" type="button" style="flex: 1; min-width: 220px; background: rgba(16, 185, 129, 0.25); color: #6ee7b7; border: 2px solid #10b981; border-radius: 14px; padding: 14px; font-size: 1rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-              <span>✂️</span>
-              <span>切り出し音声(MP3)単体を保存</span>
-            </button>
+          <!-- カット音声単体のダウンロード（MP3 / WAV 形式選択対応） -->
+          <div class="audio-save-options-card" style="margin-top: 16px; background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(16, 185, 129, 0.35); border-radius: 16px; padding: 14px 16px;">
+            <div style="font-size: 0.96rem; font-weight: 800; color: #6ee7b7; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.2rem;">✂️</span>
+              <span>切り出し楽曲データ単体を保存する</span>
+            </div>
+            <p style="font-size: 0.82rem; color: #94a3b8; margin: 0 0 12px 0; line-height: 1.45;">
+              動画を生成せず、サビなどの切り出した音声だけを保存したい場合は、用途に合わせて形式を選べます：
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button id="quickDownloadMp3Btn" class="giant-btn" type="button" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.3)); color: #6ee7b7; border: 2px solid #10b981; border-radius: 14px; padding: 14px 10px; font-size: 1rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span style="font-size: 1.4rem;">🎵</span>
+                <div style="text-align: left; line-height: 1.25;">
+                  <div style="font-size: 1rem;">MP3で保存</div>
+                  <small style="font-size: 0.76rem; color: #a7f3d0; font-weight: 500;">軽量・扱いやすい</small>
+                </div>
+              </button>
+              <button id="quickDownloadWavBtn" class="giant-btn" type="button" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.3)); color: #93c5fd; border: 2px solid #3b82f6; border-radius: 14px; padding: 14px 10px; font-size: 1rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span style="font-size: 1.4rem;">💎</span>
+                <div style="text-align: left; line-height: 1.25;">
+                  <div style="font-size: 1rem;">WAVで保存</div>
+                  <small style="font-size: 0.76rem; color: #bfdbfe; font-weight: 500;">最高音質・無劣化</small>
+                </div>
+              </button>
+              <button id="quickDownloadTrimmedBtn" type="button" style="display:none;" tabindex="-1"></button>
+            </div>
           </div>
         </div>
       </section>
@@ -714,6 +734,24 @@
         </div>
 
         <div class="modal-body">
+          <!-- 形式切り替えタブ（MP3 / WAV） -->
+          <div style="margin-bottom: 12px;">
+            <div style="font-size: 0.82rem; color: #cbd5e1; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>保存形式を選択:</span>
+              <span id="modalFormatExplainer" style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">MP3: 軽量 | WAV: 最高音質</span>
+            </div>
+            <div style="display: flex; gap: 8px; background: rgba(15, 23, 42, 0.95); padding: 5px; border-radius: 12px; border: 1.5px solid rgba(255, 255, 255, 0.12);">
+              <button id="modalFormatMp3Btn" type="button" class="format-tab-btn active" style="flex: 1; padding: 10px 8px; border-radius: 9px; border: none; font-size: 0.92rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #10b981; color: #fff; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);">
+                <span>🎵</span>
+                <span>MP3 (軽量)</span>
+              </button>
+              <button id="modalFormatWavBtn" type="button" class="format-tab-btn" style="flex: 1; padding: 10px 8px; border-radius: 9px; border: none; font-size: 0.92rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; color: #94a3b8;">
+                <span>💎</span>
+                <span>WAV (最高音質)</span>
+              </button>
+            </div>
+          </div>
+
           <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(110, 231, 183, 0.35); border-radius: 14px; padding: 14px 16px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px;">
               <span id="modalAudioFileName" style="font-weight: 800; color: #fff; font-size: 0.95rem; word-break: break-all;">song_cut.mp3</span>
@@ -741,15 +779,15 @@
             <button id="saveAudioToPhoneBtn" class="giant-save-photos-btn" type="button" style="background: linear-gradient(135deg, #10b981, #06b6d4); border-color: #34d399; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);">
               <span class="btn-icon" style="font-size: 1.6rem;">📱</span>
               <div class="btn-text-col">
-                <strong style="font-size: 1.05rem;">切り出し音声(MP3)をスマホに保存 / 共有</strong>
-                <span style="font-size: 0.82rem;">「"ファイル"に保存」でiPhone内に保存できます</span>
+                <strong id="saveAudioBtnText" style="font-size: 1.05rem;">切り出し音声(MP3)をスマホに保存 / 共有</strong>
+                <span id="saveAudioBtnSub" style="font-size: 0.82rem;">「"ファイル"に保存」でiPhone内に保存できます</span>
               </div>
             </button>
 
             <button id="directAudioDownloadBtn" class="giant-download-file-btn" type="button" style="padding: 12px 10px; justify-content: center;">
               <span class="btn-icon" style="font-size: 1.3rem;">⬇️</span>
               <div class="btn-text-col" style="text-align: left;">
-                <strong style="font-size: 0.95rem;">MP3ファイルを直接ダウンロード</strong>
+                <strong id="directAudioBtnText" style="font-size: 0.95rem;">MP3ファイルを直接ダウンロード</strong>
               </div>
             </button>
             <button id="directLyricsDownloadBtn" class="hidden" type="button"></button>

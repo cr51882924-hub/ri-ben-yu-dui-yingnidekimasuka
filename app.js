@@ -1508,6 +1508,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalStudioLyricsPreview = document.getElementById('modalStudioLyricsPreview');
   const modalAudioDirectLink = document.getElementById('modalAudioDirectLink');
 
+  // Format Switcher & Quick Save Buttons (v12.3)
+  const quickDownloadMp3Btn = document.getElementById('quickDownloadMp3Btn');
+  const quickDownloadWavBtn = document.getElementById('quickDownloadWavBtn');
+  const modalFormatMp3Btn = document.getElementById('modalFormatMp3Btn');
+  const modalFormatWavBtn = document.getElementById('modalFormatWavBtn');
+  const modalFormatExplainer = document.getElementById('modalFormatExplainer');
+  const saveAudioBtnText = document.getElementById('saveAudioBtnText');
+  const directAudioBtnText = document.getElementById('directAudioBtnText');
+
+  let currentCutFormat = 'mp3'; // 'mp3' or 'wav'
+  let cutMp3Blob = null;
+  let cutMp3File = null;
+  let cutMp3Filename = '';
+  let cutWavBlob = null;
+  let cutWavFile = null;
+  let cutWavFilename = '';
+
   let lastCutAudioBlob = null;
   let lastCutAudioFile = null;
   let lastCutAudioFilename = '';
@@ -1676,35 +1693,92 @@ document.addEventListener('DOMContentLoaded', () => {
     return text;
   }
 
-  function openCutAudioModal(blob, file, filename, trimStart, trimEnd) {
+  function updateModalFormatUI(format) {
+    currentCutFormat = format;
+    const isWav = format === 'wav';
+
+    // Tab buttons active states
+    if (modalFormatMp3Btn) {
+      modalFormatMp3Btn.style.background = isWav ? 'transparent' : '#10b981';
+      modalFormatMp3Btn.style.color = isWav ? '#94a3b8' : '#fff';
+      modalFormatMp3Btn.style.boxShadow = isWav ? 'none' : '0 2px 8px rgba(16, 185, 129, 0.4)';
+    }
+    if (modalFormatWavBtn) {
+      modalFormatWavBtn.style.background = isWav ? '#3b82f6' : 'transparent';
+      modalFormatWavBtn.style.color = isWav ? '#fff' : '#94a3b8';
+      modalFormatWavBtn.style.boxShadow = isWav ? '0 2px 8px rgba(59, 130, 246, 0.4)' : 'none';
+    }
+
+    if (modalFormatExplainer) {
+      modalFormatExplainer.textContent = isWav ? 'WAV: 最高音質（非圧縮PCM）' : 'MP3: 軽量（192kbps高音質）';
+    }
+
+    const activeBlob = isWav ? cutWavBlob : cutMp3Blob;
+    const activeFile = isWav ? cutWavFile : cutMp3File;
+    const activeFilename = isWav ? cutWavFilename : cutMp3Filename;
+
+    lastCutAudioBlob = activeBlob;
+    lastCutAudioFile = activeFile;
+    lastCutAudioFilename = activeFilename;
+
+    if (lastCutAudioUrl) {
+      try { URL.revokeObjectURL(lastCutAudioUrl); } catch (e) {}
+    }
+    if (activeBlob) {
+      lastCutAudioUrl = URL.createObjectURL(activeBlob);
+    }
+
+    if (modalAudioFileName) modalAudioFileName.textContent = activeFilename;
+    if (modalAudioFormatBadge) {
+      modalAudioFormatBadge.textContent = isWav ? 'WAV' : 'MP3';
+      modalAudioFormatBadge.style.background = isWav ? 'rgba(59, 130, 246, 0.25)' : 'rgba(16, 185, 129, 0.25)';
+      modalAudioFormatBadge.style.color = isWav ? '#93c5fd' : '#6ee7b7';
+      modalAudioFormatBadge.style.borderColor = isWav ? '#3b82f6' : '#10b981';
+    }
+
+    if (modalAudioMeta && activeBlob) {
+      const dur = Math.max(1, Math.round(audioEngine.trimEnd - audioEngine.trimStart));
+      const sizeStr = isWav ? `${(activeBlob.size / (1024 * 1024)).toFixed(2)} MB` : `${(activeBlob.size / 1024).toFixed(1)} KB`;
+      const qualityStr = isWav ? '最高音質・無劣化' : '192kbps高音質・軽量';
+      modalAudioMeta.textContent = `区間: ${formatTime(audioEngine.trimStart)} 〜 ${formatTime(audioEngine.trimEnd)} (${dur}秒間) | 容量: ${sizeStr} (${qualityStr})`;
+    }
+
+    if (completeAudioPreview && lastCutAudioUrl) {
+      completeAudioPreview.src = lastCutAudioUrl;
+      completeAudioPreview.load();
+    }
+
+    if (modalAudioDirectLink) {
+      modalAudioDirectLink.href = lastCutAudioUrl || '#';
+      modalAudioDirectLink.download = activeFilename;
+    }
+
+    if (saveAudioBtnText) {
+      saveAudioBtnText.textContent = `切り出し音声(${isWav ? 'WAV' : 'MP3'})をスマホに保存 / 共有`;
+    }
+    if (saveAudioToPhoneBtn) {
+      saveAudioToPhoneBtn.style.background = isWav
+        ? 'linear-gradient(135deg, #3b82f6, #06b6d4)'
+        : 'linear-gradient(135deg, #10b981, #06b6d4)';
+      saveAudioToPhoneBtn.style.borderColor = isWav ? '#60a5fa' : '#34d399';
+    }
+    if (directAudioBtnText) {
+      directAudioBtnText.textContent = `${isWav ? 'WAV' : 'MP3'}ファイルを直接ダウンロード`;
+    }
+  }
+
+  function openCutAudioModal(initialFormat = 'mp3', trimStart = 0, trimEnd = 15) {
     if (!audioCompleteModal) return;
     if (audioEngine && audioEngine.isPlaying) {
       audioEngine.pause();
       updatePlayUI(false);
     }
 
-    lastCutAudioBlob = blob;
-    lastCutAudioFile = file;
-    lastCutAudioFilename = filename;
-
-    if (lastCutAudioUrl) {
-      try { URL.revokeObjectURL(lastCutAudioUrl); } catch (e) {}
-    }
-    lastCutAudioUrl = URL.createObjectURL(blob);
-
-    if (modalAudioFileName) modalAudioFileName.textContent = filename;
-    if (modalAudioFormatBadge) modalAudioFormatBadge.textContent = 'MP3';
-    if (modalAudioMeta) {
-      const dur = Math.max(1, Math.round(trimEnd - trimStart));
-      const kb = (blob.size / 1024).toFixed(1);
-      modalAudioMeta.textContent = `区間: ${formatTime(trimStart)} 〜 ${formatTime(trimEnd)} (${dur}秒間) | 容量: ${kb} KB`;
-    }
-
     // Build Lyrics Data & Text File (Pattern A)
     const effectiveSong = currentSongConfig || (typeof GROOVE_PRESETS !== 'undefined' && GROOVE_PRESETS.songs ? GROOVE_PRESETS.songs.jpop : null);
     lastCutLyricsText = buildStudioLyricsText(effectiveSong, trimStart, trimEnd);
-    const baseName = filename.replace(/\.[^/.]+$/, '');
-    lastCutLyricsFilename = `${baseName}_歌詞.txt`;
+    const songTitle = (currentSongConfig && currentSongConfig.title) ? currentSongConfig.title : 'song';
+    lastCutLyricsFilename = `${songTitle}_歌詞.txt`;
     lastCutLyricsBlob = new Blob([lastCutLyricsText], { type: 'text/plain;charset=utf-8' });
     lastCutLyricsFile = new File([lastCutLyricsBlob], lastCutLyricsFilename, { type: 'text/plain;charset=utf-8' });
 
@@ -1725,15 +1799,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    if (completeAudioPreview) {
-      completeAudioPreview.src = lastCutAudioUrl;
-      completeAudioPreview.load();
-    }
-
-    if (modalAudioDirectLink) {
-      modalAudioDirectLink.href = lastCutAudioUrl;
-      modalAudioDirectLink.download = filename;
-    }
+    // Apply the chosen initial format (MP3 or WAV)
+    updateModalFormatUI(initialFormat);
 
     audioCompleteModal.classList.remove('hidden');
     audioCompleteModal.classList.add('visible');
@@ -1751,43 +1818,84 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  if (quickDownloadTrimmedBtn) {
-    quickDownloadTrimmedBtn.addEventListener('click', async (e) => {
+  async function handleAudioCutDownload(targetFormat = 'mp3') {
+    triggerHaptic();
+
+    if (!audioEngine.hasAudioLoaded()) {
+      showToast('まず STEP 2 であなたの楽曲ファイルをアップロードしてください');
+      return;
+    }
+
+    showToast(`✂️ カット音声を${targetFormat.toUpperCase()}で準備中...`);
+
+    try {
+      let buf = audioEngine.ensureAudioBuffer();
+      if (!buf) {
+        const ctx = audioEngine.ctx || new (window.AudioContext || window.webkitAudioContext)();
+        buf = ctx.createBuffer(2, ctx.sampleRate * 15, ctx.sampleRate);
+      }
+
+      const sliced = sliceBufferDirect(buf, audioEngine.trimStart, audioEngine.trimEnd);
+      const songTitle = (currentSongConfig && currentSongConfig.title) ? currentSongConfig.title : 'song';
+      const timeTag = `${formatTime(audioEngine.trimStart).replace(':', 'm')}s-${formatTime(audioEngine.trimEnd).replace(':', 'm')}s`;
+
+      // Pre-encode both MP3 and WAV so user can toggle between them instantly in the modal
+      cutMp3Blob = encodeMp3Direct(sliced);
+      cutMp3Filename = `${songTitle}_cut_${timeTag}.mp3`;
+      cutMp3File = new File([cutMp3Blob], cutMp3Filename, { type: 'audio/mpeg' });
+
+      cutWavBlob = encodeWavDirect(sliced);
+      cutWavFilename = `${songTitle}_cut_${timeTag}.wav`;
+      cutWavFile = new File([cutWavBlob], cutWavFilename, { type: 'audio/wav' });
+
+      openCutAudioModal(targetFormat, audioEngine.trimStart, audioEngine.trimEnd);
+      showToast(`✂️ 「${targetFormat === 'wav' ? cutWavFilename : cutMp3Filename}」を切り出しました！`);
+
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (!isMobile) {
+        const activeBlob = targetFormat === 'wav' ? cutWavBlob : cutMp3Blob;
+        const activeName = targetFormat === 'wav' ? cutWavFilename : cutMp3Filename;
+        triggerDirectAudioDownload(activeBlob, activeName);
+      }
+    } catch (err) {
+      console.error('Quick download failed:', err);
+      showToast('切り出し保存に失敗しました。専用カッターツールもお試しください');
+    }
+  }
+
+  // Register Section 3 Save Buttons
+  if (quickDownloadMp3Btn) {
+    quickDownloadMp3Btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      handleAudioCutDownload('mp3');
+    });
+  }
+  if (quickDownloadWavBtn) {
+    quickDownloadWavBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      handleAudioCutDownload('wav');
+    });
+  }
+  if (quickDownloadTrimmedBtn) {
+    quickDownloadTrimmedBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      handleAudioCutDownload('mp3');
+    });
+  }
+
+  // Register Modal Format Switch Tabs
+  if (modalFormatMp3Btn) {
+    modalFormatMp3Btn.addEventListener('click', () => {
       triggerHaptic();
-
-      if (!audioEngine.hasAudioLoaded()) {
-        showToast('まず STEP 2 であなたの楽曲ファイルをアップロードしてください');
-        return;
-      }
-
-      showToast('✂️ カット音声をエンコード中...');
-
-      try {
-        let buf = audioEngine.ensureAudioBuffer();
-        if (!buf) {
-          const ctx = audioEngine.ctx || new (window.AudioContext || window.webkitAudioContext)();
-          buf = ctx.createBuffer(2, ctx.sampleRate * 15, ctx.sampleRate);
-        }
-
-        const sliced = sliceBufferDirect(buf, audioEngine.trimStart, audioEngine.trimEnd);
-        const blob = encodeMp3Direct(sliced);
-        const songTitle = (currentSongConfig && currentSongConfig.title) ? currentSongConfig.title : 'song';
-        const fileName = `${songTitle}_cut_${formatTime(audioEngine.trimStart).replace(':', 'm')}s-${formatTime(audioEngine.trimEnd).replace(':', 'm')}s.mp3`;
-
-        const file = new File([blob], fileName, { type: 'audio/mpeg' });
-
-        openCutAudioModal(blob, file, fileName, audioEngine.trimStart, audioEngine.trimEnd);
-        showToast(`✂️ 「${fileName}」を切り出しました！`);
-
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (!isMobile) {
-          triggerDirectAudioDownload(blob, fileName);
-        }
-      } catch (err) {
-        console.error('Quick download failed:', err);
-        showToast('切り出し保存に失敗しました。専用カッターツールもお試しください');
-      }
+      updateModalFormatUI('mp3');
+      showToast('🎵 MP3形式（軽量）に切り替えました');
+    });
+  }
+  if (modalFormatWavBtn) {
+    modalFormatWavBtn.addEventListener('click', () => {
+      triggerHaptic();
+      updateModalFormatUI('wav');
+      showToast('💎 WAV形式（最高音質）に切り替えました');
     });
   }
 
