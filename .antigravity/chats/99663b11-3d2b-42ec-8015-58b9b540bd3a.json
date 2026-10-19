@@ -40,6 +40,18 @@
       "created_at": "2026-10-19T12:57:55.943Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "d37edfbd-2c75-4d7c-bbfa-189f58e12b95",
+      "role": "user",
+      "content": "最新メッセージが全て消えました。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-19T13:04:09.897Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
