@@ -103,6 +103,7 @@ class AudioEngine {
     }
     this.audioBuffer = null;
     this.userAudioMode = null;
+    this.rawUserFile = file || null;
 
     // Check if the user accidentally uploaded an image file
     if (file && file.type && file.type.startsWith('image/')) {
@@ -119,10 +120,10 @@ class AudioEngine {
       };
     }
 
-    // Helper: read ArrayBuffer safely
-    const getArrayBuffer = () => {
+    // Helper: read ArrayBuffer safely (25s timeout for large M4A/WAV files on iOS)
+    const getArrayBuffer = (timeoutMs = 25000) => {
       return new Promise(async (resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error('ArrayBuffer timeout')), 4000);
+        const timer = setTimeout(() => reject(new Error('ArrayBuffer timeout')), timeoutMs);
         try {
           if (typeof file.arrayBuffer === 'function') {
             const buf = await file.arrayBuffer();
@@ -147,16 +148,16 @@ class AudioEngine {
       });
     };
 
-    // Helper: decodeAudioData compatible with Promise & Callback
-    const decodeAudioSafe = (ctx, buffer) => {
+    // Helper: decodeAudioData compatible with Promise & Callback (30s timeout)
+    const decodeAudioSafe = (ctx, buffer, timeoutMs = 30000) => {
       return new Promise((resolve, reject) => {
         let finished = false;
         const timer = setTimeout(() => {
           if (!finished) {
             finished = true;
-            reject(new Error('Audio decode timeout (12s)'));
+            reject(new Error('Audio decode timeout (30s)'));
           }
-        }, 12000);
+        }, timeoutMs);
 
         try {
           const res = ctx.decodeAudioData(
@@ -203,8 +204,8 @@ class AudioEngine {
 
     // LAYER 1: Fast direct AudioBuffer decoding
     try {
-      const buffer = await getArrayBuffer();
-      const decoded = await decodeAudioSafe(this.ctx, buffer);
+      const buffer = await getArrayBuffer(25000);
+      const decoded = await decodeAudioSafe(this.ctx, buffer, 30000);
       this.audioBuffer = decoded;
       this.duration = decoded.duration;
       this.userAudioMode = 'buffer';
@@ -238,7 +239,7 @@ class AudioEngine {
           } else {
             reject(new Error('HTMLAudioElement metadata timeout'));
           }
-        }, 4000);
+        }, 8000);
 
         audio.onloadedmetadata = () => {
           clearTimeout(timer);
@@ -257,6 +258,13 @@ class AudioEngine {
       this.audioElement = audio;
       this.duration = dur;
       this.userAudioMode = 'element';
+
+      // Attempt background AudioBuffer decode so slicing/MP3/WAV export uses user's real song
+      getArrayBuffer(35000).then(buf => decodeAudioSafe(this.ctx, buf, 45000)).then(decoded => {
+        if (!this.isDemoTrack && !this.audioBuffer) {
+          this.audioBuffer = decoded;
+        }
+      }).catch(() => {});
 
       try {
         if (!this.mediaElementSource) {
@@ -292,6 +300,7 @@ class AudioEngine {
     this.stop();
 
     this.isDemoTrack = true;
+    this.rawUserFile = null;
     this.currentTrackId = trackId;
     this.duration = 30;
     this.trimStart = 0;
