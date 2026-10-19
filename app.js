@@ -329,11 +329,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Setters preserving endpoints independence
-  function setTrimStart(newStart) {
+  function setTrimStart(newStart, preserveEndStrict = false) {
     const totalDuration = audioEngine.duration || 300;
     let s = Math.max(0, Math.round(newStart * 2) / 2);
     if (s >= trimEndSeconds) {
-      if (s + 0.5 <= totalDuration) {
+      if (preserveEndStrict) {
+        s = Math.max(0, trimEndSeconds - 0.5);
+      } else if (s + 0.5 <= totalDuration) {
         trimEndSeconds = Math.round((s + 0.5) * 2) / 2;
       } else {
         s = Math.max(0, trimEndSeconds - 0.5);
@@ -345,11 +347,13 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTrimmerUI();
   }
 
-  function setTrimEnd(newEnd) {
+  function setTrimEnd(newEnd, preserveStartStrict = false) {
     const totalDuration = audioEngine.duration || 300;
     let e = Math.min(totalDuration, Math.round(newEnd * 2) / 2);
     if (e <= trimStartSeconds) {
-      if (e - 0.5 >= 0) {
+      if (preserveStartStrict) {
+        e = Math.min(totalDuration, trimStartSeconds + 0.5);
+      } else if (e - 0.5 >= 0) {
         trimStartSeconds = Math.round((e - 0.5) * 2) / 2;
       } else {
         e = trimStartSeconds + 0.5;
@@ -373,11 +377,22 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTrimmerUI();
   }
 
-  // Start input direct typing
-  const onStartInputsChange = () => {
+  // Start input direct typing (preserve End strictly while typing)
+  const onStartInputsChange = (e) => {
+    const isInputEvt = e && e.type === 'input';
+    if (isInputEvt) {
+      if ((trimStartMinInput && document.activeElement === trimStartMinInput && trimStartMinInput.value === '') ||
+          (trimStartSecInput && document.activeElement === trimStartSecInput && trimStartSecInput.value === '')) {
+        return;
+      }
+    }
     const min = Math.max(0, parseInt(trimStartMinInput ? trimStartMinInput.value : 0, 10) || 0);
     const sec = Math.max(0, parseFloat(trimStartSecInput ? trimStartSecInput.value : 0) || 0);
-    setTrimStart(min * 60 + sec);
+    const candidate = min * 60 + sec;
+    if (isInputEvt && candidate >= trimEndSeconds) {
+      return;
+    }
+    setTrimStart(candidate, true);
   };
   if (trimStartMinInput) {
     trimStartMinInput.addEventListener('input', onStartInputsChange);
@@ -392,33 +407,35 @@ document.addEventListener('DOMContentLoaded', () => {
   if (startMinus1Btn) {
     startMinus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      setTrimStart(trimStartSeconds - 1);
+      setTrimStart(trimStartSeconds - 1, true);
     });
   }
   if (startMinusHalfBtn) {
     startMinusHalfBtn.addEventListener('click', () => {
       triggerHaptic();
-      setTrimStart(trimStartSeconds - 0.5);
+      setTrimStart(trimStartSeconds - 0.5, true);
     });
   }
   if (startPlusHalfBtn) {
     startPlusHalfBtn.addEventListener('click', () => {
       triggerHaptic();
-      setTrimStart(trimStartSeconds + 0.5);
+      setTrimStart(trimStartSeconds + 0.5, true);
     });
   }
   if (startPlus1Btn) {
     startPlus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      setTrimStart(trimStartSeconds + 1);
+      setTrimStart(trimStartSeconds + 1, true);
     });
   }
 
   // Duration input & steppers (0.5s & 1s) - Start is LOCKED, End moves
   if (trimDurationInput) {
-    const onDurInputChange = () => {
-      const dur = Math.max(0.5, parseFloat(trimDurationInput.value) || 0.5);
-      setTrimDuration(dur);
+    const onDurInputChange = (e) => {
+      if (e && e.type === 'input' && trimDurationInput.value === '') return;
+      const parsed = parseFloat(trimDurationInput.value);
+      if (isNaN(parsed) || (e && e.type === 'input' && parsed < 0.5)) return;
+      setTrimDuration(Math.max(0.5, parsed));
     };
     trimDurationInput.addEventListener('input', onDurInputChange);
     trimDurationInput.addEventListener('change', onDurInputChange);
@@ -449,10 +466,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // End position input & steppers (0.5s & 1s) - Start is LOCKED
-  const onEndInputsChange = () => {
+  const onEndInputsChange = (e) => {
+    const isInputEvt = e && e.type === 'input';
+    if (isInputEvt) {
+      if ((trimEndMinInput && document.activeElement === trimEndMinInput && trimEndMinInput.value === '') ||
+          (trimEndSecInput && document.activeElement === trimEndSecInput && trimEndSecInput.value === '')) {
+        return;
+      }
+    }
     const min = Math.max(0, parseInt(trimEndMinInput ? trimEndMinInput.value : 0, 10) || 0);
     const sec = Math.max(0, parseFloat(trimEndSecInput ? trimEndSecInput.value : 0) || 0);
-    setTrimEnd(min * 60 + sec);
+    const candidate = min * 60 + sec;
+    if (isInputEvt && candidate <= trimStartSeconds) {
+      return;
+    }
+    setTrimEnd(candidate, true);
   };
   if (trimEndMinInput) {
     trimEndMinInput.addEventListener('input', onEndInputsChange);
@@ -465,25 +493,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (endMinus1Btn) {
     endMinus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      setTrimEnd(trimEndSeconds - 1);
+      setTrimEnd(trimEndSeconds - 1, true);
     });
   }
   if (endMinusHalfBtn) {
     endMinusHalfBtn.addEventListener('click', () => {
       triggerHaptic();
-      setTrimEnd(trimEndSeconds - 0.5);
+      setTrimEnd(trimEndSeconds - 0.5, true);
     });
   }
   if (endPlusHalfBtn) {
     endPlusHalfBtn.addEventListener('click', () => {
       triggerHaptic();
-      setTrimEnd(trimEndSeconds + 0.5);
+      setTrimEnd(trimEndSeconds + 0.5, true);
     });
   }
   if (endPlus1Btn) {
     endPlus1Btn.addEventListener('click', () => {
       triggerHaptic();
-      setTrimEnd(trimEndSeconds + 1);
+      setTrimEnd(trimEndSeconds + 1, true);
     });
   }
 
@@ -765,13 +793,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   function updatePlayUI(playing) {
     if (playing) {
-      mainPlayIcon.textContent = '⏸';
-      mainPlayText.textContent = '音楽を一時停止';
-      stagePlayIcon.textContent = '⏸';
+      if (mainPlayIcon) mainPlayIcon.textContent = '⏸';
+      if (mainPlayText) mainPlayText.textContent = '音楽を一時停止';
+      if (stagePlayIcon) stagePlayIcon.textContent = '⏸';
     } else {
-      mainPlayIcon.textContent = '▶';
-      mainPlayText.textContent = '音楽を再生する';
-      stagePlayIcon.textContent = '▶';
+      if (mainPlayIcon) mainPlayIcon.textContent = '▶';
+      if (mainPlayText) mainPlayText.textContent = '音楽を再生する';
+      if (stagePlayIcon) stagePlayIcon.textContent = '▶';
+      if (previewTrimIcon) previewTrimIcon.textContent = '▶';
     }
   }
 
