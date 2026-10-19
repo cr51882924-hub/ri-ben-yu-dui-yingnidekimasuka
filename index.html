@@ -7,8 +7,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="GrooveSync MV">
   <meta name="theme-color" content="#090d16">
-  <title>GrooveSync MV Studio - 本格AIリップシンク歌唱動画生成スタジオ (v12.8)</title>
-  <link rel="stylesheet" href="style.css?v=20261019_2">
+  <title>GrooveSync MV Studio - 本格AIリップシンク歌唱動画生成スタジオ (v12.9)</title>
+  <link rel="stylesheet" href="style.css?v=20261019_3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
 
         <button id="appReloadBtn" class="app-reload-btn" aria-label="アプリを最新状態に更新・リロードします" title="最新バージョンを再読み込み">
           <span class="reload-icon">🔄</span>
-          <span id="headerVersionLabel">最新版 (v12.8)</span>
+          <span id="headerVersionLabel">最新版 (v12.9)</span>
         </button>
       </div>
     </header>
@@ -50,7 +50,7 @@
 
       <!-- Step-by-Step Arrow Flow Guide Banner (矢印フロー解説) -->
       <section class="flow-guide-card">
-        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v12.8: 写真・動画2パターン両対応 ＆ 完成動画サイズ選択)</span>
+        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v12.9: 写真・動画2パターン両対応 ＆ 完成動画サイズ選択)</span>
         <div class="flow-steps-row">
           <span class="flow-chip highlight">🔑 APIキー登録</span>
           <span class="flow-arrow">➔</span>
@@ -281,7 +281,7 @@
               <button type="button" id="captureVideoFrameBtn" class="giant-btn" style="width: 100%; background: linear-gradient(135deg, #0284c7, #2563eb); border: 2px solid #7dd3fc; border-radius: 12px; padding: 14px; font-size: 1.05rem; font-weight: 900; color: #fff; cursor: pointer;">
                 <span>📸 現在の再生位置の1コマを写真としてセットする</span>
               </button>
-              <div id="capturedFramePreviewRow" class="hidden" style="margin-top: 12px; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.35); padding: 10px 12px; border-radius: 10px; border: 1.5px solid rgba(56, 189, 248, 0.4);">
+              <div id="capturedFramePreviewRow" class="captured-frame-preview-row hidden">
                 <img id="capturedFrameThumb" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #38bdf8;" alt="切り出した1コマ">
                 <div>
                   <strong style="color: #6ee7b7; font-size: 0.95rem; display: block;">✔ 1コマを写真としてセット完了！</strong>
@@ -343,15 +343,17 @@
               <span class="preview-box-hint">曲を流して歌わせたい箇所の秒数を確認できます</span>
             </div>
 
-            <!-- 大型リアルタイム秒数ディスプレイ -->
+            <!-- 大型リアルタイム秒数ディスプレイ（上段：ラベル＆再生状態バッジ ／ 下段：特大秒数カウンター） -->
             <div class="current-time-large-display">
+              <div class="time-display-top-row">
+                <span class="time-label">⏱ 現在の再生位置:</span>
+                <div id="fullPlayerStatusBadge" class="player-status-badge">待機中</div>
+              </div>
               <div class="time-readout-wrap">
-                <span class="time-label">現在の再生位置:</span>
                 <span id="fullPlayerCurrentTime" class="time-counter-big">00:00</span>
                 <span class="time-slash">/</span>
                 <span id="fullPlayerTotalTime" class="time-counter-total">00:00</span>
               </div>
-              <div id="fullPlayerStatusBadge" class="player-status-badge">待機中</div>
             </div>
 
             <!-- 曲全体のタイムライン・シークバー＆切り取り範囲の可視化バー -->
