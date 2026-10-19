@@ -1745,29 +1745,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Event Listeners for Output Video Size Buttons
+  // Event Listeners for Output Video Size Buttons (strictly 1 active item)
   document.querySelectorAll('.video-size-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       triggerHaptic();
       document.querySelectorAll('.video-size-btn').forEach(b => {
         b.classList.remove('active');
-        b.style.background = 'rgba(15, 23, 42, 0.85)';
-        b.style.borderColor = 'rgba(255,255,255,0.18)';
+        b.style.background = '';
+        b.style.borderColor = '';
         const pill = b.querySelector('.size-pill');
         if (pill) {
           pill.textContent = 'タップで選択';
-          pill.style.background = 'rgba(255,255,255,0.12)';
-          pill.style.color = '#cbd5e1';
+          pill.style.background = '';
+          pill.style.color = '';
         }
       });
       btn.classList.add('active');
-      btn.style.background = 'rgba(56, 189, 248, 0.28)';
-      btn.style.borderColor = '#38bdf8';
       const activePill = btn.querySelector('.size-pill');
       if (activePill) {
         activePill.textContent = '✔ 選択中';
-        activePill.style.background = '#10b981';
-        activePill.style.color = '#052e16';
+        activePill.style.background = '';
+        activePill.style.color = '';
       }
       selectedOutputVideoSize = btn.dataset.size || '9:16';
       updateSizeFramingPreview();
@@ -1776,20 +1774,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Event Listeners for Fit Mode Buttons
+  // Event Listeners for Fit Mode Buttons (strictly 1 active item)
   document.querySelectorAll('.video-fit-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       triggerHaptic();
       document.querySelectorAll('.video-fit-btn').forEach(b => {
         b.classList.remove('active');
-        b.style.background = 'rgba(15, 23, 42, 0.85)';
-        b.style.borderColor = 'rgba(255,255,255,0.2)';
-        b.style.color = '#cbd5e1';
+        b.style.background = '';
+        b.style.borderColor = '';
+        b.style.color = '';
       });
       btn.classList.add('active');
-      btn.style.background = 'rgba(168, 85, 247, 0.32)';
-      btn.style.borderColor = '#c084fc';
-      btn.style.color = '#fff';
       selectedOutputFitMode = btn.dataset.fit || 'cover';
       updateSizeFramingPreview();
       showToast(selectedOutputFitMode === 'contain_blur'
@@ -1798,20 +1793,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Event Listeners for Resolution Buttons (720p / 1080p)
+  // Event Listeners for Resolution Buttons (720p / 1080p - strictly 1 active item)
   document.querySelectorAll('.video-res-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       triggerHaptic();
       document.querySelectorAll('.video-res-btn').forEach(b => {
         b.classList.remove('active');
-        b.style.background = 'rgba(15, 23, 42, 0.85)';
-        b.style.borderColor = 'rgba(255,255,255,0.2)';
-        b.style.color = '#cbd5e1';
+        b.style.background = '';
+        b.style.borderColor = '';
+        b.style.color = '';
       });
       btn.classList.add('active');
-      btn.style.background = 'rgba(16, 185, 129, 0.25)';
-      btn.style.borderColor = '#10b981';
-      btn.style.color = '#fff';
       selectedOutputResolution = btn.dataset.res || '720p';
       updateSizeFramingPreview();
       const dim = getTargetVideoDimensions();
@@ -1822,20 +1814,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize size preview on load
   setTimeout(() => updateSizeFramingPreview(), 150);
 
-  // Style chips in STEP 4
+  // Style chips in STEP 4 (strictly 1 active chip)
   document.querySelectorAll('.ai-style-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       triggerHaptic();
       document.querySelectorAll('.ai-style-chip').forEach(c => {
         c.classList.remove('active');
-        c.style.background = 'rgba(15, 23, 42, 0.85)';
-        c.style.borderColor = 'rgba(255,255,255,0.22)';
-        c.style.color = '#e2e8f0';
+        c.style.background = '';
+        c.style.borderColor = '';
+        c.style.color = '';
       });
       chip.classList.add('active');
-      chip.style.background = 'rgba(168, 85, 247, 0.35)';
-      chip.style.borderColor = '#c084fc';
-      chip.style.color = '#fff';
       selectedAiPromptStyle = chip.dataset.style || 'sway';
       if (aiVideoPromptInput && chip.dataset.prompt) {
         aiVideoPromptInput.value = chip.dataset.prompt;
@@ -1848,7 +1837,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function openApiModal() {
     triggerHaptic();
     if (falApiKeyInput) falApiKeyInput.value = getSavedFalApiKey();
-    if (aiSettingsModal) aiSettingsModal.classList.remove('hidden');
+    if (aiSettingsModal) {
+      aiSettingsModal.classList.remove('hidden');
+      aiSettingsModal.classList.add('visible');
+    }
+  }
+
+  function closeApiModal() {
+    if (aiSettingsModal) {
+      aiSettingsModal.classList.remove('visible');
+      aiSettingsModal.classList.add('hidden');
+    }
   }
 
   if (openAiSettingsBtn) {
@@ -1859,14 +1858,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (closeAiSettingsBtn) {
-    closeAiSettingsBtn.addEventListener('click', () => {
-      if (aiSettingsModal) aiSettingsModal.classList.add('hidden');
-    });
+    closeAiSettingsBtn.addEventListener('click', closeApiModal);
   }
   if (closeAiSettingsBottomBtn) {
-    closeAiSettingsBottomBtn.addEventListener('click', () => {
-      if (aiSettingsModal) aiSettingsModal.classList.add('hidden');
-    });
+    closeAiSettingsBottomBtn.addEventListener('click', closeApiModal);
   }
 
   if (saveAiSettingsBtn) {
@@ -1874,7 +1869,7 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerHaptic();
       const val = falApiKeyInput ? falApiKeyInput.value : '';
       saveFalApiKey(val);
-      if (aiSettingsModal) aiSettingsModal.classList.add('hidden');
+      closeApiModal();
     });
   }
 
@@ -2018,9 +2013,17 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
       } else {
-        if (!characterRenderer.customAvatarImg) {
-          if (activeMaterialMode === 'video' && activeVideoPattern === 'B' && sourceVideoPlayer) {
-            captureFrameFromSourceVideo();
+        if (!characterRenderer.customAvatarImg && activeMaterialMode === 'video' && activeVideoPattern === 'B' && sourceVideoPlayer) {
+          captureFrameFromSourceVideo();
+          if (!characterRenderer.customAvatarImg && uploadedVideoMaterialUrl) {
+            await new Promise((resolve) => {
+              const onReady = () => {
+                captureFrameFromSourceVideo();
+                resolve();
+              };
+              sourceVideoPlayer.addEventListener('loadeddata', onReady, { once: true });
+              setTimeout(onReady, 800);
+            });
           }
         }
         if (!characterRenderer.customAvatarImg) {
@@ -2052,7 +2055,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const materialLabel = isVideoToVideo ? '動画' : '写真';
         showAiStatus(`⏳ <strong>[1/3] 完成サイズ「${targetDim.label}」で${materialLabel}と切り出し音源（${formatTime(audioEngine.trimStart || 0)}〜${formatTime(audioEngine.trimEnd || 15)}）を準備しています...</strong>`, '#c084fc');
 
-        // 1. Prepare Sliced Audio MP3 File & Data URL
+        // 1. Prepare Sliced Audio File (MP3 with automatic WAV fallback) & Data URL
         const srcBuf = audioEngine.ensureAudioBuffer();
         if (!srcBuf) {
           throw new Error('楽曲データのデコードに失敗しました。もう一度STEP 2で楽曲を選択してください。');
@@ -2060,9 +2063,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const startSec = audioEngine.trimStart || 0;
         const endSec = Math.max(startSec + 0.5, audioEngine.trimEnd || (startSec + 15));
         const slicedBuf = sliceBufferDirect(srcBuf, startSec, endSec);
-        const mp3Blob = encodeMp3Direct(slicedBuf);
-        const audioFile = new File([mp3Blob], 'vocal_cut.mp3', { type: 'audio/mpeg' });
-        const audioDataUrl = await blobToDataUrl(mp3Blob);
+        let audioBlob = null;
+        let audioMime = 'audio/mpeg';
+        let audioFilename = 'vocal_cut.mp3';
+        try {
+          audioBlob = encodeMp3Direct(slicedBuf);
+          if (audioBlob && audioBlob.type === 'audio/wav') {
+            audioMime = 'audio/wav';
+            audioFilename = 'vocal_cut.wav';
+          }
+        } catch (mp3Err) {
+          console.warn('MP3 encode fallback to WAV:', mp3Err);
+          audioBlob = encodeWavDirect(slicedBuf);
+          audioMime = 'audio/wav';
+          audioFilename = 'vocal_cut.wav';
+        }
+        const audioFile = new File([audioBlob], audioFilename, { type: audioMime });
+        const audioDataUrl = await blobToDataUrl(audioBlob);
 
         // 2. Prepare Formatted Image File matching selected Output Video Size (9:16, 16:9, 1:1, or original)
         let imgBlob = null;
@@ -2090,11 +2107,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let finalVideoUrl = '';
 
         // 3. Call Fal.ai via official @fal-ai/client
+        let sdkConnected = false;
         try {
           const falModule = await import('https://cdn.jsdelivr.net/npm/@fal-ai/client/+esm');
           const createFalClient = falModule.createFalClient || (falModule.default && falModule.default.createFalClient);
 
           if (createFalClient) {
+            sdkConnected = true;
             const falClient = createFalClient({ credentials: apiKey });
 
             showAiStatus(`⏳ <strong>[2/3] Fal.ai サーバーへ${materialLabel}（${targetDim.label}）と音源をアップロード中...</strong>`, '#38bdf8');
@@ -2142,6 +2161,10 @@ document.addEventListener('DOMContentLoaded', () => {
               if (uploadedAudioUrl && selectedV11bMode !== 'video') {
                 inputPayload.audio_url = uploadedAudioUrl;
               }
+              if (selectedV11bModel && selectedV11bModel.includes('omnihuman')) {
+                const trimDur = endSec - startSec;
+                inputPayload.resolution = (trimDur > 30) ? '720p' : (selectedOutputResolution || '720p');
+              }
               if (selectedV11bMode === 'video' && targetDim.aspectRatio) {
                 inputPayload.aspect_ratio = targetDim.aspectRatio;
               }
@@ -2169,14 +2192,23 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (sdkErr) {
           console.warn('Fal client SDK notice, checking error or trying direct REST:', sdkErr);
           const status = sdkErr && (sdkErr.status || (sdkErr.body && sdkErr.body.status));
-          const detailMsg = (sdkErr && sdkErr.body && (sdkErr.body.detail || sdkErr.body.message)) || (sdkErr && sdkErr.message) || '';
+          const detailRaw = (sdkErr && sdkErr.body && (sdkErr.body.detail || sdkErr.body.message)) || (sdkErr && sdkErr.message) || '';
+          const detailMsg = (typeof detailRaw === 'string') ? detailRaw : JSON.stringify(detailRaw);
+
           if (status === 401 || /unauthorized|invalid.*key/i.test(detailMsg)) {
             throw new Error('APIキーが無効です（401エラー）。Fal.ai の Keys ページで発行した正しいキーかご確認ください。');
           }
           if (status === 402 || status === 403 || /balance|credit|exhausted|billing|payment/i.test(detailMsg)) {
             throw new Error(`Fal.ai のクレジット残高が不足しているか、利用制限です（${detailMsg || 'Billingページでチャージをご確認ください'}）。`);
           }
-          // Try direct REST fallback if SDK import itself had a network hiccup (for image mode)
+          if (status === 422 || status === 400) {
+            throw new Error(`AIモデル入力エラー (${status}): ${detailMsg || '秒数を15秒前後にするか、別のモデルでお試しください。'}`);
+          }
+          if (sdkConnected && status) {
+            throw new Error(`Fal.ai APIエラー (${status}): ${detailMsg}`);
+          }
+
+          // Try direct REST fallback only if SDK import itself failed (for image mode)
           if (!finalVideoUrl && !isVideoToVideo) {
             const payload = {
               image_url: imgDataUrl,
