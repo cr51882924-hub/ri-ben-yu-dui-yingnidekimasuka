@@ -2809,13 +2809,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Open file picker cleanly on click / tap
-  avatarUploadBtn.addEventListener('click', (e) => {
+  avatarUploadBtn.addEventListener('click', () => {
     triggerHaptic();
-    // If user has a saved avatar and is currently on preset, re-apply saved avatar
-    if (savedCustomAvatarCanvas && characterRenderer.customAvatarImg !== savedCustomAvatarCanvas) {
-      e.preventDefault();
-      applyCustomAvatar(savedCustomAvatarCanvas, savedCustomAvatarName);
-      showToast(`保存されていた写真「${savedCustomAvatarName}」を再適用しました`);
+    if (avatarUploadBtn.tagName.toLowerCase() !== 'label') {
+      avatarFileInput.click();
     }
   });
 
