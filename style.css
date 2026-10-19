@@ -2479,12 +2479,48 @@ body.zoom-huge .toast {
 }
 
 /* ==========================================================================
-   v12.4: STEP 1 素材選択タブ & 動画パターン選択ボタン
+   v12.9: 単一選択（1つだけ選択状態になる）ボタン群の明確なアクティブ・非アクティブ制御
    ========================================================================== */
+.models-grid-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.captured-frame-preview-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+}
+
 .mat-tab-btn {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 2px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 14px;
+  padding: 14px 10px;
+  color: #94a3b8 !important;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
   -webkit-tap-highlight-color: transparent;
+}
+
+.mat-tab-btn strong {
+  color: #cbd5e1 !important;
+}
+
+.mat-tab-btn small {
+  color: #94a3b8 !important;
 }
 
 .mat-tab-btn:active {
@@ -2492,13 +2528,35 @@ body.zoom-huge .toast {
 }
 
 .mat-tab-btn.active {
+  background: rgba(168, 85, 247, 0.32) !important;
+  border: 2.5px solid #c084fc !important;
+  color: #ffffff !important;
   box-shadow: 0 0 20px rgba(192, 132, 252, 0.45);
 }
 
+.mat-tab-btn.active strong {
+  color: #f0abfc !important;
+}
+
+.mat-tab-btn.active small {
+  color: #f1f5f9 !important;
+}
+
 .video-pattern-btn {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 2px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 14px;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  color: #94a3b8 !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   -webkit-tap-highlight-color: transparent;
+}
+
+.video-pattern-btn strong {
+  color: #cbd5e1 !important;
 }
 
 .video-pattern-btn:active {
@@ -2506,7 +2564,162 @@ body.zoom-huge .toast {
 }
 
 .video-pattern-btn.active {
+  background: rgba(168, 85, 247, 0.32) !important;
+  border: 2.5px solid #c084fc !important;
+  color: #ffffff !important;
   box-shadow: 0 0 22px rgba(168, 85, 247, 0.5);
+}
+
+.video-pattern-btn.active strong {
+  color: #f0abfc !important;
+}
+
+.v11b-model-btn {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 2px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 14px;
+  padding: 16px;
+  color: #94a3b8 !important;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: none;
+}
+
+.v11b-model-btn strong {
+  color: #cbd5e1 !important;
+}
+
+.v11b-model-btn .v11b-model-desc {
+  color: #94a3b8 !important;
+}
+
+.v11b-model-btn .v11b-model-pill {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+}
+
+.v11b-model-btn.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.34), rgba(236, 72, 153, 0.2)) !important;
+  border: 2.5px solid #c084fc !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 20px rgba(192, 132, 252, 0.45);
+}
+
+.v11b-model-btn.active strong {
+  color: #f0abfc !important;
+}
+
+.v11b-model-btn.active .v11b-model-desc {
+  color: #f8fafc !important;
+}
+
+.v11b-model-btn.active .v11b-model-pill {
+  background: #10b981 !important;
+  color: #052e16 !important;
+  font-weight: 900 !important;
+}
+
+.video-size-btn {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 2px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 14px;
+  padding: 14px 10px;
+  color: #94a3b8 !important;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+.video-size-btn strong {
+  color: #cbd5e1 !important;
+}
+
+.video-size-btn small {
+  color: #94a3b8 !important;
+}
+
+.video-size-btn .size-pill {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+}
+
+.video-size-btn.active {
+  background: rgba(56, 189, 248, 0.3) !important;
+  border: 2.5px solid #38bdf8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.4);
+}
+
+.video-size-btn.active strong {
+  color: #7dd3fc !important;
+}
+
+.video-size-btn.active small {
+  color: #f1f5f9 !important;
+}
+
+.video-size-btn.active .size-pill {
+  background: #10b981 !important;
+  color: #052e16 !important;
+  font-weight: 900 !important;
+}
+
+.video-fit-btn,
+.video-res-btn {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 10px;
+  padding: 10px 8px;
+  color: #94a3b8 !important;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.18s ease;
+}
+
+.video-fit-btn.active {
+  background: rgba(168, 85, 247, 0.34) !important;
+  border: 2px solid #c084fc !important;
+  color: #ffffff !important;
+  font-weight: 900;
+  box-shadow: 0 0 14px rgba(192, 132, 252, 0.35);
+}
+
+.video-res-btn.active {
+  background: rgba(16, 185, 129, 0.28) !important;
+  border: 2px solid #10b981 !important;
+  color: #ffffff !important;
+  font-weight: 900;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+}
+
+.ai-style-chip {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  color: #94a3b8 !important;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 1.02rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.ai-style-chip.active {
+  background: rgba(168, 85, 247, 0.36) !important;
+  border: 2.5px solid #c084fc !important;
+  color: #ffffff !important;
+  font-weight: 900;
+  box-shadow: 0 0 16px rgba(192, 132, 252, 0.4);
 }
 
 /* Super Zoom Support */
@@ -2524,4 +2737,17 @@ body.zoom-huge .video-pattern-btn strong {
 
 body.zoom-huge .video-pattern-btn p {
   font-size: 1.08rem !important;
+}
+
+body.zoom-huge .time-counter-big {
+  font-size: 2.3rem;
+}
+
+body.zoom-huge .time-counter-total {
+  font-size: 1.6rem;
+}
+
+body.zoom-huge .player-status-badge {
+  font-size: 0.95rem;
+  padding: 5px 14px;
 }
