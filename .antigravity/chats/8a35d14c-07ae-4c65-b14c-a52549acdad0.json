@@ -40,6 +40,18 @@
       "created_at": "2026-10-19T02:16:55.964Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "2410aac5-e913-44cf-a16e-8e626ad2e062",
+      "role": "agent",
+      "content": "ご報告ありがとうございます！\n**曲を再生しているときに画面が上下にブレる（ガタつく）原因を特定し、ピタッと静止するように修正いたしました（v12.7）！**\n\n---\n\n### 🔍 上下にブレていた原因\n前回のアップデートで「0.5秒単位（小数点表示）」に対応した際、曲の再生中に動く **「現在の再生位置」の特大カウンター（緑色の数字）** が、\n- ちょうどの秒数のときは `00:01`（**5文字**・横幅が短い）\n- 0.1秒〜0.9秒のときは `00:01.1`〜`00:01.9`（**7文字**・横幅が広い）\n\nと**1秒ごとに文字数が5文字⇔7文字に増減**していました。\nそのため、文字が増えた瞬間に右横の「再生中 🔊」バッジが2行目に押し出されて枠の縦幅が広がり、ちょうどの秒数になると1行目に戻って縦幅が縮むという動きが1秒ごとに繰り返され、画面全体が上下に揺れていました。\n\n---\n\n### 🛠 今回の修正内容（[app.js](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/app.js) / [style.css](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/style.css)）\n1. **リアルタイム再生カウンターの文字数を「5文字固定（`00:00`）」に統一**\n   - 再生中のカウンター表示（[`formatTime`](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/app.js#L187-L202) / [`tick`](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/app.js#L3379-L3470)）は常に `00:00` 形式で固定幅にし、文字数の増減が起きないようにしました（※歌い出し・終了位置の0.5秒設定はそのまま `00:10.5` のように0.5秒単位で正確に動作します）。\n2. **秒数ディスプレイ枠（[`.current-time-large-display`](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/style.css#L877-L890)）の改行・縦幅変動を完全ロック**\n   - 再生中・一時停止中・0.5秒調整のどんな場面でも、枠が2行に折り返したり縦幅が1ミリでも変わったりしないようレイアウトを固定しました。\n3. **毎秒60回の不要な画面書き換えをカット**\n   - 秒数の表示が変わった瞬間だけ文字を更新するように最適化し、iPhoneでのスクロールや操作をさらに滑らかにしました。\n\n---\n\n### 🌐 修正版（v12.7）のご確認はこちら\n数秒後に自動反映されますので、下記リンクを開いて（または画面右上の「🔄 最新版 (v12.7)」ボタンを押して）曲を再生してみてください：\n\n👉 **[GrooveSync MV Studio 最新版（v12.7）を開く](https://antigravity.luch.dev/site/99be14d3-31d5-4abb-884c-c3b755893105/e9856f67f45823b115dd6ebe/)**\n\n他にもボタンを押してみて気になる点があれば、続けて何でもお知らせください！",
+      "status": "completed",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "b2d9ae92-5dcf-4827-90a6-9ac0d9d05bda",
+      "created_at": "2026-10-19T02:25:11.319Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
