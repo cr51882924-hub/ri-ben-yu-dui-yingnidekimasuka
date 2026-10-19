@@ -136,6 +136,18 @@
       "created_at": "2026-10-19T10:17:41.070Z",
       "sender": "ios",
       "is_cancelled": true
+    },
+    {
+      "id": "706ec9fb-c8ea-450d-abbe-38709e6b448c",
+      "role": "user",
+      "content": "最新メッセージを反映させてください。",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-19T11:05:10.142Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
