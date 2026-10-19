@@ -1292,7 +1292,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Restore user's uploaded photo if they previously uploaded one
       if (savedCustomAvatarCanvas) {
-        characterRenderer.setCustomAvatar(savedCustomAvatarCanvas);
+        applyCustomAvatar(savedCustomAvatarCanvas, savedCustomAvatarName);
       }
 
       const currentPhotoBtn = photoModelsGroup
@@ -1547,6 +1547,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       showToast(`🎬 動画「${file.name}」を読み込みました！`);
+      videoMaterialFileInput.value = '';
     });
   }
 
@@ -2140,9 +2141,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
               inputPayload = {
                 video_url: uploadedVideoUrl,
-                audio_url: uploadedAudioUrl,
-                sync_mode: 'cut_off'
+                audio_url: uploadedAudioUrl
               };
+              if (selectedV11bModel && selectedV11bModel.includes('sync-lipsync')) {
+                inputPayload.sync_mode = 'cut_off';
+              }
             } else {
               // Image LipSync (OmniHuman / Kling AI Avatar / MiniMax / Kling 1.6)
               let uploadedImageUrl = imgDataUrl;
