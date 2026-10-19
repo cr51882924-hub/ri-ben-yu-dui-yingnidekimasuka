@@ -3,17 +3,29 @@
   "name": "このメッセージは最新ではありません。 最新はV13.0です。",
   "createdAt": "2026-10-19T12:42:40.717Z",
   "filename": "99663b11-3d2b-42ec-8015-58b9b540bd3a.json",
-  "geminiStarted": false,
+  "geminiStarted": true,
   "messages": [
     {
       "id": "fbcce217-8fed-4f81-ae3c-b812d11e0c29",
       "role": "user",
       "content": "このメッセージは最新ではありません。\n\n最新はV13.0です。",
-      "status": "pending",
+      "status": "cancelled",
       "model": "gemini-3.8-flash-high",
       "client_type": "gemini-bridge",
       "parent_message_id": null,
       "created_at": "2026-10-19T12:42:43.079Z",
+      "sender": "ios",
+      "is_cancelled": true
+    },
+    {
+      "id": "d784d663-fe50-4cda-a874-28fca1b8158d",
+      "role": "user",
+      "content": "待っていられないので、あなたの回答を無視して、\nversion13.0の修正点を書きます。\n\n⇩\n\nv13.0について\n\n①AIを選択のところで\nMinMax H3\nを選択しました。そして演出は3つ選択できると思うんですが、同じ写真で同じリップシンクの切り取りした曲で、3つとも同じ演出になります。\nプロンプトが変わってないのではないでしょうか。\n他のAIに関してはこのAIがそうだったので全て再確認をしてください。\n一度全てのAIの演出を確認して。\n\n②今回、AIツールの選択を、なぜこのAIツールにしたのか？理由を教えてください。\n\nほかのツールをみると他よりも扱っているものがバージョンが低いものを扱っているみたいなので。\n\n③あと、生成されるリップシンク動画はリップシンクはしていますが、\n出来上がりについて、とても採用できるものではありません。\n\n原因をしりたいです。\n各AIツールが良くないのか？\nプロンプトか良くないのか？\n正直におしえてください。\n理由をしりたいのは改善策を一緒に\n考えたいから。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-19T12:43:49.220Z",
       "sender": "ios",
       "is_cancelled": false
     }
