@@ -100,6 +100,18 @@
       "created_at": "2026-10-19T02:35:15.855Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "befa3ac4-35f9-49e2-9f33-decf3db217cf",
+      "role": "user",
+      "content": "※v12.8の修正箇所をアップします。\n\n①曲アップロード中の再生中や一時停止中を表す文字部分が再生秒数の右側の曲全体の時間と重なっていて見ずらい。\n\n②AIツールを選択する部分で、最初に選択されている部分がずっと残る。つまり、他を選択すると、最初から選択されているものと、新しく選択したもの2つ選択された状態になる。\n\n③修正箇所が続き、動画生成までいかない。\nいちど、全体を2重チェックしてもらえませんか？",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-19T09:47:20.213Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
