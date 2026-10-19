@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="音声カッター">
   <meta name="theme-color" content="#090d16">
   <title>楽曲カッター＆トリマー - 曲の長さを決めてカット音声をダウンロード</title>
-  <link rel="stylesheet" href="style.css?v=20261013_14">
+  <link rel="stylesheet" href="style.css?v=20261019_3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
@@ -279,15 +279,17 @@
       </div>
 
       <div class="trimmer-card">
-        <!-- リアルタイム秒数ディスプレイ -->
+        <!-- リアルタイム秒数ディスプレイ（1段目: ラベル＋再生状態バッジ / 2段目: 秒数と曲全体の時間・重なりゼロ＆縦揺れゼロ固定） -->
         <div class="current-time-large-display">
+          <div class="time-display-top-row">
+            <span class="time-label">⏱ 現在の再生位置:</span>
+            <div id="fullPlayerStatusBadge" class="player-status-badge">一時停止中</div>
+          </div>
           <div class="time-readout-wrap">
-            <span class="time-label">現在の再生位置:</span>
             <span id="fullPlayerCurrentTime" class="time-counter-big">00:00</span>
             <span class="time-slash">/</span>
             <span id="fullPlayerTotalTime" class="time-counter-total">00:30</span>
           </div>
-          <div id="fullPlayerStatusBadge" class="player-status-badge">一時停止中</div>
         </div>
 
         <!-- タイムライン・波形トラック -->
