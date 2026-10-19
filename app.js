@@ -3377,9 +3377,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Main Animation Loop (60 FPS)
   // ==========================================
   function tick() {
+    audioEngine.updateAnalysis(characterRenderer.lipsyncSens);
     const isStageVisible = viewStage && !viewStage.classList.contains('hidden');
     if (isStageVisible || isRecording) {
-      audioEngine.updateAnalysis(characterRenderer.lipsyncSens);
       characterRenderer.render(audioEngine);
     }
 
