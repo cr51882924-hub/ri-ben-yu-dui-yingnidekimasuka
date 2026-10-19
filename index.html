@@ -681,55 +681,64 @@
           <!-- A. 写真／1コマ切り出し用AIモデル群（Photo または 動画パターンB） -->
           <div id="photoModelsGroup" class="models-grid-group">
             <!-- Model 1: ByteDance OmniHuman v1.5 (Lip-Sync + Full Performance) -->
-            <button type="button" class="v11b-model-btn active" data-model="fal-ai/bytedance/omnihuman/v1.5" data-mode="lipsync" data-label="ByteDance OmniHuman v1.5 (リップシンク)">
+            <button type="button" class="v11b-model-btn active" data-model="fal-ai/bytedance/omnihuman/v1.5" data-mode="lipsync" data-supports-prompt="true" data-label="ByteDance OmniHuman v1.5 (リップシンク)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.15rem;">🎤 ByteDance OmniHuman v1.5（一番人気・リップシンク）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.88rem; padding: 4px 12px; border-radius: 999px;">✔ 選択中</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲 ➔ 歌唱動画】歌声に合わせて口元のリップシンク・顔の表情・自然な上半身の動きまで完全同期する最高峰モデル</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲＋演出 ➔ 歌唱動画】歌声に合わせて口元・顔の表情・上半身の身振りまで同期する最高峰モデル（✨3つの演出プロンプト対応）</span>
             </button>
 
             <!-- Model 2: Kling AI Avatar v2 Pro (Lip-Sync) -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/ai-avatar/v2/pro" data-mode="lipsync" data-label="Kling AI Avatar v2 Pro (リップシンク)">
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/ai-avatar/v2/pro" data-mode="lipsync" data-supports-prompt="true" data-label="Kling AI Avatar v2 Pro (リップシンク)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.15rem;">🎬 Kling AI Avatar v2 Pro（高精細リップシンク）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲 ➔ 歌唱動画】Kling最新の最上位リップシンクAI。実写・イラスト問わずボーカルに合わせて高精細に熱唱</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲＋演出 ➔ 歌唱動画】Kling最上位のアバター歌唱AI。ボーカルと演出指示に合わせて高精細に熱唱（✨3つの演出プロンプト対応）</span>
             </button>
 
             <!-- Model 3: Kling AI Avatar v2 Standard (Fast Lip-Sync) -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/ai-avatar/v2/standard" data-mode="lipsync" data-label="Kling AI Avatar v2 Standard (高速リップシンク)">
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/ai-avatar/v2/standard" data-mode="lipsync" data-supports-prompt="true" data-label="Kling AI Avatar v2 Standard (高速リップシンク)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.15rem;">⚡ Kling AI Avatar v2 Standard（高速・コスパ重視）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲 ➔ 歌唱動画】クレジット消費を抑えてスピーディーにリップシンク歌唱動画を作りたい時に最適</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲＋演出 ➔ 歌唱動画】クレジット消費を抑えてスピーディーにリップシンク動画を作りたい時に最適（✨3つの演出プロンプト対応）</span>
             </button>
 
-            <!-- Model 4: MiniMax H3 Max Lip-Sync -->
-            <button type="button" class="v11b-model-btn" data-model="minimax/h3-max/lip-sync/image-to-video" data-mode="lipsync" data-label="MiniMax H3 Max Lip-Sync">
+            <!-- Model 4: Wan 2.2 Speech-to-Video (Lip-Sync + Prompt Motion) -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/wan-22-s2v" data-mode="lipsync" data-supports-prompt="true" data-label="Wan 2.2 S2V (音声＆演出リップシンク)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🌟 MiniMax H3 Max Lip-Sync（スタジオ品質口パク）</strong>
+                <strong style="font-size: 1.15rem;">🔥 Wan 2.2 S2V（音声駆動＆カメラ演出リップシンク）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲 ➔ 歌唱動画】歌声の母音・子音にピタッと吸いつく滑らかなリップシンクモデル</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲＋演出 ➔ 歌唱動画】歌声の口パクと同時に、演出プロンプトによるカメラワークや身体の動きを強く反映するモデル（✨3つの演出プロンプト対応）</span>
             </button>
 
-            <!-- Model 5: Kling 1.6 Pro (Image-to-Video Motion) -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/v1.6/pro/image-to-video" data-mode="video" data-label="Kling 1.6 Pro (背景・全身ムービー)">
+            <!-- Model 5: MiniMax H3 Max Lip-Sync (Mouth-only sync, NO prompt support in API) -->
+            <button type="button" class="v11b-model-btn" data-model="minimax/h3-max/lip-sync/image-to-video" data-mode="lipsync" data-supports-prompt="false" data-label="MiniMax H3 Max Lip-Sync">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🎥 Kling 1.6 Pro（口パクなし・全身＆カメラ演出動画）</strong>
+                <strong style="font-size: 1.15rem;">🌟 MiniMax H3 Max Lip-Sync（口元固定・発音特化）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真 ➔ 5秒ムービー】リップシンクではなく、写真から映画のようなカメラワークと全身の動きを作るモード</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲 ➔ 口パク特化】母音・子音の発音に口元を合わせる専用AI（※AIの仕様上、3つの演出プロンプトは効かず口元のみの同期になります）</span>
+            </button>
+
+            <!-- Model 6: Kling 3.0 Pro (Latest Image-to-Video Motion) -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/v3/pro/image-to-video" data-mode="video" data-supports-prompt="true" data-label="Kling 3.0 Pro (最新・全身＆カメラ演出動画)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.15rem;">🎥 Kling 3.0 Pro（最新v3・全身＆映画カメラ演出動画）</strong>
+                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋演出 ➔ 5秒ムービー】Kling最新v3最上位モデル。まず写真から映画のような全身の動き＆カメラワーク動画を作りたい時に最適（✨演出プロンプト超強力）</span>
             </button>
           </div>
 
           <!-- B. 動画そのまま口元リップシンク用AIモデル群（動画パターン①/A） -->
           <div id="videoModelsGroup" class="models-grid-group hidden">
             <!-- Model V1: Sync Lipsync v3 -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/sync-lipsync/v3" data-mode="videolipsync" data-label="Sync Lipsync v3 (動画口パク同期)">
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/sync-lipsync/v3" data-mode="videolipsync" data-supports-prompt="false" data-label="Sync Lipsync v3 (動画口パク同期)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.15rem;">🎥 Sync Lipsync v3（最新動画リップシンク・おすすめ）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
@@ -737,8 +746,17 @@
               <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】元動画の画質・動き・カメラワーク・背景を100%保持し、口元の動きだけを曲に合わせて超高精度に再描画同期</span>
             </button>
 
-            <!-- Model V2: LatentSync -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/latentsync" data-mode="videolipsync" data-label="LatentSync (高精度動画リップシンク)">
+            <!-- Model V2: Kling LipSync Audio-to-Video -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/lipsync/audio-to-video" data-mode="videolipsync" data-supports-prompt="false" data-label="Kling LipSync (動画口パク同期)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.15rem;">🎬 Kling LipSync（Kling公式・動画口元アテレコ）</strong>
+                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】Kling公式の動画専用リップシンクAI。動いている人物動画の口元を歌声に自然に合わせて合成</span>
+            </button>
+
+            <!-- Model V3: LatentSync -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/latentsync" data-mode="videolipsync" data-supports-prompt="false" data-label="LatentSync (高精度動画リップシンク)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.15rem;">⚡ LatentSync（高精度リップシンク）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
@@ -750,24 +768,31 @@
           <!-- ③ 歌い方・表情・演出スタイルの指定 -->
           <div id="aiPromptStyleWrap">
             <div style="font-size: 1.05rem; font-weight: 900; color: #f3e8ff; margin-bottom: 10px;">
-              ③ 歌い方・演出スタイルの指定（ワンタップ選択）：
+              ③ 歌い方・カメラワーク・身体の演出指定（ワンタップ選択）：
             </div>
-            <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 14px;">
-              <button type="button" class="ai-style-chip active" data-style="sway" data-prompt="Passionate music video performance, singer singing emotionally with natural head movement and expressive eyes, concert stage lighting, high quality 4k">
-                🎤 感情を込めて熱唱（自然な顔の揺れ＆ライブ照明）
+
+            <!-- プロンプト非対応モデル（MiniMax H3 Lip-Sync等）選択時の正直な注意バナー -->
+            <div id="promptUnsupportedNotice" class="hidden" style="background: rgba(245, 158, 11, 0.18); border: 2px solid #f59e0b; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; color: #fef3c7; font-size: 0.92rem; line-height: 1.5; font-weight: 700;">
+              ⚠️ <strong>ご注意：現在選択中の「MiniMax H3 Max Lip-Sync」はAIサーバーの仕様上、演出プロンプト（文章指示）を受け付けない「口元同期専用」モデルです。</strong><br>
+              そのため、下の3つの演出のどれを選んでも同じ動きになります。演出・カメラワーク・身振りを変えたい場合は、上の <strong>「🎤 OmniHuman v1.5」「🎬 Kling AI Avatar v2」「🔥 Wan 2.2 S2V」</strong> を選択してください。
+            </div>
+
+            <div id="promptStyleButtonsBox" style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 14px;">
+              <button type="button" class="ai-style-chip active" data-style="sway" data-prompt="The camera slowly pushes in toward the singer. Passionate singing performance, expressive eyebrows and eyes closing on emotional high notes, natural head tilt, lifting one hand toward the chest with heartfelt emotion, realistic upper body movement.">
+                🎤 ドラマチック熱唱（ゆっくりカメラズーム＋胸に手を当てる感情表現）
               </button>
-              <button type="button" class="ai-style-chip" data-style="zoom" data-prompt="Emotional ballad singing performance, gentle facial expression, soft cinematic spotlight, subtle breathing and head nod">
-                🎥 映画風バラード熱唱（優しくエモーショナルな表情）
+              <button type="button" class="ai-style-chip" data-style="zoom" data-prompt="Static close-up portrait shot with subtle breathing motion. Gentle and calm ballad singing, soft warm smile, tender eye contact with the camera, very slow and delicate head nod, serene and intimate mood.">
+                🎥 映画風バラード（カメラ固定クローズアップ＋優しい微笑みと静かな頷き）
               </button>
-              <button type="button" class="ai-style-chip" data-style="dynamic" data-prompt="Energetic pop rock vocal performance, confident expression, vibrant neon stage atmosphere, dynamic rhythm groove">
-                ⚡ アップテンポ・ライブ歌唱（力強く華やかなパフォーマンス）
+              <button type="button" class="ai-style-chip" data-style="dynamic" data-prompt="Dynamic handheld camera movement with energetic rhythm groove. Upbeat pop rock vocal performance, confident and joyful expression, head bobbing actively side to side to the beat, lively shoulder and hand gestures.">
+                ⚡ アップテンポ・ライブ（手持ちカメラ風＋リズムに乗る激しい首振り＆身振り）
               </button>
             </div>
 
             <label for="aiVideoPromptInput" style="display: block; font-size: 0.95rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 700;">
-              📝 演出プロンプト（そのままでOK・自由に変更もできます）：
+              📝 演出プロンプト（カメラの動き・身振り・表情の英語指示／自由に変更OK）：
             </label>
-            <input type="text" id="aiVideoPromptInput" value="Passionate music video performance, singer singing emotionally with natural head movement and expressive eyes, concert stage lighting, high quality 4k" placeholder="演出の指示（プロンプト）..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 14px; color: #fff; font-size: 1rem; margin-bottom: 18px;">
+            <input type="text" id="aiVideoPromptInput" value="The camera slowly pushes in toward the singer. Passionate singing performance, expressive eyebrows and eyes closing on emotional high notes, natural head tilt, lifting one hand toward the chest with heartfelt emotion, realistic upper body movement." placeholder="演出の指示（プロンプト）..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 14px; color: #fff; font-size: 1rem; margin-bottom: 18px;">
           </div>
 
           <!-- AI生成ステータス＆リアルタイム進捗ボックス -->
