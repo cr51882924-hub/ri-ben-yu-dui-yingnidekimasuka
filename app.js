@@ -518,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Trimmer Sliders
   if (trimStartSlider) {
     trimStartSlider.addEventListener('input', (e) => {
-      setTrimStart(parseFloat(e.target.value));
+      setTrimStart(parseFloat(e.target.value), true);
     });
   }
 
@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerHaptic();
       const cur = audioEngine.currentTime || 0;
       const curSec = Math.round(cur * 2) / 2;
-      setTrimStart(curSec);
+      setTrimStart(curSec, true);
       showToast(`📍 現在の秒数「${formatTime(curSec)}」を開始位置にセットしました！（終了: ${formatTime(trimEndSeconds)}、長さ: ${formatDurationText(trimDurationSeconds)}）`);
     });
   }
@@ -635,7 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('⚠️ 終了位置は歌い出し位置（開始）より後ろで指定してください');
         return;
       }
-      setTrimEnd(curSec);
+      setTrimEnd(curSec, true);
       showToast(`🏁 現在の秒数「${formatTime(curSec)}」を終了位置にセットしました！（開始: ${formatTime(trimStartSeconds)}、長さ: ${formatDurationText(trimDurationSeconds)}）`);
     });
   }
@@ -773,8 +773,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (appReloadBtn) {
     appReloadBtn.addEventListener('click', () => {
       triggerHaptic();
-      const match = appReloadBtn.textContent.match(/v\d+/i);
-      const verLabel = match ? ` (${match[0].toLowerCase()})` : ' (v9)';
+      const match = appReloadBtn.textContent.match(/v\d+(?:\.\d+)*/i);
+      const verLabel = match ? ` (${match[0].toLowerCase()})` : '';
       showToast(`🔄 最新バージョン${verLabel} を読み込んでいます...`);
       setTimeout(() => {
         try {
