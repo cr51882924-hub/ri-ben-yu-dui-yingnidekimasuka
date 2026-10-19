@@ -777,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (verSpan) {
         verSpan.textContent = '更新中...';
       }
-      showToast('🔄 最新版 (v13.0) を読み込んで更新しています...');
+      showToast('🔄 最新版 (v13.1) を読み込んで更新しています...');
       setTimeout(() => {
         try {
           const url = new URL(window.location.href);
@@ -1251,6 +1251,23 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedV11bModel = targetBtn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
     selectedV11bMode = targetBtn.dataset.mode || 'lipsync';
     selectedV11bLabel = targetBtn.dataset.label || 'ByteDance OmniHuman v1.5';
+
+    const supportsPrompt = targetBtn.dataset.supportsPrompt !== 'false';
+    const promptUnsupportedNotice = document.getElementById('promptUnsupportedNotice');
+    const promptStyleButtonsBox = document.getElementById('promptStyleButtonsBox');
+    if (promptUnsupportedNotice) {
+      if (!supportsPrompt && selectedV11bMode !== 'videolipsync') {
+        promptUnsupportedNotice.classList.remove('hidden');
+      } else {
+        promptUnsupportedNotice.classList.add('hidden');
+      }
+    }
+    if (promptStyleButtonsBox) {
+      promptStyleButtonsBox.style.opacity = (!supportsPrompt && selectedV11bMode !== 'videolipsync') ? '0.45' : '1';
+    }
+    if (aiVideoPromptInput) {
+      aiVideoPromptInput.style.opacity = (!supportsPrompt && selectedV11bMode !== 'videolipsync') ? '0.45' : '1';
+    }
 
     if (showFeedback) {
       showToast(`🎤 「${selectedV11bLabel}」を選択しました`);
@@ -2050,7 +2067,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const promptText = (aiVideoPromptInput && aiVideoPromptInput.value.trim())
         ? aiVideoPromptInput.value.trim()
-        : 'Passionate music video performance, singer singing emotionally with natural head movement and expressive eyes, concert stage lighting, high quality 4k';
+        : 'The camera slowly pushes in toward the singer. Passionate singing performance, expressive eyebrows and eyes closing on emotional high notes, natural head tilt, lifting one hand toward the chest with heartfelt emotion, realistic upper body movement.';
 
       generateAiLipsyncBtn.disabled = true;
       const originalBtnHtml = generateAiLipsyncBtn.innerHTML;
@@ -2137,7 +2154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let inputPayload = {};
 
             if (isVideoToVideo) {
-              // Video-to-Video LipSync (Sync-3 Lipsync / LatentSync)
+              // Video-to-Video LipSync (Sync-3 Lipsync / Kling LipSync / LatentSync)
               let uploadedVideoUrl = '';
               if (falClient.storage && typeof falClient.storage.upload === 'function') {
                 uploadedVideoUrl = await falClient.storage.upload(uploadedVideoMaterialFile);
@@ -2153,7 +2170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 inputPayload.sync_mode = 'cut_off';
               }
             } else {
-              // Image LipSync (OmniHuman / Kling AI Avatar / MiniMax / Kling 1.6)
+              // Image LipSync & Motion (OmniHuman v1.5 / Kling AI Avatar v2 / Wan 2.2 S2V / MiniMax H3 Max / Kling 3.0 Pro)
               let uploadedImageUrl = imgDataUrl;
               if (imgFile && falClient.storage && typeof falClient.storage.upload === 'function') {
                 try {
@@ -2163,19 +2180,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
               }
 
-              inputPayload = {
-                image_url: uploadedImageUrl,
-                prompt: promptText
-              };
-              if (uploadedAudioUrl && selectedV11bMode !== 'video') {
-                inputPayload.audio_url = uploadedAudioUrl;
-              }
-              if (selectedV11bModel && selectedV11bModel.includes('omnihuman')) {
-                const trimDur = endSec - startSec;
-                inputPayload.resolution = (trimDur > 30) ? '720p' : (selectedOutputResolution || '720p');
-              }
-              if (selectedV11bMode === 'video' && targetDim.aspectRatio) {
-                inputPayload.aspect_ratio = targetDim.aspectRatio;
+              const modelId = selectedV11bModel || 'fal-ai/bytedance/omnihuman/v1.5';
+              const trimDur = endSec - startSec;
+
+              if (modelId.includes('minimax/h3-max/lip-sync')) {
+                // MiniMax H3 Max Lip-Sync: Schema does NOT accept 'prompt'; pass resolution & enable_transcription
+                inputPayload = {
+                  image_url: uploadedImageUrl,
+                  audio_url: uploadedAudioUrl,
+                  resolution: (selectedOutputResolution === '1080p') ? '1080P' : '768P',
+                  enable_transcription: true
+                };
+              } else if (modelId.includes('kling-video/v3/')) {
+                // Kling 3.0 Pro Image-to-Video: Uses start_image_url & prompt
+                inputPayload = {
+                  start_image_url: uploadedImageUrl,
+                  prompt: promptText,
+                  duration: '5',
+                  generate_audio: false
+                };
+              } else if (modelId.includes('wan-22-s2v')) {
+                // Wan 2.2 Speech-to-Video: Accepts image_url, audio_url, prompt, resolution (480p/580p/720p)
+                inputPayload = {
+                  image_url: uploadedImageUrl,
+                  audio_url: uploadedAudioUrl,
+                  prompt: promptText,
+                  resolution: '720p'
+                };
+              } else if (modelId.includes('omnihuman')) {
+                // ByteDance OmniHuman v1.5: Accepts image_url, audio_url, prompt, resolution, turbo_mode
+                inputPayload = {
+                  image_url: uploadedImageUrl,
+                  audio_url: uploadedAudioUrl,
+                  prompt: promptText,
+                  resolution: (trimDur > 30) ? '720p' : (selectedOutputResolution || '720p'),
+                  turbo_mode: false
+                };
+              } else {
+                // Kling AI Avatar v2 Pro / Standard & others: Accepts image_url, audio_url, prompt
+                inputPayload = {
+                  image_url: uploadedImageUrl,
+                  prompt: promptText
+                };
+                if (uploadedAudioUrl && selectedV11bMode !== 'video') {
+                  inputPayload.audio_url = uploadedAudioUrl;
+                }
+                if (selectedV11bMode === 'video' && targetDim.aspectRatio) {
+                  inputPayload.aspect_ratio = targetDim.aspectRatio;
+                }
               }
             }
 
