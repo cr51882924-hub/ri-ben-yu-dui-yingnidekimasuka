@@ -298,13 +298,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update Full Song Preview Timeline labels & range
     if (fullPlayerTotalTime) {
-      fullPlayerTotalTime.textContent = formatTime(totalDuration);
+      fullPlayerTotalTime.textContent = formatTime(totalDuration, false);
     }
     if (timelineMidLabel) {
-      timelineMidLabel.textContent = formatTime(totalDuration / 2);
+      timelineMidLabel.textContent = formatTime(totalDuration / 2, false);
     }
     if (timelineEndLabel) {
-      timelineEndLabel.textContent = `${formatTime(totalDuration)} (終了)`;
+      timelineEndLabel.textContent = `${formatTime(totalDuration, false)} (終了)`;
     }
     if (fullSongSeekSlider) {
       fullSongSeekSlider.max = totalDuration;
@@ -578,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fullSongSeekSlider.addEventListener('input', (e) => {
       const targetSec = parseFloat(e.target.value);
       audioEngine.seekFull(targetSec);
-      if (fullPlayerCurrentTime) fullPlayerCurrentTime.textContent = formatTime(targetSec);
+      if (fullPlayerCurrentTime) fullPlayerCurrentTime.textContent = formatTime(targetSec, false);
       if (timelinePlayhead) {
         const dur = Math.max(1, audioEngine.duration);
         timelinePlayhead.style.left = `${(targetSec / dur) * 100}%`;
@@ -3377,59 +3377,92 @@ document.addEventListener('DOMContentLoaded', () => {
   // Main Animation Loop (60 FPS)
   // ==========================================
   function tick() {
-    audioEngine.updateAnalysis(characterRenderer.lipsyncSens);
-    characterRenderer.render(audioEngine);
+    const isStageVisible = viewStage && !viewStage.classList.contains('hidden');
+    if (isStageVisible || isRecording) {
+      audioEngine.updateAnalysis(characterRenderer.lipsyncSens);
+      characterRenderer.render(audioEngine);
+    }
 
     if (audioEngine.isPlaying) {
       const cur = audioEngine.currentTime;
       const totalDur = Math.max(1, audioEngine.duration || 30);
+      const curStr = formatTime(cur, false);
 
       if (audioEngine.playMode === 'full') {
         const fullPercent = Math.min(100, (cur / totalDur) * 100);
-        controlSongTime.textContent = `${formatTime(cur)} / ${formatTime(totalDur)}`;
-        stageSongTime.textContent = `${formatTime(cur)} / ${formatTime(totalDur)}`;
-        stageProgressFill.style.width = `${fullPercent}%`;
+        const totalStr = formatTime(totalDur, false);
+        const pairStr = `${curStr} / ${totalStr}`;
+        if (controlSongTime && controlSongTime.textContent !== pairStr) {
+          controlSongTime.textContent = pairStr;
+        }
+        if (stageSongTime && stageSongTime.textContent !== pairStr) {
+          stageSongTime.textContent = pairStr;
+        }
+        if (stageProgressFill) {
+          stageProgressFill.style.width = `${fullPercent}%`;
+        }
 
-        if (fullPlayerCurrentTime) {
-          fullPlayerCurrentTime.textContent = formatTime(cur);
+        if (fullPlayerCurrentTime && fullPlayerCurrentTime.textContent !== curStr) {
+          fullPlayerCurrentTime.textContent = curStr;
         }
         if (timelinePlayhead) {
           timelinePlayhead.style.left = `${fullPercent}%`;
         }
-        if (fullSongSeekSlider && !fullSongSeekSlider.matches(':active')) {
-          fullSongSeekSlider.value = cur;
+        if (fullSongSeekSlider && !fullSongSeekSlider.matches(':active') && document.activeElement !== fullSongSeekSlider) {
+          const snapped = Math.round(cur * 2) / 2;
+          if (Math.abs((parseFloat(fullSongSeekSlider.value) || 0) - snapped) >= 0.5) {
+            fullSongSeekSlider.value = snapped;
+          }
         }
       } else {
         const trimLen = audioEngine.getTrimDuration();
         const currentOffset = Math.max(0, cur - audioEngine.trimStart);
         const progressPercent = Math.min(100, (currentOffset / trimLen) * 100);
+        const trimEndStr = formatTime(audioEngine.trimEnd, false);
+        const pairStr = `${curStr} / ${trimEndStr}`;
 
-        controlSongTime.textContent = `${formatTime(cur)} / ${formatTime(audioEngine.trimEnd)}`;
-        stageSongTime.textContent = `${formatTime(cur)} / ${formatTime(audioEngine.trimEnd)}`;
-        stageProgressFill.style.width = `${progressPercent}%`;
+        if (controlSongTime && controlSongTime.textContent !== pairStr) {
+          controlSongTime.textContent = pairStr;
+        }
+        if (stageSongTime && stageSongTime.textContent !== pairStr) {
+          stageSongTime.textContent = pairStr;
+        }
+        if (stageProgressFill) {
+          stageProgressFill.style.width = `${progressPercent}%`;
+        }
 
-        if (fullPlayerCurrentTime) {
-          fullPlayerCurrentTime.textContent = formatTime(cur);
+        if (fullPlayerCurrentTime && fullPlayerCurrentTime.textContent !== curStr) {
+          fullPlayerCurrentTime.textContent = curStr;
         }
         if (timelinePlayhead) {
           const fullPercent = Math.min(100, (cur / totalDur) * 100);
           timelinePlayhead.style.left = `${fullPercent}%`;
         }
-        if (fullSongSeekSlider && !fullSongSeekSlider.matches(':active')) {
-          fullSongSeekSlider.value = cur;
+        if (fullSongSeekSlider && !fullSongSeekSlider.matches(':active') && document.activeElement !== fullSongSeekSlider) {
+          const snapped = Math.round(cur * 2) / 2;
+          if (Math.abs((parseFloat(fullSongSeekSlider.value) || 0) - snapped) >= 0.5) {
+            fullSongSeekSlider.value = snapped;
+          }
         }
       }
 
-      if (currentSongConfig && currentSongConfig.lyrics) {
-        let activeLyric = currentSongConfig.lyrics[0].text;
-        for (const lyric of currentSongConfig.lyrics) {
-          if (cur >= lyric.time) {
-            activeLyric = lyric.text;
+      if (isStageVisible && lyricsText) {
+        if (currentSongConfig && currentSongConfig.lyrics) {
+          let activeLyric = currentSongConfig.lyrics[0].text;
+          for (const lyric of currentSongConfig.lyrics) {
+            if (cur >= lyric.time) {
+              activeLyric = lyric.text;
+            }
+          }
+          if (lyricsText.textContent !== activeLyric) {
+            lyricsText.textContent = activeLyric;
+          }
+        } else {
+          const fallbackLyric = audioEngine.isPlaying ? '♪ 歌唱中...' : '音源を取り込むとリップシンクが連動します';
+          if (lyricsText.textContent !== fallbackLyric) {
+            lyricsText.textContent = fallbackLyric;
           }
         }
-        lyricsText.textContent = activeLyric;
-      } else {
-        lyricsText.textContent = audioEngine.isPlaying ? '♪ 歌唱中...' : '音源を取り込むとリップシンクが連動します';
       }
     } else {
       if (fullPlayerStatusBadge && fullPlayerStatusBadge.classList.contains('playing')) {
@@ -3437,7 +3470,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    if (stageVisemeChar) {
+    if (isStageVisible && stageVisemeChar && stageVisemeChar.textContent !== audioEngine.currentChar) {
       stageVisemeChar.textContent = audioEngine.currentChar;
     }
 
