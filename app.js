@@ -186,17 +186,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Format mm:ss or mm:ss.s (supports 0.5s precision)
   function formatTime(sec, showDecimal = true) {
     if (isNaN(sec) || sec < 0) sec = 0;
-    const m = Math.floor(sec / 60);
-    const remSec = sec % 60;
-    const roundedSec = Math.round(remSec * 10) / 10;
-    const isInt = (Math.abs(roundedSec - Math.round(roundedSec)) < 0.05);
-    const sInt = Math.floor(roundedSec);
-    const sStr = sInt < 10 ? '0' + sInt : '' + sInt;
-    if (showDecimal && !isInt) {
-      const frac = Math.round((roundedSec - sInt) * 10);
-      return `${m < 10 ? '0' : ''}${m}:${sStr}.${frac}`;
+    if (!showDecimal) {
+      const totalSec = Math.floor(sec);
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
     }
-    return `${m < 10 ? '0' : ''}${m}:${sStr}`;
+    const totalTenths = Math.round(sec * 10);
+    const totalSec = Math.floor(totalTenths / 10);
+    const frac = totalTenths % 10;
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    const base = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    return frac !== 0 ? `${base}.${frac}` : base;
   }
 
   function formatDurationText(sec) {
