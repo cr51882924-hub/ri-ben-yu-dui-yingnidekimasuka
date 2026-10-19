@@ -773,14 +773,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (appReloadBtn) {
     appReloadBtn.addEventListener('click', () => {
       triggerHaptic();
-      const match = appReloadBtn.textContent.match(/v\d+(?:\.\d+)*/i);
-      const verLabel = match ? ` (${match[0].toLowerCase()})` : '';
-      showToast(`🔄 最新バージョン${verLabel} を読み込んでいます...`);
+      const verSpan = document.getElementById('headerVersionLabel');
+      if (verSpan) {
+        verSpan.textContent = '更新中...';
+      }
+      showToast('🔄 最新版 (v13.0) を読み込んで更新しています...');
       setTimeout(() => {
         try {
           const url = new URL(window.location.href);
+          // If viewing old subpages like v11-b.html or v11-a.html, ensure it points to index.html
+          if (url.pathname.endsWith('v11-b.html') || url.pathname.endsWith('v11-a.html')) {
+            url.pathname = url.pathname.replace(/v11-[ab]\.html$/, 'index.html');
+          }
           url.searchParams.set('v', Date.now().toString());
-          window.location.href = url.toString();
+          window.location.replace(url.toString());
         } catch (e) {
           window.location.reload();
         }
