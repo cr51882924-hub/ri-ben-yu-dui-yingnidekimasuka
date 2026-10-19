@@ -4,5 +4,18 @@
   "createdAt": "2026-10-19T12:42:40.717Z",
   "filename": "99663b11-3d2b-42ec-8015-58b9b540bd3a.json",
   "geminiStarted": false,
-  "messages": []
+  "messages": [
+    {
+      "id": "fbcce217-8fed-4f81-ae3c-b812d11e0c29",
+      "role": "user",
+      "content": "このメッセージは最新ではありません。\n\n最新はV13.0です。",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-19T12:42:43.079Z",
+      "sender": "ios",
+      "is_cancelled": false
+    }
+  ]
 }
