@@ -1072,17 +1072,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function sanitizeFalApiKey(raw) {
+    return (raw || '')
+      .trim()
+      .replace(/^["']+|["']+$/g, '')
+      .replace(/^(?:Key|Bearer)\s+/i, '')
+      .trim();
+  }
+
   function getSavedFalApiKey() {
     let key = '';
-    try { key = (localStorage.getItem('gs_fal_api_key') || '').trim(); } catch (e) {}
+    try { key = sanitizeFalApiKey(localStorage.getItem('gs_fal_api_key')); } catch (e) {}
     if (!key) {
-      try { key = (sessionStorage.getItem('gs_fal_api_key') || '').trim(); } catch (e) {}
+      try { key = sanitizeFalApiKey(sessionStorage.getItem('gs_fal_api_key')); } catch (e) {}
     }
     if (!key) {
-      key = (getKeyCookie() || '').trim();
+      key = sanitizeFalApiKey(getKeyCookie());
     }
     if (!key) {
-      key = (getKeyFromUrlHash() || '').trim();
+      key = sanitizeFalApiKey(getKeyFromUrlHash());
     }
     if (key) {
       try { localStorage.setItem('gs_fal_api_key', key); } catch (e) {}
@@ -1115,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function saveFalApiKey(rawKey) {
-    const val = (rawKey || '').trim();
+    const val = sanitizeFalApiKey(rawKey);
     if (val) {
       try { localStorage.setItem('gs_fal_api_key', val); } catch (e) {}
       try { sessionStorage.setItem('gs_fal_api_key', val); } catch (e) {}
@@ -1211,35 +1219,43 @@ document.addEventListener('DOMContentLoaded', () => {
     aiGenStatusBox.classList.remove('hidden');
   }
 
-  // Model selection in STEP 4 (supports both photoModelsGroup and videoModelsGroup)
+  // Centralized Single-Selection Function for AI Model Buttons (guarantees only 1 model is selected across the entire page)
+  function selectAiModelButton(targetBtn, showFeedback = true) {
+    if (!targetBtn) return;
+    document.querySelectorAll('.v11b-model-btn').forEach(b => {
+      b.classList.remove('active');
+      b.style.background = '';
+      b.style.borderColor = '';
+      const pill = b.querySelector('.v11b-model-pill');
+      if (pill) {
+        pill.textContent = 'タップで選択';
+        pill.style.background = '';
+        pill.style.color = '';
+      }
+    });
+
+    targetBtn.classList.add('active');
+    const activePill = targetBtn.querySelector('.v11b-model-pill');
+    if (activePill) {
+      activePill.textContent = '✔ 選択中';
+      activePill.style.background = '';
+      activePill.style.color = '';
+    }
+
+    selectedV11bModel = targetBtn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
+    selectedV11bMode = targetBtn.dataset.mode || 'lipsync';
+    selectedV11bLabel = targetBtn.dataset.label || 'ByteDance OmniHuman v1.5';
+
+    if (showFeedback) {
+      showToast(`🎤 「${selectedV11bLabel}」を選択しました`);
+    }
+  }
+
+  // Model selection in STEP 4 (strictly 1 active model at a time)
   document.querySelectorAll('.v11b-model-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       triggerHaptic();
-      const parentContainer = btn.closest('#photoModelsGroup, #videoModelsGroup') || btn.parentElement;
-      parentContainer.querySelectorAll('.v11b-model-btn').forEach(b => {
-        b.classList.remove('active');
-        b.style.background = 'rgba(15, 23, 42, 0.85)';
-        b.style.borderColor = 'rgba(255,255,255,0.18)';
-        const pill = b.querySelector('.v11b-model-pill');
-        if (pill) {
-          pill.textContent = 'タップで選択';
-          pill.style.background = 'rgba(255,255,255,0.12)';
-          pill.style.color = '#cbd5e1';
-        }
-      });
-      btn.classList.add('active');
-      btn.style.background = 'rgba(168, 85, 247, 0.28)';
-      btn.style.borderColor = '#c084fc';
-      const activePill = btn.querySelector('.v11b-model-pill');
-      if (activePill) {
-        activePill.textContent = '✔ 選択中';
-        activePill.style.background = '#10b981';
-        activePill.style.color = '#052e16';
-      }
-      selectedV11bModel = btn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
-      selectedV11bMode = btn.dataset.mode || 'lipsync';
-      selectedV11bLabel = btn.dataset.label || 'ByteDance OmniHuman v1.5';
-      showToast(`🎤 「${selectedV11bLabel}」を選択しました`);
+      selectAiModelButton(btn, true);
     });
   });
 
@@ -1250,13 +1266,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mode === 'photo') {
       if (tabModePhoto) {
         tabModePhoto.classList.add('active');
-        tabModePhoto.style.background = 'rgba(168, 85, 247, 0.28)';
-        tabModePhoto.style.borderColor = '#c084fc';
+        tabModePhoto.style.background = '';
+        tabModePhoto.style.borderColor = '';
       }
       if (tabModeVideo) {
         tabModeVideo.classList.remove('active');
-        tabModeVideo.style.background = 'rgba(15, 23, 42, 0.85)';
-        tabModeVideo.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        tabModeVideo.style.background = '';
+        tabModeVideo.style.borderColor = '';
       }
       if (materialPhotoBox) materialPhotoBox.classList.remove('hidden');
       if (materialVideoBox) materialVideoBox.classList.add('hidden');
@@ -1274,23 +1290,28 @@ document.addEventListener('DOMContentLoaded', () => {
         generateAiLipsyncBtn.innerHTML = '<span>✨ APIでAIリップシンク歌唱動画を生成する</span>';
       }
 
-      const activeBtn = photoModelsGroup ? photoModelsGroup.querySelector('.v11b-model-btn.active') : null;
-      if (activeBtn) {
-        selectedV11bModel = activeBtn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
-        selectedV11bMode = activeBtn.dataset.mode || 'lipsync';
-        selectedV11bLabel = activeBtn.dataset.label || 'ByteDance OmniHuman v1.5';
+      // Restore user's uploaded photo if they previously uploaded one
+      if (savedCustomAvatarCanvas) {
+        characterRenderer.setCustomAvatar(savedCustomAvatarCanvas);
+      }
+
+      const currentPhotoBtn = photoModelsGroup
+        ? (photoModelsGroup.querySelector('.v11b-model-btn.active') || photoModelsGroup.querySelector('.v11b-model-btn'))
+        : null;
+      if (currentPhotoBtn) {
+        selectAiModelButton(currentPhotoBtn, false);
       }
       showToast('📷 「写真・画像」モードに切り替えました');
     } else {
       if (tabModeVideo) {
         tabModeVideo.classList.add('active');
-        tabModeVideo.style.background = 'rgba(56, 189, 248, 0.25)';
-        tabModeVideo.style.borderColor = '#38bdf8';
+        tabModeVideo.style.background = '';
+        tabModeVideo.style.borderColor = '';
       }
       if (tabModePhoto) {
         tabModePhoto.classList.remove('active');
-        tabModePhoto.style.background = 'rgba(15, 23, 42, 0.85)';
-        tabModePhoto.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        tabModePhoto.style.background = '';
+        tabModePhoto.style.borderColor = '';
       }
       if (materialVideoBox) materialVideoBox.classList.remove('hidden');
       if (materialPhotoBox) materialPhotoBox.classList.add('hidden');
@@ -1312,23 +1333,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (activeVideoPattern === 'A') {
       if (patternBtnA) {
         patternBtnA.classList.add('active');
-        patternBtnA.style.background = 'rgba(168, 85, 247, 0.28)';
-        patternBtnA.style.borderColor = '#c084fc';
+        patternBtnA.style.background = '';
+        patternBtnA.style.borderColor = '';
       }
       if (patternPillA) {
         patternPillA.textContent = '✔ 選択中';
-        patternPillA.style.background = '#10b981';
-        patternPillA.style.color = '#052e16';
+        patternPillA.style.background = '';
+        patternPillA.style.color = '';
       }
       if (patternBtnB) {
         patternBtnB.classList.remove('active');
-        patternBtnB.style.background = 'rgba(15, 23, 42, 0.85)';
-        patternBtnB.style.borderColor = 'rgba(255, 255, 255, 0.18)';
+        patternBtnB.style.background = '';
+        patternBtnB.style.borderColor = '';
       }
       if (patternPillB) {
         patternPillB.textContent = 'タップで選択';
-        patternPillB.style.background = 'rgba(255, 255, 255, 0.12)';
-        patternPillB.style.color = '#cbd5e1';
+        patternPillB.style.background = '';
+        patternPillB.style.color = '';
       }
       if (patternBFrameBox) patternBFrameBox.classList.add('hidden');
 
@@ -1345,32 +1366,32 @@ document.addEventListener('DOMContentLoaded', () => {
         generateAiLipsyncBtn.innerHTML = '<span>✨ APIで動画の口元をリップシンク生成する</span>';
       }
 
-      const activeBtn = videoModelsGroup ? videoModelsGroup.querySelector('.v11b-model-btn.active') : null;
-      if (activeBtn) {
-        selectedV11bModel = activeBtn.dataset.model || 'fal-ai/sync-lipsync/v3';
-        selectedV11bMode = activeBtn.dataset.mode || 'videolipsync';
-        selectedV11bLabel = activeBtn.dataset.label || 'Sync Lipsync v3 (動画口パク同期)';
+      const currentVidBtn = videoModelsGroup
+        ? (videoModelsGroup.querySelector('.v11b-model-btn.active') || videoModelsGroup.querySelector('.v11b-model-btn'))
+        : null;
+      if (currentVidBtn) {
+        selectAiModelButton(currentVidBtn, false);
       }
     } else {
       if (patternBtnB) {
         patternBtnB.classList.add('active');
-        patternBtnB.style.background = 'rgba(2, 132, 199, 0.25)';
-        patternBtnB.style.borderColor = '#38bdf8';
+        patternBtnB.style.background = '';
+        patternBtnB.style.borderColor = '';
       }
       if (patternPillB) {
         patternPillB.textContent = '✔ 選択中';
-        patternPillB.style.background = '#10b981';
-        patternPillB.style.color = '#052e16';
+        patternPillB.style.background = '';
+        patternPillB.style.color = '';
       }
       if (patternBtnA) {
         patternBtnA.classList.remove('active');
-        patternBtnA.style.background = 'rgba(15, 23, 42, 0.85)';
-        patternBtnA.style.borderColor = 'rgba(255, 255, 255, 0.18)';
+        patternBtnA.style.background = '';
+        patternBtnA.style.borderColor = '';
       }
       if (patternPillA) {
         patternPillA.textContent = 'タップで選択';
-        patternPillA.style.background = 'rgba(255, 255, 255, 0.12)';
-        patternPillA.style.color = '#cbd5e1';
+        patternPillA.style.background = '';
+        patternPillA.style.color = '';
       }
       if (patternBFrameBox) patternBFrameBox.classList.remove('hidden');
 
@@ -1387,11 +1408,11 @@ document.addEventListener('DOMContentLoaded', () => {
         generateAiLipsyncBtn.innerHTML = '<span>✨ APIでAIリップシンク歌唱動画を生成する</span>';
       }
 
-      const activeBtn = photoModelsGroup ? photoModelsGroup.querySelector('.v11b-model-btn.active') : null;
-      if (activeBtn) {
-        selectedV11bModel = activeBtn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
-        selectedV11bMode = activeBtn.dataset.mode || 'lipsync';
-        selectedV11bLabel = activeBtn.dataset.label || 'ByteDance OmniHuman v1.5';
+      const currentPhotoBtn = photoModelsGroup
+        ? (photoModelsGroup.querySelector('.v11b-model-btn.active') || photoModelsGroup.querySelector('.v11b-model-btn'))
+        : null;
+      if (currentPhotoBtn) {
+        selectAiModelButton(currentPhotoBtn, false);
       }
     }
     if (typeof updateSizeFramingPreview === 'function') {
@@ -1467,7 +1488,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (videoMaterialUploadBtn && videoMaterialFileInput) {
     videoMaterialUploadBtn.addEventListener('click', () => {
       triggerHaptic();
-      videoMaterialFileInput.click();
+      if (videoMaterialUploadBtn.tagName.toLowerCase() !== 'label') {
+        videoMaterialFileInput.click();
+      }
     });
     videoMaterialUploadBtn.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
