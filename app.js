@@ -952,14 +952,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedOutputFitMode = 'cover';  // 'cover' | 'contain_blur'
   let selectedOutputResolution = '720p'; // '720p' | '1080p'
 
-  // v14.0: 改善B (AIボーカル自動分離) & 改善A (2段階ハイブリッド生成)
+  // v14.1: 改善B (AIボーカル自動分離) & 顔・画風100%完全維持ロック (Identity & Style Lock)
   let enableVocalSeparation = true; // default ON (Demucs vocal isolation + original audio merge)
+  let enableIdentityLock = true;    // default ON (Strict character face & art style preservation)
   let selectedHybridStage2Model = 'fal-ai/sync-lipsync/v3';
   let selectedHybridStage2Label = 'Sync Lipsync v3';
 
-  let selectedV11bModel = 'hybrid-kling3-sync3';
-  let selectedV11bMode = 'hybrid_lipsync';
-  let selectedV11bLabel = '【改善A】2段階ハイブリッド生成 (Kling 3.0 Pro ➔ Sync v3)';
+  let selectedV11bModel = 'fal-ai/bytedance/omnihuman/v1.5';
+  let selectedV11bMode = 'lipsync';
+  let selectedV11bLabel = 'ByteDance OmniHuman v1.5 (顔・画風100%維持リップシンク)';
   let selectedAiPromptStyle = 'sway';
 
   // --- 5-Layer Persistent Key Vault (Safari + iOS Home Screen Web App) ---
@@ -1254,9 +1255,9 @@ document.addEventListener('DOMContentLoaded', () => {
       activePill.style.color = '';
     }
 
-    selectedV11bModel = targetBtn.dataset.model || 'hybrid-kling3-sync3';
-    selectedV11bMode = targetBtn.dataset.mode || 'hybrid_lipsync';
-    selectedV11bLabel = targetBtn.dataset.label || '【改善A】2段階ハイブリッド生成 (Kling 3.0 Pro ➔ Sync v3)';
+    selectedV11bModel = targetBtn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
+    selectedV11bMode = targetBtn.dataset.mode || 'lipsync';
+    selectedV11bLabel = targetBtn.dataset.label || 'ByteDance OmniHuman v1.5 (顔・画風100%維持リップシンク)';
 
     // Toggle Hybrid Stage 2 sub-selector visibility
     const hybridStage2SelectorBox = document.getElementById('hybridStage2SelectorBox');
@@ -1329,6 +1330,34 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(enableVocalSeparation
         ? '🎙️ 改善B：AIボーカル自動分離を「ON」にしました（推奨）'
         : '🎵 改善B：AIボーカル自動分離を「OFF」にしました');
+    });
+  });
+
+  // v14.1: 🔒 Character Face & Art Style 100% Lock ON/OFF toggle
+  const identityLockBtns = document.querySelectorAll('.identity-lock-btn');
+  const identityLockStatusBadge = document.getElementById('identityLockStatusBadge');
+  identityLockBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      triggerHaptic();
+      identityLockBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      enableIdentityLock = (btn.dataset.lock === 'on');
+      if (identityLockStatusBadge) {
+        if (enableIdentityLock) {
+          identityLockStatusBadge.textContent = '🔒 ON：顔・画風を完全固定（必須）';
+          identityLockStatusBadge.style.background = 'rgba(217, 70, 239, 0.35)';
+          identityLockStatusBadge.style.borderColor = '#f0abfc';
+          identityLockStatusBadge.style.color = '#fdf4ff';
+        } else {
+          identityLockStatusBadge.textContent = '🔓 OFF：自由な表情変化を許可';
+          identityLockStatusBadge.style.background = 'rgba(148, 163, 184, 0.25)';
+          identityLockStatusBadge.style.borderColor = '#94a3b8';
+          identityLockStatusBadge.style.color = '#e2e8f0';
+        }
+      }
+      showToast(enableIdentityLock
+        ? '🔒 キャラクターの顔・スタイル完全維持ロックを「ON」にしました'
+        : '🔓 キャラクターの顔・スタイル維持ロックを「OFF」にしました');
     });
   });
 
