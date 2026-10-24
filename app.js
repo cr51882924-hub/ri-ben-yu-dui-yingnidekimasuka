@@ -774,10 +774,11 @@ document.addEventListener('DOMContentLoaded', () => {
     appReloadBtn.addEventListener('click', () => {
       triggerHaptic();
       const verSpan = document.getElementById('headerVersionLabel');
+      const currentVerText = verSpan && verSpan.textContent ? verSpan.textContent.trim() : '最新版 (v14.0)';
       if (verSpan) {
         verSpan.textContent = '更新中...';
       }
-      showToast('🔄 最新版 (v13.1) を読み込んで更新しています...');
+      showToast(`🔄 ${currentVerText} を読み込んで更新しています...`);
       setTimeout(() => {
         try {
           const url = new URL(window.location.href);
