@@ -951,9 +951,14 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedOutputFitMode = 'cover';  // 'cover' | 'contain_blur'
   let selectedOutputResolution = '720p'; // '720p' | '1080p'
 
-  let selectedV11bModel = 'fal-ai/bytedance/omnihuman/v1.5';
-  let selectedV11bMode = 'lipsync';
-  let selectedV11bLabel = 'ByteDance OmniHuman v1.5 (リップシンク)';
+  // v14.0: 改善B (AIボーカル自動分離) & 改善A (2段階ハイブリッド生成)
+  let enableVocalSeparation = true; // default ON (Demucs vocal isolation + original audio merge)
+  let selectedHybridStage2Model = 'fal-ai/sync-lipsync/v3';
+  let selectedHybridStage2Label = 'Sync Lipsync v3';
+
+  let selectedV11bModel = 'hybrid-kling3-sync3';
+  let selectedV11bMode = 'hybrid_lipsync';
+  let selectedV11bLabel = '【改善A】2段階ハイブリッド生成 (Kling 3.0 Pro ➔ Sync v3)';
   let selectedAiPromptStyle = 'sway';
 
   // --- 5-Layer Persistent Key Vault (Safari + iOS Home Screen Web App) ---
@@ -1248,9 +1253,25 @@ document.addEventListener('DOMContentLoaded', () => {
       activePill.style.color = '';
     }
 
-    selectedV11bModel = targetBtn.dataset.model || 'fal-ai/bytedance/omnihuman/v1.5';
-    selectedV11bMode = targetBtn.dataset.mode || 'lipsync';
-    selectedV11bLabel = targetBtn.dataset.label || 'ByteDance OmniHuman v1.5';
+    selectedV11bModel = targetBtn.dataset.model || 'hybrid-kling3-sync3';
+    selectedV11bMode = targetBtn.dataset.mode || 'hybrid_lipsync';
+    selectedV11bLabel = targetBtn.dataset.label || '【改善A】2段階ハイブリッド生成 (Kling 3.0 Pro ➔ Sync v3)';
+
+    // Toggle Hybrid Stage 2 sub-selector visibility
+    const hybridStage2SelectorBox = document.getElementById('hybridStage2SelectorBox');
+    if (hybridStage2SelectorBox) {
+      if (selectedV11bMode === 'hybrid_lipsync') {
+        hybridStage2SelectorBox.classList.remove('hidden');
+      } else {
+        hybridStage2SelectorBox.classList.add('hidden');
+      }
+    }
+
+    // Dim vocal separation card only when motion-only video mode is selected
+    const vocalSeparationCard = document.getElementById('vocalSeparationCard');
+    if (vocalSeparationCard) {
+      vocalSeparationCard.style.opacity = (selectedV11bMode === 'video') ? '0.55' : '1';
+    }
 
     const supportsPrompt = targetBtn.dataset.supportsPrompt !== 'false';
     const promptUnsupportedNotice = document.getElementById('promptUnsupportedNotice');
@@ -1279,6 +1300,47 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       triggerHaptic();
       selectAiModelButton(btn, true);
+    });
+  });
+
+  // v14.0: 改善B (AI Vocal Separation ON/OFF toggle)
+  const vocalSepBtns = document.querySelectorAll('.vocal-sep-btn');
+  const vocalSepStatusBadge = document.getElementById('vocalSepStatusBadge');
+  vocalSepBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      triggerHaptic();
+      vocalSepBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      enableVocalSeparation = (btn.dataset.sep === 'on');
+      if (vocalSepStatusBadge) {
+        if (enableVocalSeparation) {
+          vocalSepStatusBadge.textContent = '✨ ON：自動分離する（推奨）';
+          vocalSepStatusBadge.style.background = 'rgba(16, 185, 129, 0.3)';
+          vocalSepStatusBadge.style.borderColor = '#34d399';
+          vocalSepStatusBadge.style.color = '#ecfdf5';
+        } else {
+          vocalSepStatusBadge.textContent = '🎵 OFF：原曲のまま口パク';
+          vocalSepStatusBadge.style.background = 'rgba(148, 163, 184, 0.25)';
+          vocalSepStatusBadge.style.borderColor = '#94a3b8';
+          vocalSepStatusBadge.style.color = '#e2e8f0';
+        }
+      }
+      showToast(enableVocalSeparation
+        ? '🎙️ 改善B：AIボーカル自動分離を「ON」にしました（推奨）'
+        : '🎵 改善B：AIボーカル自動分離を「OFF」にしました');
+    });
+  });
+
+  // v14.0: 改善A (Hybrid Stage 2 Lip-Sync Engine Selector)
+  const hybridStage2Btns = document.querySelectorAll('.hybrid-stage2-btn');
+  hybridStage2Btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      triggerHaptic();
+      hybridStage2Btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedHybridStage2Model = btn.dataset.stage2Model || 'fal-ai/sync-lipsync/v3';
+      selectedHybridStage2Label = btn.dataset.stage2Label || 'Sync Lipsync v3';
+      showToast(`🔗 第2段階の口パクAIを「${selectedHybridStage2Label}」に設定しました`);
     });
   });
 
