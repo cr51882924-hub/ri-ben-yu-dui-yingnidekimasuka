@@ -7,8 +7,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="GrooveSync MV">
   <meta name="theme-color" content="#090d16">
-  <title>GrooveSync MV Studio - 本格AIリップシンク歌唱動画生成スタジオ (v14.1)</title>
-  <link rel="stylesheet" href="style.css?v=20261024_141b">
+  <title>GrooveSync MV Studio - 本格AIリップシンク歌唱動画生成スタジオ (v15.0)</title>
+  <link rel="stylesheet" href="style.css?v=20261024_150">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
 
         <button id="appReloadBtn" class="app-reload-btn" aria-label="アプリを最新状態に更新・リロードします" title="最新バージョンを再読み込み">
           <span class="reload-icon">🔄</span>
-          <span id="headerVersionLabel">最新版 (v14.1)</span>
+          <span id="headerVersionLabel">最新版 (v15.0)</span>
         </button>
       </div>
     </header>
@@ -50,7 +50,7 @@
 
       <!-- Step-by-Step Arrow Flow Guide Banner (矢印フロー解説) -->
       <section class="flow-guide-card">
-        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v14.1: 🔒顔・スタイル100%完全維持ロック ＆ 改善B ボーカル自動分離対応)</span>
+        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v15.0: 最新 OmniHuman 2.0 ＆ Kling 4.0 ＆ 顔崩壊防止エンジン搭載)</span>
         <div class="flow-steps-row">
           <span class="flow-chip highlight">🔑 APIキー登録</span>
           <span class="flow-arrow">➔</span>
@@ -702,183 +702,174 @@
           </div>
 
           <!-- ========================================================
-               🔒 【最重要】キャラクターの顔・画風 100%完全維持ロック
+               🔒 【最重要】キャラクターの顔・画風維持 ＆「絶叫・顔崩壊（妖怪化）」完全防止ロック
                ======================================================== -->
           <div id="identityLockCard" style="background: rgba(88, 28, 135, 0.42); border: 2.5px solid #e879f9; border-radius: 16px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(232, 121, 249, 0.2);">
             <div style="font-size: 1.08rem; font-weight: 900; color: #f5d0fe; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-              <span>🔒 ②-2 キャラクターの顔・スタイル完全維持ロック：</span>
-              <span id="identityLockStatusBadge" style="background: rgba(217, 70, 239, 0.35); border: 1.5px solid #f0abfc; color: #fdf4ff; font-size: 0.85rem; font-weight: 900; padding: 3px 10px; border-radius: 999px;">🔒 ON：顔・画風を完全固定（必須）</span>
+              <span>🔒 ②-2 顔崩壊（妖怪化）防止・スタイル維持ロック：</span>
+              <span id="identityLockStatusBadge" style="background: rgba(217, 70, 239, 0.35); border: 1.5px solid #f0abfc; color: #fdf4ff; font-size: 0.85rem; font-weight: 900; padding: 3px 10px; border-radius: 999px;">🔒 ON：穏やか口パク＆顔保護（推奨）</span>
             </div>
             <p style="font-size: 0.9rem; color: #f3e8ff; margin: 0 0 12px 0; line-height: 1.5;">
-              アップした写真の<strong>顔立ち・目鼻立ち・輪郭・イラストや写真の画風（タッチ）が動画で別人に変わってしまうのを防ぐ必須ロック</strong>です。<br>
-              実写化ワードや目を閉じる・大きく横を向く等の「顔崩壊の原因」を自動ブロックし、元画像のピクセル情報を無劣化（高精細PNG）で毎フレームAIに参照させます。
+              歌声が大きいときにAIが「絶叫している」と勘違いして<strong>口が裂けたり目がギョロッと見開いて悪魔・妖怪のような顔に崩れる現象を自動防止</strong>します。<br>
+              AIに渡す口パク計算用の音声だけを「優しい会話レベルの音量（-13dB）」に自動調整して<strong>元の顔の可愛さ・美しさを保ったまま上品に口を動かし</strong>、最後に100%元の大迫力の楽曲を合体させます。
             </p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <button type="button" class="video-res-btn identity-lock-btn active" data-lock="on" style="padding: 14px 10px;">
-                🔒 ON：元の顔・スタイルを完全維持<br><small style="font-size: 0.78rem; color: #f5d0fe; font-weight: 700;">キャラの顔変わり防止【必須推奨】</small>
+                🔒 ON：顔崩壊を防止して上品に歌う<br><small style="font-size: 0.78rem; color: #f5d0fe; font-weight: 700;">妖怪顔・大口開き防止【必須推奨】</small>
               </button>
               <button type="button" class="video-res-btn identity-lock-btn" data-lock="off" style="padding: 14px 10px;">
-                🔓 OFF：AIの自由な表情変化を許可<br><small style="font-size: 0.78rem; color: #cbd5e1; font-weight: 500;">顔や画風が変化する場合があります</small>
+                🔓 OFF：音量そのまま大きく口を開ける<br><small style="font-size: 0.78rem; color: #cbd5e1; font-weight: 500;">激しい曲では顔が歪むことがあります</small>
               </button>
             </div>
           </div>
 
-          <!-- ③ 使用するAIモデル一覧（顔・スタイル完全維持の1段階直結モデルを最上位に搭載） -->
+          <!-- ③ 使用するAIモデル一覧（2026年10月最新 OmniHuman 2.0 ＆ Kling 4.0 搭載） -->
           <div style="font-size: 1.08rem; font-weight: 900; color: #fbcfe8; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-            <span>③ 使用するAI生成モード・モデルをタップして選択：</span>
+            <span>③ 使用する最新AIモデルをタップして選択：</span>
             <span id="currentMaterialIndicatorBadge" style="background: rgba(168, 85, 247, 0.35); border: 1px solid #c084fc; color: #f0abfc; font-size: 0.85rem; font-weight: 800; padding: 3px 10px; border-radius: 999px;">📷 写真モード</span>
           </div>
 
           <!-- A. 写真／1コマ切り出し用AIモデル群（Photo または 動画パターンB） -->
           <div id="photoModelsGroup" class="models-grid-group">
-            <!-- Model 1 (DEFAULT FOR STRICT FACE/STYLE PRESERVATION): ByteDance OmniHuman v1.5 -->
-            <button type="button" class="v11b-model-btn active" data-model="fal-ai/bytedance/omnihuman/v1.5" data-mode="lipsync" data-supports-prompt="true" data-label="ByteDance OmniHuman v1.5 (顔・画風100%維持リップシンク)">
+            <!-- Model 1 (NEW 2026-10-15 LATEST): ByteDance OmniHuman 2.0 -->
+            <button type="button" class="v11b-model-btn active" data-model="bytedance/omnihuman/v2" data-mode="lipsync" data-supports-prompt="true" data-label="ByteDance OmniHuman 2.0 (最新v2・高精細リップシンク)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.16rem; color: #f5d0fe;">🔒 🎤 ByteDance OmniHuman v1.5（顔・スタイル完全維持【最推奨】）</strong>
+                <strong style="font-size: 1.16rem; color: #f5d0fe;">👑 🎤 ByteDance OmniHuman 2.0（最新2.0・1段階直結リップシンク【最推奨】）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.88rem; padding: 4px 12px; border-radius: 999px;">✔ 選択中</span>
               </div>
               <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.5; display: block;">
-                【元写真の顔・画風を100%維持！】最後の1コマまで<strong>常に元の写真を直接参照（ReferenceNetロック）</strong>しながら1段階で口パク＆上半身・カメラ演出を生成。イラスト・アニメ・CG・実写のどれでも<strong>元のキャラクターの顔とスタイルが絶対に別人に変わりません</strong>（✨3つの演出プロンプト対応）
+                【2026年10月最新リリース！】v1.5から大幅に進化した最新世代 <strong>OmniHuman 2.0 (`bytedance/omnihuman/v2`)</strong>。元写真のキャラクターの顔と画風を保ちながら、歌声に合わせた自然な口パクとカメラ演出を1段階で生成します（日本語・英語プロンプト両対応／4秒〜最大5分対応）
               </span>
             </button>
 
-            <!-- Model 2: Kling AI Avatar v2 Pro (Strict Face/Style Preservation High-Res Lip-Sync) -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/ai-avatar/v2/pro" data-mode="lipsync" data-supports-prompt="true" data-label="Kling AI Avatar v2 Pro (顔・画風維持・高精細リップシンク)">
+            <!-- Model 2 (NEW): Sync-3 Avatar Image-to-Video (Direct Face/Mouth-only Lip-Sync) -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/sync-lipsync/v3/image-to-video" data-mode="lipsync" data-supports-prompt="false" data-label="Sync-3 Avatar (最新v3・静止画から口元のみ自然リップシンク)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem; color: #bae6fd;">🔒 🎬 Kling AI Avatar v2 Pro（顔・スタイル完全維持／高精細アバター）</strong>
+                <strong style="font-size: 1.15rem; color: #6ee7b7;">✨ Sync-3 Avatar（最新v3・元写真の顔と目を一切変えず口元だけリップシンク）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
               <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">
-                【元写真の顔・画風を100%維持！】Kling最上位の1段階アバター直結AI。アップした写真の顔立ちと画風を固定したまま、ボーカルと演出指示に合わせて高精細に熱唱（✨3つの演出プロンプト対応）
+                【写真のスタイル・目鼻立ちを絶対に変えたくない時に最適！】余計な全身変形や目の描き直しを行わず、アップした写真の雰囲気をそのままに口元だけを歌声に同期させる最新Sync-3アバターモデル
               </span>
             </button>
 
-            <!-- Model 3: Kling AI Avatar v2 Standard (Fast Lip-Sync) -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/ai-avatar/v2/standard" data-mode="lipsync" data-supports-prompt="true" data-label="Kling AI Avatar v2 Standard (顔維持・高速リップシンク)">
+            <!-- Model 3 (NEW 2026-10-16 LATEST): 改善A・2段階ハイブリッド自動生成 (Kling 4.0 ➔ Sync Lipsync v3) -->
+            <button type="button" class="v11b-model-btn" data-model="hybrid-kling4-sync3" data-mode="hybrid_lipsync" data-supports-prompt="true" data-label="【改善A・最新v4】2段階ハイブリッド (Kling 4.0 ➔ Sync v3)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🔒 ⚡ Kling AI Avatar v2 Standard（顔・スタイル維持／高速・コスパ重視）</strong>
-                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
-              </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【元写真の顔・画風を維持】クレジット消費を抑えて元のキャラクターのままスピーディーにリップシンク動画を作りたい時に最適（✨3つの演出プロンプト対応）</span>
-            </button>
-
-            <!-- Model 4: Wan 2.2 Speech-to-Video (Lip-Sync + Prompt Motion) -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/wan-22-s2v" data-mode="lipsync" data-supports-prompt="true" data-label="Wan 2.2 S2V (音声＆演出リップシンク)">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🔥 Wan 2.2 S2V（1段階・音声駆動＆カメラ演出リップシンク）</strong>
-                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
-              </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲＋演出 ➔ 歌唱動画】元写真を直接参照しながら、歌声の口パクと同時にカメラワークや身体の動きを強く反映するモデル（✨3つの演出プロンプト対応）</span>
-            </button>
-
-            <!-- Model 5: MiniMax H3 Max Lip-Sync (Mouth-only sync, NO prompt support in API) -->
-            <button type="button" class="v11b-model-btn" data-model="minimax/h3-max/lip-sync/image-to-video" data-mode="lipsync" data-supports-prompt="false" data-label="MiniMax H3 Max Lip-Sync">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🌟 MiniMax H3 Max Lip-Sync（口元のみ固定・発音特化）</strong>
-                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
-              </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲 ➔ 口パク特化】顔の他の部分を動かさず母音・子音の発音に口元を合わせる専用AI（※AIの仕様上、3つの演出プロンプトは効かず口元のみの同期になります）</span>
-            </button>
-
-            <!-- Model 0 (2-Stage Hybrid): 改善A・2段階ハイブリッド自動生成 (Kling 3.0 Pro ➔ Sync Lipsync v3) -->
-            <button type="button" class="v11b-model-btn" data-model="hybrid-kling3-sync3" data-mode="hybrid_lipsync" data-supports-prompt="true" data-label="【改善A】2段階ハイブリッド生成 (Kling 3.0 Pro ➔ Sync v3)">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem; color: #fde047;">👑 【改善A】2段階ハイブリッド生成（Kling 3.0 ➔ Sync v3 口パク）</strong>
+                <strong style="font-size: 1.15rem; color: #fde047;">🎬 【改善A・最新v4】2段階ハイブリッド（最新 Kling 4.0 ➔ Sync v3 口パク）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
               <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.5; display: block;">
-                【ダイナミック動き重視】①Kling 3.0 Proで映画のような動画を作り、②Sync v3で口元を上書き合成する2段階モード。<br>
-                <strong style="color: #fda4af;">※ご注意：2つの別々のAIを連続で通して口元を塗り直すため、元の写真の顔やイラストの画風が少し変わることがあります。顔・スタイル完全維持が必須の場合は一番上の「🔒 OmniHuman v1.5」または「🔒 Kling AI Avatar v2」をお選びください。</strong>
+                【2026年10月最新 <strong>Kling 4.0 (`kling/v4/image-to-video`)</strong> 搭載！】①Kling 4.0で始点・終点の両方に元写真をロックした映画品質ムービー（1080p）を生成し、②最新Sync v3（またはHeyGen v3 / VEED v2）で口パクを合成するダイナミックモード
               </span>
             </button>
 
             <!-- 改善A（2段階ハイブリッド）選択時の第2段階リップシンクAI切り替えサブボックス（初期非表示） -->
             <div id="hybridStage2SelectorBox" class="hidden" style="background: rgba(30, 27, 75, 0.85); border: 2px solid #eab308; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;">
-              <div style="background: rgba(244, 63, 94, 0.2); border: 1.5px solid #fb7185; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 0.88rem; color: #ffe4e6; line-height: 1.45; font-weight: 700;">
-                💡 <strong>顔が変わるのを防ぎたい場合：</strong><br>
-                この2段階モードは「動画化AI」と「実写向け口元塗り直しAI」の2つを通るため、キャラクターの顔立ちやタッチが変化しやすい特性があります。<strong>写真のキャラクターの顔・スタイルを100%そのまま維持したい時は、一番上の「🔒 ByteDance OmniHuman v1.5」をタップして選択してください。</strong>
-              </div>
               <div style="font-size: 0.92rem; font-weight: 900; color: #fef08a; margin-bottom: 8px;">
-                🔗 2段階ハイブリッドの「口パク合成（第2段階）」に使うAI：
+                🔗 2段階ハイブリッドの「口パク合成（第2段階）」に使う最新AI：
               </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                 <button type="button" class="video-res-btn hybrid-stage2-btn active" data-stage2-model="fal-ai/sync-lipsync/v3" data-stage2-label="Sync Lipsync v3">
-                  🎥 Sync Lipsync v3<br><small style="font-size: 0.75rem; color: #fef08a; font-weight: 700;">自然な口元・長尺対応【推奨】</small>
+                  🎥 Sync v3<br><small style="font-size: 0.72rem; color: #fef08a; font-weight: 700;">最新標準【推奨】</small>
                 </button>
-                <button type="button" class="video-res-btn hybrid-stage2-btn" data-stage2-model="fal-ai/kling-video/lipsync/audio-to-video" data-stage2-label="Kling LipSync">
-                  🎬 Kling LipSync<br><small style="font-size: 0.75rem; color: #cbd5e1; font-weight: 500;">Kling純正の口元合成（10秒以内）</small>
+                <button type="button" class="video-res-btn hybrid-stage2-btn" data-stage2-model="fal-ai/heygen/v3/lipsync/precision" data-stage2-label="HeyGen v3 Precision">
+                  💎 HeyGen v3<br><small style="font-size: 0.72rem; color: #cbd5e1; font-weight: 500;">高精度Precision</small>
+                </button>
+                <button type="button" class="video-res-btn hybrid-stage2-btn" data-stage2-model="veed/lipsync/v2" data-stage2-label="VEED Lipsync v2">
+                  ✨ VEED v2<br><small style="font-size: 0.72rem; color: #cbd5e1; font-weight: 500;">自然な口元合成</small>
                 </button>
               </div>
             </div>
 
-            <!-- Model 6: Kling 3.0 Pro (Latest Image-to-Video Motion) -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/v3/pro/image-to-video" data-mode="video" data-supports-prompt="true" data-label="Kling 3.0 Pro (最新・全身＆カメラ演出動画)">
+            <!-- Model 4 (NEW 2026-08): Mirage Avatar X Reference-to-Video -->
+            <button type="button" class="v11b-model-btn" data-model="mirage-api/avatar-x/reference-to-video" data-mode="lipsync" data-supports-prompt="false" data-label="Mirage Avatar X (最新リファレンス歌唱アバター)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🎥 Kling 3.0 Pro（最新v3・口パクなし全身＆映画カメラ演出動画）</strong>
+                <strong style="font-size: 1.15rem; color: #bae6fd;">🌟 Mirage Avatar X（2026年8月最新・高精細リファレンス歌唱アバター）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋演出 ➔ ムービー】Kling最新v3最上位モデル。口パクなしで写真から全身の動き＆カメラワーク動画を作りたい時に最適</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">
+                【写真＋楽曲 ➔ 歌唱動画】最新の Mirage Avatar X エンジン。アップした写真（9:16 または 16:9）をリファレンスとして忠実に保ちながら歌わせる最新世代モデル
+              </span>
+            </button>
+
+            <!-- Model 5: MiniMax H3 Max Lip-Sync -->
+            <button type="button" class="v11b-model-btn" data-model="minimax/h3-max/lip-sync/image-to-video" data-mode="lipsync" data-supports-prompt="false" data-label="MiniMax H3 Max Lip-Sync">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.15rem;">🎤 MiniMax H3 Max Lip-Sync（2026年9月・1080p発音特化リップシンク）</strong>
+                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲 ➔ 口パク特化】顔の他の部分を動かさず母音・子音の発音に口元を合わせる専用AI（※演出プロンプトは使わず口元のみの同期になります）</span>
+            </button>
+
+            <!-- Model 6 (NEW 2026-10-16 LATEST): Kling 4.0 Image-to-Video (Motion + Audio Merge) -->
+            <button type="button" class="v11b-model-btn" data-model="kling/v4/image-to-video" data-mode="video" data-supports-prompt="true" data-label="Kling 4.0 (2026年10月最新v4・全身＆カメラ演出動画)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.15rem;">🎥 Kling 4.0（2026年10月最新v4・口パクなし全身＆映画カメラ演出動画）</strong>
+                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【2026年10月16日最新リリース！】Kling 3.0を超える最新フラッグシップ <strong>Kling 4.0 (`kling/v4/image-to-video`)</strong>。顔の歪みがない最も美しいカメラワーク＆全身ムービーを生成し、あなたの楽曲を合成します</span>
             </button>
           </div>
 
           <!-- B. 動画そのまま口元リップシンク用AIモデル群（動画パターン①/A） -->
           <div id="videoModelsGroup" class="models-grid-group hidden">
             <!-- Model V1: Sync Lipsync v3 -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/sync-lipsync/v3" data-mode="videolipsync" data-supports-prompt="false" data-label="Sync Lipsync v3 (動画口パク同期)">
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/sync-lipsync/v3" data-mode="videolipsync" data-supports-prompt="false" data-label="Sync Lipsync v3 (最新動画口パク同期)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.15rem;">🎥 Sync Lipsync v3（最新動画リップシンク・おすすめ）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】元動画の画質・動き・カメラワーク・背景を100%保持し、口元の動きだけを曲に合わせて超高精度に再描画同期</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】元動画の画質・動き・カメラワーク・背景を100%保持し、口元の動きだけを曲に合わせて高精度に同期</span>
             </button>
 
-            <!-- Model V2: Kling LipSync Audio-to-Video -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/lipsync/audio-to-video" data-mode="videolipsync" data-supports-prompt="false" data-label="Kling LipSync (動画口パク同期)">
+            <!-- Model V2: HeyGen v3 Lipsync Precision -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/heygen/v3/lipsync/precision" data-mode="videolipsync" data-supports-prompt="false" data-label="HeyGen v3 Precision (2026最新・高精度動画口パク)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🎬 Kling LipSync（Kling公式・動画口元アテレコ）</strong>
+                <strong style="font-size: 1.15rem;">💎 HeyGen v3 Precision（2026最新・超高精度動画リップシンク）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】Kling公式の動画専用リップシンクAI。動いている人物動画の口元を歌声に自然に合わせて合成</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】HeyGen最新のv3 Precisionエンジン。元動画の人物の顔立ちを崩さず口元だけを精密に同期</span>
             </button>
 
-            <!-- Model V3: LatentSync -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/latentsync" data-mode="videolipsync" data-supports-prompt="false" data-label="LatentSync (高精度動画リップシンク)">
+            <!-- Model V3: VEED Lipsync v2 -->
+            <button type="button" class="v11b-model-btn" data-model="veed/lipsync/v2" data-mode="videolipsync" data-supports-prompt="false" data-label="VEED Lipsync v2 (2026年7月最新・自然な動画口パク)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">⚡ LatentSync（高精度リップシンク）</strong>
+                <strong style="font-size: 1.15rem;">✨ VEED Lipsync v2（2026年7月最新・自然な口元アテレコ）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】拡散モデルベースの高精度動画リップシンクAI。人物の口元を自然な発音形状にモーフィング</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】VEED最新v2リップシンクAI。動いている人物動画の口元を控えめで自然な形に合わせて合成</span>
             </button>
           </div>
 
-          <!-- ④ 歌い方・表情・演出スタイルの指定（顔・画風維持対応プロンプト） -->
+          <!-- ④ 歌い方・表情・演出スタイルの指定（顔崩壊ワード完全排除・穏やか仕様） -->
           <div id="aiPromptStyleWrap">
             <div style="font-size: 1.05rem; font-weight: 900; color: #f3e8ff; margin-bottom: 10px;">
-              ④ 歌い方・カメラワーク・身体の演出指定（顔・画風維持仕様）：
+              ④ 歌い方・カメラワークの指定（顔が歪まない穏やか仕様）：
             </div>
 
-            <!-- プロンプト非対応モデル（MiniMax H3 Lip-Sync等）選択時の正直な注意バナー -->
+            <!-- プロンプト非対応モデル（Sync-3 Avatar / Mirage X / MiniMax等）選択時の正直な注意バナー -->
             <div id="promptUnsupportedNotice" class="hidden" style="background: rgba(245, 158, 11, 0.18); border: 2px solid #f59e0b; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; color: #fef3c7; font-size: 0.92rem; line-height: 1.5; font-weight: 700;">
-              ⚠️ <strong>ご注意：現在選択中の「MiniMax H3 Max Lip-Sync」はAIサーバーの仕様上、演出プロンプト（文章指示）を受け付けない「口元同期専用」モデルです。</strong><br>
-              そのため、下の3つの演出のどれを選んでも同じ動きになります。演出・カメラワーク・身振りを変えたい場合は、上の <strong>「🔒 OmniHuman v1.5」「🔒 Kling AI Avatar v2」「🔥 Wan 2.2 S2V」</strong> を選択してください。
+              💡 <strong>現在選択中のモデルは「元の写真の顔・構図を動かさず、口元のリップシンクに集中する」専用モデルです。</strong><br>
+              余計な演出指示で顔が歪むことがないため、下のプロンプト入力は自動的にスキップされます。カメラワークや体の動きもつけたい場合は <strong>「👑 OmniHuman 2.0」または「🎬 改善A（Kling 4.0 ➔ Sync v3）」</strong> を選択してください。
             </div>
 
             <div id="promptStyleButtonsBox" style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 14px;">
-              <button type="button" class="ai-style-chip active" data-style="sway" data-prompt="Strictly preserve the exact original face, facial features, eye shape, and art style from the reference image. The camera slowly pushes in toward the singer. Passionate singing performance facing forward, keeping eyes open and clear, lifting one hand toward the chest with heartfelt emotion, smooth upper body sway.">
-                🎤 ドラマチック熱唱（顔・画風を完全維持＋ゆっくりズーム＆胸に手を当てる）
+              <button type="button" class="ai-style-chip active" data-style="sway" data-prompt="The camera slowly and gently moves in. Calm, gentle singing with a soft natural smile and subtle, relaxed upper body sway.">
+                🎤 優しい歌唱＆ゆっくりズーム（顔を崩さず自然な微笑みで歌う【推奨】）
               </button>
-              <button type="button" class="ai-style-chip" data-style="zoom" data-prompt="Strictly preserve the exact original face, facial features, eye shape, and art style from the reference image. Static close-up portrait shot with gentle breathing motion. Calm ballad singing facing the camera directly, soft warm expression, very subtle and delicate head nod, keeping original character style unchanged.">
-                🎥 映画風バラード（顔・画風を完全維持＋カメラ固定＆優しい微笑み）
+              <button type="button" class="ai-style-chip" data-style="zoom" data-prompt="Static portrait shot. Calm and gentle ballad singing with a soft warm smile and minimal, delicate movement.">
+                🎥 カメラ固定＆穏やかバラード（目や輪郭を動かさず上品に口パク）
               </button>
-              <button type="button" class="ai-style-chip" data-style="dynamic" data-prompt="Strictly preserve the exact original face, facial features, eye shape, and art style from the reference image. Gentle handheld camera groove with rhythmic beat motion. Upbeat vocal performance facing forward, confident joyful expression, rhythmic shoulder and hand gestures while keeping the face angle clear and consistent.">
-                ⚡ アップテンポ・ライブ（顔・画風を完全維持＋リズムに乗る肩と手の身振り）
+              <button type="button" class="ai-style-chip" data-style="dynamic" data-prompt="Gentle camera groove. Relaxed and joyful singing with a soft smile and subtle rhythmic shoulder motion.">
+                ⚡ 軽やかリズム（穏やかな可愛い表情のままリズムに乗る）
               </button>
             </div>
 
             <label for="aiVideoPromptInput" style="display: block; font-size: 0.95rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 700;">
-              📝 演出プロンプト（カメラの動き・身振り・表情の英語指示／自由に変更OK）：
+              📝 演出プロンプト（OmniHuman 2.0 は日本語でも英語でもOK！激しい表現を避けると顔が綺麗に保たれます）：
             </label>
-            <input type="text" id="aiVideoPromptInput" value="Strictly preserve the exact original face, facial features, eye shape, and art style from the reference image. The camera slowly pushes in toward the singer. Passionate singing performance facing forward, keeping eyes open and clear, lifting one hand toward the chest with heartfelt emotion, smooth upper body sway." placeholder="演出の指示（プロンプト）..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 14px; color: #fff; font-size: 1rem; margin-bottom: 18px;">
+            <input type="text" id="aiVideoPromptInput" value="The camera slowly and gently moves in. Calm, gentle singing with a soft natural smile and subtle, relaxed upper body sway." placeholder="演出の指示（プロンプト）..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 14px; color: #fff; font-size: 1rem; margin-bottom: 18px;">
           </div>
 
           <!-- AI生成ステータス＆リアルタイム進捗ボックス -->
@@ -1172,9 +1163,9 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
   <script src="lame.min.js"></script>
-  <script src="audio-engine.js?v=20261024_141b"></script>
-  <script src="presets.js?v=20261024_141b"></script>
-  <script src="character-renderer.js?v=20261024_141b"></script>
-  <script src="app.js?v=20261024_141b"></script>
+  <script src="audio-engine.js?v=20261024_150"></script>
+  <script src="presets.js?v=20261024_150"></script>
+  <script src="character-renderer.js?v=20261024_150"></script>
+  <script src="app.js?v=20261024_150"></script>
 </body>
 </html>
