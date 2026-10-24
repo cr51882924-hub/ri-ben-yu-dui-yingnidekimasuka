@@ -7,29 +7,23 @@
   - 小さな文字や細かすぎるボタンはNG。
   - iPhoneの音声入力（ディクテーション）を使ってチャットされることがあるため、多少の音声認識の誤変換があっても文脈から意図を汲み取って対応すること。
 
-## 2. 決定事項・現在の進捗（v13.1: 全AIモデル演出プロンプト総点検・最新モデル刷新版）
-1. **MiniMax H3 で3つの演出がすべて同じになる原因の特定と全AIモデルの総点検（v13.1）**:
-   - **原因**: `minimax/h3-max/lip-sync/image-to-video` のFal.ai公式APIスキーマには `prompt` パラメータ自体が存在せず（受け取るのは `image_url`, `audio_url`, `resolution`, `enable_transcription` のみ）、アプリから送信していた `prompt` がAIサーバー側で丸ごと無視されていた。
-   - **全AIモデルの点検と改修**:
-     - `fal-ai/bytedance/omnihuman/v1.5` (`prompt` 対応)
-     - `fal-ai/kling-video/ai-avatar/v2/pro` & `standard` (`prompt` 対応)
-     - `fal-ai/wan-22-s2v`（新規追加：`image_url` + `audio_url` + `prompt` でカメラワークと動きを強く反映するリップシンクAI）
-     - `minimax/h3-max/lip-sync/image-to-video`（`prompt` 非対応・口元発音同期特化。選択時にプロンプト非対応の注意バナー `#promptUnsupportedNotice` を自動表示し、`resolution: '1080P'` と `enable_transcription: true` を送信するよう改善）
-     - 旧 `Kling 1.6 Pro` を最新の **`Kling 3.0 Pro` (`fal-ai/kling-video/v3/pro/image-to-video`)** にアップグレード（動画モードにも **`Kling LipSync` (`fal-ai/kling-video/lipsync/audio-to-video`)** を追加）。
-   - **3つの演出プロンプトの全面刷新**:
-     - 従来の「照明・雰囲気」中心の抽象的な英語（静止画入力では無視されやすい）から、「カメラのズーム・固定・手持ち揺れ」「目を閉じる・微笑む」「胸に手を当てる・リズムに合わせて首や肩を振る」といった**具体的なカメラワーク＋身体アクション指示**に刷新。
-
-2. **リップシンク動画のクオリティ課題と今後の改善策（ユーザー様と相談中）**:
-   - **課題の正直な原因**:
-     1. 「1枚の静止画 ➔ 直接リップシンクAI」だと、AIが元の写真を維持しようとするため、背景や体が固まった「喋る証明写真」になりやすい。
-     2. 伴奏（ドラム・ギター等）が混ざった楽曲をそのまま渡すと、楽器の音に口が反応して不自然な口パクになる。
-   - **提案中の改善策**:
-     - **改善案A（2段階ハイブリッド生成）**: まず最新 `Kling 3.0 Pro` 等で写真から「映画のような動き・カメラワークの5秒〜10秒動画」を作り、その動画に `Sync Lipsync v3` / `Kling LipSync` で歌声を口パク合成する2段階自動化。
-     - **改善案B（AIボーカル自動分離）**: `fal-ai/demucs` で裏側でボーカル声だけを抽出して口パク計算に使い、完成映像には元の伴奏付き高音質楽曲を合わせる方式。
+## 2. 決定事項・現在の進捗（v14.0: 改善B「AIボーカル自動分離」＆ 改善A「2段階ハイブリッド生成」実装完了）
+1. **【改善B】AIボーカル自動分離＆高音質伴奏の再合成（`fal-ai/demucs` ➔ リップシンク ➔ `fal-ai/ffmpeg-api/merge-audio-video`）**:
+   - STEP 4 の `②【改善B】AIボーカル自動分離` パネルにて、標準で **「✨ ON：歌声だけ抽出して口パク（推奨）」** を有効化。
+   - 生成ボタンを押すと、まず `fal-ai/demucs` で楽曲から伴奏（ドラム・ギター等）を取り除いた「ボーカル声のみ（`vocals.mp3`）」を自動抽出し、楽器音による口の誤作動を防止。
+   - 抽出されたボーカル音声は画面内の `#isolatedVocalPreviewBox` でも試聴可能。
+   - 口パク映像の完成後、自動的に `fal-ai/ffmpeg-api/merge-audio-video` で元の伴奏入り高音質音源を動画へ合体して出力。
+2. **【改善A】プロ品質・2段階ハイブリッド自動生成モード（`Kling 3.0 Pro` ➔ `Sync Lipsync v3` / `Kling LipSync`）**:
+   - STEP 4 のAIモデル選択の最上位（標準選択）に **`👑 【改善A】2段階ハイブリッド生成（Kling 3.0 ➔ Sync v3 口パク）`** を新搭載。
+   - **第1段階**：最新の `fal-ai/kling-video/v3/pro/image-to-video` で写真と演出プロンプトから「映画のようなカメラワークと全身の演技動画（3〜15秒）」を生成し、「喋る証明写真」問題を解消。
+   - **第2段階**：生成されたKling動画に対して、`fal-ai/sync-lipsync/v3`（または選択により `fal-ai/kling-video/lipsync/audio-to-video`）を自動実行し、カメラワークと全身の動きを保ったまま口元だけを歌声に同期。
+3. **MiniMax H3 の仕様明記と全AIモデル演出プロンプト刷新（v13.1〜継続）**:
+   - `minimax/h3-max/lip-sync/image-to-video` 選択時はプロンプト非対応の注意バナーを自動表示。
+   - 3つの演出プロンプトは具体的なカメラワーク＋身振り手振り＋顔の演技指示に刷新済み。
 
 ## 3. 現在のファイル構成 (`/home/agent/workspace`)
-- `index.html`: v13.1 本格AIリップシンク歌唱動画生成スタジオ画面
-- `app.js`: v13.1 モデル別スキーマ最適化、プロンプト対応判定、0.5秒精度トリミング、Fal.ai連携
+- `index.html`: v14.0 本格AIリップシンク歌唱動画生成スタジオ画面（改善B・改善A搭載）
+- `app.js`: v14.0 Demucsボーカル分離、Kling 3.0 Pro ➔ Sync v3 2段階ハイブリッド生成、FFmpeg原曲再合成パイプライン
 - `style.css`: 2段固定タイムディスプレイ、単一選択ハイライト、特大ボタン・高コントラストUIスタイル
 - `audio-engine.js`: 楽曲読み込み・再生（大容量ファイル対応・小数精度トリミング対応）
 - `audio-cutter.js` / `audio-cutter.html`: 楽曲カッター専用ツール
