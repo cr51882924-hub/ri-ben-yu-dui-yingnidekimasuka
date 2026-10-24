@@ -2334,14 +2334,23 @@ document.addEventListener('DOMContentLoaded', () => {
               showAiStatus(`🎬 <strong>[改善A・第1段階] 最新「Kling 3.0 Pro」で写真から映画のようなカメラワーク＆全身の動きを生成中... (${elapsedSec}秒経過)</strong><br><small style="color:#fde047;">3つの演出プロンプトを100%反映したベース映像（${klingDurStr}秒）を作っています。</small>`, '#eab308');
 
               let stage1VideoUrl = '';
+              const buildKlingStage1Input = (durStr) => {
+                const payload = {
+                  start_image_url: uploadedImageUrl,
+                  prompt: promptText,
+                  duration: durStr,
+                  generate_audio: false
+                };
+                if (enableIdentityLock) {
+                  payload.end_image_url = uploadedImageUrl;
+                  payload.negative_prompt = 'different face, changed facial features, altered art style, face morphing, deformed eyes, closed eyes, blurry face, realistic skin texture on illustration';
+                  payload.cfg_scale = 0.7;
+                }
+                return payload;
+              };
               try {
                 const s1Res = await falClient.subscribe('fal-ai/kling-video/v3/pro/image-to-video', {
-                  input: {
-                    start_image_url: uploadedImageUrl,
-                    prompt: promptText,
-                    duration: klingDurStr,
-                    generate_audio: false
-                  },
+                  input: buildKlingStage1Input(klingDurStr),
                   logs: true,
                   onQueueUpdate: (st) => {
                     if (!st) return;
@@ -2359,12 +2368,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('Kling 3.0 Pro custom duration retry with standard 5s/10s:', s1Err);
                 const fallbackDur = (trimDur >= 8) ? '10' : '5';
                 const s1Retry = await falClient.subscribe('fal-ai/kling-video/v3/pro/image-to-video', {
-                  input: {
-                    start_image_url: uploadedImageUrl,
-                    prompt: promptText,
-                    duration: fallbackDur,
-                    generate_audio: false
-                  },
+                  input: buildKlingStage1Input(fallbackDur),
                   logs: true
                 });
                 const s1RetryData = (s1Retry && s1Retry.data) ? s1Retry.data : s1Retry;
