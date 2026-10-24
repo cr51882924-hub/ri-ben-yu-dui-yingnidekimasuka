@@ -2221,6 +2221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const audioDataUrl = await blobToDataUrl(audioBlob);
 
         // 2. Prepare Formatted Image File matching selected Output Video Size (9:16, 16:9, 1:1, or original)
+        // v14.1: Use Lossless PNG when Identity Lock is ON to prevent any JPEG compression artifacts on eyes/mouth/lines
         let imgBlob = null;
         let imgDataUrl = '';
         let imgFile = null;
@@ -2232,9 +2233,15 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedOutputVideoSize,
             selectedOutputFitMode
           );
-          imgBlob = await canvasToJpegBlob(formattedCanvas, 0.92);
-          imgDataUrl = formattedCanvas.toDataURL('image/jpeg', 0.9);
-          imgFile = imgBlob ? new File([imgBlob], `artist_${targetDim.width}x${targetDim.height}.jpg`, { type: 'image/jpeg' }) : null;
+          if (enableIdentityLock) {
+            imgBlob = await canvasToPngBlob(formattedCanvas);
+            imgDataUrl = formattedCanvas.toDataURL('image/png');
+            imgFile = imgBlob ? new File([imgBlob], `artist_${targetDim.width}x${targetDim.height}.png`, { type: 'image/png' }) : null;
+          } else {
+            imgBlob = await canvasToJpegBlob(formattedCanvas, 0.95);
+            imgDataUrl = formattedCanvas.toDataURL('image/jpeg', 0.95);
+            imgFile = imgBlob ? new File([imgBlob], `artist_${targetDim.width}x${targetDim.height}.jpg`, { type: 'image/jpeg' }) : null;
+          }
         }
 
         // Start live elapsed second counter for user feedback
