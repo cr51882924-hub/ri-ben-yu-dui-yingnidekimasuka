@@ -160,6 +160,18 @@
       "created_at": "2026-10-24T16:01:50.018Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "56cd40ea-949f-4e3a-ad52-ecb415e908bd",
+      "role": "user",
+      "content": "まず最初にv14.0の更新ボタンを押すと、13.1の更新中の表示がでます。",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-24T19:55:40.680Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
