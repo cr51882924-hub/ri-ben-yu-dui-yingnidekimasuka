@@ -153,11 +153,23 @@
       "id": "b5db087a-eb94-4f67-837c-50bfd230aed4",
       "role": "user",
       "content": "Kling AI Avatar v2 Proは最新のバージョンではなく、すでにさらに新しいバージョン（Kling v2.5やv2.6、さらにKling 3.0など）が登場しています。\n\nKling AIのバージョン状況\n\n• Avatar v2 Pro：1枚の画像と音声から1080p・30fpsのリップシンク動画を生成できるモデルで、2025年後半頃に広く知られたバージョンです。\n• その後のアップデート：現在では「Kling v2.5」や「Kling v2.6」、さらには「Kling 3.0」といったより新しい動画生成モデルやバージョンが展開されています。",
-      "status": "pending",
+      "status": "cancelled",
       "model": "gemini-4-argon-medium",
       "client_type": "gemini-bridge",
       "parent_message_id": null,
       "created_at": "2026-10-24T23:21:54.137Z",
+      "sender": "ios",
+      "is_cancelled": true
+    },
+    {
+      "id": "0e9356fa-be67-4c0b-96a9-2e93e8b98b3b",
+      "role": "user",
+      "content": "なぜ、古いバージョンのを私に使わせようするのですか？\n私は常に最新バージョンを使いたい。\nこれは決してワガママじゃないと思います。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-24T23:23:00.690Z",
       "sender": "ios",
       "is_cancelled": false
     }
