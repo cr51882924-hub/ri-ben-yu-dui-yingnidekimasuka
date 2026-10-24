@@ -148,6 +148,18 @@
       "created_at": "2026-10-24T15:55:18.767Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "3b45c82a-7302-4b7c-9e2e-7e4a9bdeef8f",
+      "role": "agent",
+      "content": "ご希望通り、**「B ➔ A」の順番で両方とも組み込んだ最新版（v14.0）**を完成させ、保存いたしました！\n\n👉 **[最新版（v14.0）の画面を開く](https://antigravity.luch.dev/site/99be14d3-31d5-4abb-884c-c3b755893105/e9856f67f45823b115dd6ebe/)**\n\n---\n\n### ✨ v14.0 で追加された2つの新機能（STEP 4）\n\n#### ① 先に実装：【改善B】AIボーカル自動分離（[index.html](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/index.html#L675-L702) / [app.js](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/app.js#L2220-L2256)）\n- STEP 4 の **「🎙️ ②【改善B】AIボーカル自動分離」** が、最初から **「✨ ON（推奨）」** になっています。\n- **動き方**：\n  1. 伴奏入りの曲から、AI（`Demucs`）が自動で**「歌声（ボーカル）だけ」**を抜き出します（※抜き出した歌声は画面上で試聴もできます）。\n  2. ドラムやギターの音が消えた「純粋な歌声」だけで口パクを作るため、**楽器の音で口が勝手にパクパク動く現象がなくなります**。\n  3. 最後に、完成した映像へ**「元の伴奏入りの高音質な曲」を自動で合体**させて仕上げます。\n\n#### ② 続けて実装：【改善A】2段階ハイブリッド自動生成（[index.html](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/index.html#L712-L736) / [app.js](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/app.js#L2263-L2366)）\n- STEP 4 のAIモデル選択の一番上に、**「👑 【改善A】2段階ハイブリッド生成（Kling 3.0 ➔ Sync v3 口パク）」** を追加し、最初から選択された状態にしました。\n- **動き方（ボタン1つで全自動）**：\n  1. **第1段階**：最新の **`Kling 3.0 Pro`** が、写真と演出プロンプトから**「映画のようにカメラと全身が動く動画」**を作ります（証明写真のような棒立ちになりません）。\n  2. **第2段階**：その動いている動画に対して、**`Sync Lipsync v3`**（または **`Kling LipSync`**）が**口元だけを歌声にピタッと合成**します。\n\n---\n\n### 📱 使い方はこれまで通り簡単です\n1. **STEP 1** で写真をセット\n2. **STEP 2・3** で曲と秒数（まずは **5秒〜10秒** が一番きれいでお勧めです）を指定\n3. **STEP 4** は最初から **「改善B：ON」「改善A：2段階ハイブリッド」** が選ばれているので、そのまま一番下の **「✨ APIでAIリップシンク歌唱動画を生成する」** を押すだけです！\n\nぜひ上のリンクから **v14.0** を開いて、新しくなった動きをお試しください！",
+      "status": "completed",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "720ef275-af1d-493d-8e9d-93a6b5df5ece",
+      "created_at": "2026-10-24T16:01:50.018Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
