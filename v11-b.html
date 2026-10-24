@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="refresh" content="0; url=index.html">
-  <title>GrooveSync MV Studio - 最新版へ移動中 (v14.0)</title>
+  <title>GrooveSync MV Studio - 最新版へ移動中 (v14.1)</title>
   <script>
     try {
-      const target = 'index.html' + (window.location.search || '');
+      const target = 'index.html?v=141b' + (window.location.search ? '&' + window.location.search.slice(1) : '');
       window.location.replace(target);
     } catch (e) {
-      window.location.href = 'index.html';
+      window.location.href = 'index.html?v=141b';
     }
   </script>
   <style>
@@ -47,9 +47,9 @@
 </head>
 <body>
   <div class="redirect-card">
-    <h1>🔄 最新版 (v14.0) へ自動移動しています</h1>
+    <h1>🔄 最新版 (v14.1) へ自動移動しています</h1>
     <p>数秒待っても移動しない場合は、下のボタンをタップしてください。</p>
-    <a class="btn" href="index.html">👉 最新版 (v14.0) を開く</a>
+    <a class="btn" href="index.html?v=141b">👉 最新版 (v14.1) を開く</a>
   </div>
 </body>
 </html>
