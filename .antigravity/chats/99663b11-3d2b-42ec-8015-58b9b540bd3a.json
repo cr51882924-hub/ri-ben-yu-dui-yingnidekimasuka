@@ -172,6 +172,18 @@
       "created_at": "2026-10-24T19:55:40.680Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "0de6449e-d373-4c68-a8db-35644f5a68ec",
+      "role": "agent",
+      "content": "ご指摘ありがとうございます！\n更新ボタンを押した際の通知メッセージが `v13.1` のままになっていた箇所（[app.js](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/app.js#L772-L796)）を修正し、現在のヘッダー表示（`最新版 (v14.0)`）に合わせて **「🔄 最新版 (v14.0) を読み込んで更新しています...」** と表示されるように修正・保存いたしました（あわせて [index.html](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/index.html#L11) のキャッシュ読み込み番号も更新しています）。\n\n👉 **修正後の画面（v14.0）はこちら**：\nhttps://antigravity.luch.dev/site/99be14d3-31d5-4abb-884c-c3b755893105/e9856f67f45823b115dd6ebe/",
+      "status": "completed",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "56cd40ea-949f-4e3a-ad52-ecb415e908bd",
+      "created_at": "2026-10-24T19:58:54.172Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
