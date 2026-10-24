@@ -2202,37 +2202,63 @@ document.addEventListener('DOMContentLoaded', () => {
             sdkConnected = true;
             const falClient = createFalClient({ credentials: apiKey });
 
-            showAiStatus(`⏳ <strong>[2/3] Fal.ai サーバーへ${materialLabel}（${targetDim.label}）と音源をアップロード中...</strong>`, '#38bdf8');
-            let uploadedAudioUrl = audioDataUrl;
+            showAiStatus(`⏳ <strong>[準備] Fal.ai サーバーへ${materialLabel}（${targetDim.label}）と切り出し音源をアップロード中...</strong>`, '#38bdf8');
+            let uploadedOriginalAudioUrl = audioDataUrl;
 
             if (falClient.storage && typeof falClient.storage.upload === 'function') {
               try {
-                uploadedAudioUrl = await falClient.storage.upload(audioFile);
+                uploadedOriginalAudioUrl = await falClient.storage.upload(audioFile);
               } catch (uErr) {
                 console.warn('Audio storage upload fallback to DataURL:', uErr);
               }
             }
 
-            let inputPayload = {};
+            // =========================================================================
+            // 🎙️ 【改善B】AIボーカル自動分離 (fal-ai/demucs)
+            // 伴奏（ドラム・ギター等）を除去し「歌声だけ」を口パクAIに渡すことで口の誤作動を防止
+            // =========================================================================
+            let lipSyncAudioUrl = uploadedOriginalAudioUrl;
+            let didSeparateVocals = false;
+            const isolatedVocalPreviewBox = document.getElementById('isolatedVocalPreviewBox');
+            const isolatedVocalAudioPlayer = document.getElementById('isolatedVocalAudioPlayer');
 
-            if (isVideoToVideo) {
-              // Video-to-Video LipSync (Sync-3 Lipsync / Kling LipSync / LatentSync)
-              let uploadedVideoUrl = '';
-              if (falClient.storage && typeof falClient.storage.upload === 'function') {
-                uploadedVideoUrl = await falClient.storage.upload(uploadedVideoMaterialFile);
-              } else {
-                throw new Error('動画ファイルのアップロード機能が利用できません。ネットワークをご確認ください。');
+            if (enableVocalSeparation && selectedV11bMode !== 'video') {
+              try {
+                showAiStatus(`🎙️ <strong>[改善B] AIボーカル自動分離（Demucs）で曲から「歌声だけ」を抽出しています... (${elapsedSec}秒経過)</strong><br><small style="color:#a7f3d0;">※ ドラムやギター等の楽器音に口が反応してパクパクするのを防ぎます。</small>`, '#10b981');
+                const demucsRes = await falClient.subscribe('fal-ai/demucs', {
+                  input: {
+                    audio_url: uploadedOriginalAudioUrl,
+                    output_format: 'mp3'
+                  },
+                  logs: true,
+                  onQueueUpdate: (st) => {
+                    if (st && st.status === 'IN_PROGRESS') {
+                      showAiStatus(`🎙️ <strong>[改善B] AIが伴奏をカットしてボーカル声だけを抽出中... (${elapsedSec}秒経過)</strong><br><small style="color:#a7f3d0;">抽出完了後、続けて映像と口パク生成に進みます。</small>`, '#10b981');
+                    }
+                  }
+                });
+                const demucsData = (demucsRes && demucsRes.data) ? demucsRes.data : demucsRes;
+                const vocalTrackUrl = (demucsData && demucsData.vocals && demucsData.vocals.url)
+                  || (demucsData && typeof demucsData.vocals === 'string' ? demucsData.vocals : '');
+                if (vocalTrackUrl) {
+                  lipSyncAudioUrl = vocalTrackUrl;
+                  didSeparateVocals = true;
+                  if (isolatedVocalPreviewBox && isolatedVocalAudioPlayer) {
+                    isolatedVocalAudioPlayer.src = vocalTrackUrl;
+                    isolatedVocalPreviewBox.classList.remove('hidden');
+                  }
+                }
+              } catch (demucsErr) {
+                console.warn('Demucs vocal separation skipped/fallback to original audio:', demucsErr);
               }
+            }
 
-              inputPayload = {
-                video_url: uploadedVideoUrl,
-                audio_url: uploadedAudioUrl
-              };
-              if (selectedV11bModel && selectedV11bModel.includes('sync-lipsync')) {
-                inputPayload.sync_mode = 'cut_off';
-              }
-            } else {
-              // Image LipSync & Motion (OmniHuman v1.5 / Kling AI Avatar v2 / Wan 2.2 S2V / MiniMax H3 Max / Kling 3.0 Pro)
+            const trimDur = endSec - startSec;
+
+            // =========================================================================
+            // 👑 【改善A】2段階ハイブリッド自動生成 (Kling 3.0 Pro 映画演出 ➔ Sync v3 / Kling LipSync)
+            // =========================================================================
+            if (!isVideoToVideo && selectedV11bMode === 'hybrid_lipsync') {
               let uploadedImageUrl = imgDataUrl;
               if (imgFile && falClient.storage && typeof falClient.storage.upload === 'function') {
                 try {
@@ -2242,75 +2268,228 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
               }
 
-              const modelId = selectedV11bModel || 'fal-ai/bytedance/omnihuman/v1.5';
-              const trimDur = endSec - startSec;
+              const klingDurNum = Math.max(3, Math.min(15, Math.round(trimDur)));
+              const klingDurStr = String(klingDurNum);
 
-              if (modelId.includes('minimax/h3-max/lip-sync')) {
-                // MiniMax H3 Max Lip-Sync: Schema does NOT accept 'prompt'; pass resolution & enable_transcription
-                inputPayload = {
-                  image_url: uploadedImageUrl,
-                  audio_url: uploadedAudioUrl,
-                  resolution: (selectedOutputResolution === '1080p') ? '1080P' : '768P',
-                  enable_transcription: true
+              showAiStatus(`🎬 <strong>[改善A・第1段階] 最新「Kling 3.0 Pro」で写真から映画のようなカメラワーク＆全身の動きを生成中... (${elapsedSec}秒経過)</strong><br><small style="color:#fde047;">3つの演出プロンプトを100%反映したベース映像（${klingDurStr}秒）を作っています。</small>`, '#eab308');
+
+              let stage1VideoUrl = '';
+              try {
+                const s1Res = await falClient.subscribe('fal-ai/kling-video/v3/pro/image-to-video', {
+                  input: {
+                    start_image_url: uploadedImageUrl,
+                    prompt: promptText,
+                    duration: klingDurStr,
+                    generate_audio: false
+                  },
+                  logs: true,
+                  onQueueUpdate: (st) => {
+                    if (!st) return;
+                    if (st.status === 'IN_QUEUE') {
+                      const pos = (typeof st.queue_position === 'number') ? ` (順番: ${st.queue_position + 1}番目)` : '';
+                      showAiStatus(`⏳ <strong>[改善A・第1段階] Kling 3.0 Pro の生成キュー待機中${pos}... (${elapsedSec}秒経過)</strong><br><small style="color:#fde047;">まず写真から動きのある高品質ムービーを生成します。</small>`, '#eab308');
+                    } else if (st.status === 'IN_PROGRESS') {
+                      showAiStatus(`🎬 <strong>[改善A・第1段階] Kling 3.0 Pro がカメラワークと身体の動きを描画中... (${elapsedSec}秒経過)</strong><br><small style="color:#fde047;">完成後、自動的に第2段階（口パク合成）へ進みます。</small>`, '#eab308');
+                    }
+                  }
+                });
+                const s1Data = (s1Res && s1Res.data) ? s1Res.data : s1Res;
+                stage1VideoUrl = (s1Data && s1Data.video && s1Data.video.url) || (s1Data && s1Data.video_url) || '';
+              } catch (s1Err) {
+                console.warn('Kling 3.0 Pro custom duration retry with standard 5s/10s:', s1Err);
+                const fallbackDur = (trimDur >= 8) ? '10' : '5';
+                const s1Retry = await falClient.subscribe('fal-ai/kling-video/v3/pro/image-to-video', {
+                  input: {
+                    start_image_url: uploadedImageUrl,
+                    prompt: promptText,
+                    duration: fallbackDur,
+                    generate_audio: false
+                  },
+                  logs: true
+                });
+                const s1RetryData = (s1Retry && s1Retry.data) ? s1Retry.data : s1Retry;
+                stage1VideoUrl = (s1RetryData && s1RetryData.video && s1RetryData.video.url) || (s1RetryData && s1RetryData.video_url) || '';
+              }
+
+              if (!stage1VideoUrl) {
+                throw new Error('第1段階（Kling 3.0 Pro）のベース動画URLが取得できませんでした。もう一度お試しください。');
+              }
+
+              // 第2段階：動いているKling動画に対してリップシンクAI（Sync Lipsync v3 または Kling LipSync）を実行
+              const primaryStage2Model = selectedHybridStage2Model || 'fal-ai/sync-lipsync/v3';
+              const backupStage2Model = primaryStage2Model.includes('sync-lipsync')
+                ? 'fal-ai/kling-video/lipsync/audio-to-video'
+                : 'fal-ai/sync-lipsync/v3';
+
+              showAiStatus(`🎤 <strong>[改善A・第2段階] 動いているKling映像に「${selectedHybridStage2Label}」で歌声の口パクを合成中... (${elapsedSec}秒経過)</strong><br><small style="color:#fbcfe8;">カメラワークと全身の演技を保ったまま、口元だけを歌声にピタッと合わせています。</small>`, '#ec4899');
+
+              const buildStage2Payload = (mId) => {
+                const p = {
+                  video_url: stage1VideoUrl,
+                  audio_url: lipSyncAudioUrl
                 };
-              } else if (modelId.includes('kling-video/v3/')) {
-                // Kling 3.0 Pro Image-to-Video: Uses start_image_url & prompt
-                inputPayload = {
-                  start_image_url: uploadedImageUrl,
-                  prompt: promptText,
-                  duration: '5',
-                  generate_audio: false
-                };
-              } else if (modelId.includes('wan-22-s2v')) {
-                // Wan 2.2 Speech-to-Video: Accepts image_url, audio_url, prompt, resolution (480p/580p/720p)
-                inputPayload = {
-                  image_url: uploadedImageUrl,
-                  audio_url: uploadedAudioUrl,
-                  prompt: promptText,
-                  resolution: '720p'
-                };
-              } else if (modelId.includes('omnihuman')) {
-                // ByteDance OmniHuman v1.5: Accepts image_url, audio_url, prompt, resolution, turbo_mode
-                inputPayload = {
-                  image_url: uploadedImageUrl,
-                  audio_url: uploadedAudioUrl,
-                  prompt: promptText,
-                  resolution: (trimDur > 30) ? '720p' : (selectedOutputResolution || '720p'),
-                  turbo_mode: false
-                };
-              } else {
-                // Kling AI Avatar v2 Pro / Standard & others: Accepts image_url, audio_url, prompt
-                inputPayload = {
-                  image_url: uploadedImageUrl,
-                  prompt: promptText
-                };
-                if (uploadedAudioUrl && selectedV11bMode !== 'video') {
-                  inputPayload.audio_url = uploadedAudioUrl;
+                if (mId.includes('sync-lipsync')) {
+                  p.sync_mode = 'bounce';
                 }
-                if (selectedV11bMode === 'video' && targetDim.aspectRatio) {
-                  inputPayload.aspect_ratio = targetDim.aspectRatio;
+                return p;
+              };
+
+              try {
+                const s2Res = await falClient.subscribe(primaryStage2Model, {
+                  input: buildStage2Payload(primaryStage2Model),
+                  logs: true,
+                  onQueueUpdate: (st) => {
+                    if (!st) return;
+                    if (st.status === 'IN_PROGRESS') {
+                      showAiStatus(`🎤 <strong>[改善A・第2段階] 「${selectedHybridStage2Label}」が口元の発音を同期描画中... (${elapsedSec}秒経過)</strong><br><small style="color:#fbcfe8;">完成まであと少しです！</small>`, '#ec4899');
+                    }
+                  }
+                });
+                const s2Data = (s2Res && s2Res.data) ? s2Res.data : s2Res;
+                finalVideoUrl = (s2Data && s2Data.video && s2Data.video.url) || (s2Data && s2Data.video_url) || '';
+              } catch (s2Err) {
+                console.warn(`Stage 2 (${primaryStage2Model}) error, trying backup model (${backupStage2Model}):`, s2Err);
+                try {
+                  const s2BackupRes = await falClient.subscribe(backupStage2Model, {
+                    input: buildStage2Payload(backupStage2Model),
+                    logs: true
+                  });
+                  const s2BackupData = (s2BackupRes && s2BackupRes.data) ? s2BackupRes.data : s2BackupRes;
+                  finalVideoUrl = (s2BackupData && s2BackupData.video && s2BackupData.video.url) || (s2BackupData && s2BackupData.video_url) || '';
+                } catch (s2BackupErr) {
+                  console.warn('Both Stage 2 lip-sync models failed, falling back to Stage 1 video with audio merge:', s2BackupErr);
+                  finalVideoUrl = stage1VideoUrl;
+                  didSeparateVocals = true; // Ensure original audio gets merged onto stage1VideoUrl
                 }
               }
+            } else {
+              // =========================================================================
+              // 通常の1段階生成モデル（OmniHuman v1.5 / Kling Avatar v2 / Wan 2.2 / MiniMax / 動画リップシンク）
+              // =========================================================================
+              let inputPayload = {};
+
+              if (isVideoToVideo) {
+                // Video-to-Video LipSync (Sync-3 Lipsync / Kling LipSync / LatentSync)
+                let uploadedVideoUrl = '';
+                if (falClient.storage && typeof falClient.storage.upload === 'function') {
+                  uploadedVideoUrl = await falClient.storage.upload(uploadedVideoMaterialFile);
+                } else {
+                  throw new Error('動画ファイルのアップロード機能が利用できません。ネットワークをご確認ください。');
+                }
+
+                inputPayload = {
+                  video_url: uploadedVideoUrl,
+                  audio_url: lipSyncAudioUrl
+                };
+                if (selectedV11bModel && selectedV11bModel.includes('sync-lipsync')) {
+                  inputPayload.sync_mode = 'cut_off';
+                }
+              } else {
+                // Image LipSync & Motion (OmniHuman v1.5 / Kling AI Avatar v2 / Wan 2.2 S2V / MiniMax H3 Max / Kling 3.0 Pro)
+                let uploadedImageUrl = imgDataUrl;
+                if (imgFile && falClient.storage && typeof falClient.storage.upload === 'function') {
+                  try {
+                    uploadedImageUrl = await falClient.storage.upload(imgFile);
+                  } catch (uErr) {
+                    console.warn('Image storage upload fallback to DataURL:', uErr);
+                  }
+                }
+
+                const modelId = selectedV11bModel || 'fal-ai/bytedance/omnihuman/v1.5';
+
+                if (modelId.includes('minimax/h3-max/lip-sync')) {
+                  // MiniMax H3 Max Lip-Sync: Schema does NOT accept 'prompt'; pass resolution & enable_transcription
+                  inputPayload = {
+                    image_url: uploadedImageUrl,
+                    audio_url: lipSyncAudioUrl,
+                    resolution: (selectedOutputResolution === '1080p') ? '1080P' : '768P',
+                    enable_transcription: true
+                  };
+                } else if (modelId.includes('kling-video/v3/')) {
+                  // Kling 3.0 Pro Image-to-Video: Uses start_image_url & prompt
+                  const klingDurStr = String(Math.max(3, Math.min(15, Math.round(trimDur))));
+                  inputPayload = {
+                    start_image_url: uploadedImageUrl,
+                    prompt: promptText,
+                    duration: klingDurStr,
+                    generate_audio: false
+                  };
+                } else if (modelId.includes('wan-22-s2v')) {
+                  // Wan 2.2 Speech-to-Video: Accepts image_url, audio_url, prompt, resolution (480p/580p/720p)
+                  inputPayload = {
+                    image_url: uploadedImageUrl,
+                    audio_url: lipSyncAudioUrl,
+                    prompt: promptText,
+                    resolution: '720p'
+                  };
+                } else if (modelId.includes('omnihuman')) {
+                  // ByteDance OmniHuman v1.5: Accepts image_url, audio_url, prompt, resolution, turbo_mode
+                  inputPayload = {
+                    image_url: uploadedImageUrl,
+                    audio_url: lipSyncAudioUrl,
+                    prompt: promptText,
+                    resolution: (trimDur > 30) ? '720p' : (selectedOutputResolution || '720p'),
+                    turbo_mode: false
+                  };
+                } else {
+                  // Kling AI Avatar v2 Pro / Standard & others: Accepts image_url, audio_url, prompt
+                  inputPayload = {
+                    image_url: uploadedImageUrl,
+                    prompt: promptText
+                  };
+                  if (lipSyncAudioUrl && selectedV11bMode !== 'video') {
+                    inputPayload.audio_url = lipSyncAudioUrl;
+                  }
+                  if (selectedV11bMode === 'video' && targetDim.aspectRatio) {
+                    inputPayload.aspect_ratio = targetDim.aspectRatio;
+                  }
+                }
+              }
+
+              showAiStatus(`🚀 <strong>「${selectedV11bLabel}」で完成サイズ「${targetDim.label}」のAI動画を生成中です... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">※ 口元の同期描画には約1〜3分かかります。この画面のままお待ちください。</small>`, '#c084fc');
+
+              const result = await falClient.subscribe(selectedV11bModel, {
+                input: inputPayload,
+                logs: true,
+                onQueueUpdate: (statusUpdate) => {
+                  if (!statusUpdate) return;
+                  if (statusUpdate.status === 'IN_QUEUE') {
+                    const pos = (typeof statusUpdate.queue_position === 'number') ? ` (順番: ${statusUpdate.queue_position + 1}番目)` : '';
+                    showAiStatus(`⏳ <strong>Fal.ai の生成キューに並びました${pos}... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成サイズ: ${targetDim.label} / まもなくAI描画が始まります。</small>`, '#38bdf8');
+                  } else if (statusUpdate.status === 'IN_PROGRESS') {
+                    showAiStatus(`🎤 <strong>AIがあなたの歌声に合わせて口元を同期描画しています... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成サイズ: ${targetDim.label} / 完成まであと少しです。</small>`, '#ec4899');
+                  }
+                }
+              });
+
+              const resData = (result && result.data) ? result.data : result;
+              finalVideoUrl = (resData && resData.video && resData.video.url) || (resData && resData.video_url) || '';
             }
 
-            showAiStatus(`🚀 <strong>[2/3] 「${selectedV11bLabel}」で完成サイズ「${targetDim.label}」のAI動画を生成中です...</strong><br><small style="color:#cbd5e1;">※ 口元の同期描画には約1〜3分かかります。この画面のままお待ちください。</small>`, '#c084fc');
-
-            const result = await falClient.subscribe(selectedV11bModel, {
-              input: inputPayload,
-              logs: true,
-              onQueueUpdate: (statusUpdate) => {
-                if (!statusUpdate) return;
-                if (statusUpdate.status === 'IN_QUEUE') {
-                  const pos = (typeof statusUpdate.queue_position === 'number') ? ` (順番: ${statusUpdate.queue_position + 1}番目)` : '';
-                  showAiStatus(`⏳ <strong>[2/3] Fal.ai の生成キューに並びました${pos}... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成サイズ: ${targetDim.label} / まもなくAI描画が始まります。</small>`, '#38bdf8');
-                } else if (statusUpdate.status === 'IN_PROGRESS') {
-                  showAiStatus(`🎤 <strong>[2/3] AIがあなたの楽曲に合わせて口元を同期描画しています... (${elapsedSec}秒経過)</strong><br><small style="color:#cbd5e1;">完成サイズ: ${targetDim.label} / 完成まであと少しです。</small>`, '#ec4899');
+            // =========================================================================
+            // 🎵 【改善B・仕上げ】ボーカル分離で口パクさせた映像に「元の伴奏入り高音質楽曲」を再合成
+            // （または Kling 3.0 Pro 単体動画に元の楽曲を合成）
+            // =========================================================================
+            if (finalVideoUrl && uploadedOriginalAudioUrl && (didSeparateVocals || selectedV11bMode === 'video')) {
+              try {
+                showAiStatus(`🎵 <strong>[仕上げ] 完成した映像に「元の伴奏入り高音質楽曲」を合体しています... (${elapsedSec}秒経過)</strong><br><small style="color:#6ee7b7;">口元の動きはボーカル声にピタッと合い、音楽は元の迫力ある伴奏付きになります！</small>`, '#10b981');
+                const mergeRes = await falClient.subscribe('fal-ai/ffmpeg-api/merge-audio-video', {
+                  input: {
+                    video_url: finalVideoUrl,
+                    audio_url: uploadedOriginalAudioUrl,
+                    start_offset: 0
+                  },
+                  logs: true
+                });
+                const mergeData = (mergeRes && mergeRes.data) ? mergeRes.data : mergeRes;
+                const mergedVideoUrl = (mergeData && mergeData.video && mergeData.video.url) || (mergeData && mergeData.video_url) || '';
+                if (mergedVideoUrl) {
+                  finalVideoUrl = mergedVideoUrl;
                 }
+              } catch (mergeErr) {
+                console.warn('FFmpeg audio-video merge skipped, using generated video directly:', mergeErr);
               }
-            });
-
-            const resData = (result && result.data) ? result.data : result;
-            finalVideoUrl = (resData && resData.video && resData.video.url) || (resData && resData.video_url) || '';
+            }
           }
         } catch (sdkErr) {
           console.warn('Fal client SDK notice, checking error or trying direct REST:', sdkErr);
