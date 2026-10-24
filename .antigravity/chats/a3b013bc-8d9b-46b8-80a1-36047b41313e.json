@@ -16,6 +16,18 @@
       "created_at": "2026-10-24T20:31:23.690Z",
       "sender": "ios",
       "is_cancelled": true
+    },
+    {
+      "id": "d00953d8-8d9a-4c6f-a9ed-d07dc9ce0bb0",
+      "role": "user",
+      "content": "回答までまだ時間がかかりますか？",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-24T22:53:48.843Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
