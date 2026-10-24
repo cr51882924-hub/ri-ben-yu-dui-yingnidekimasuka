@@ -93,11 +93,23 @@
       "id": "0cca7c35-76a0-4bfd-88a5-cbe57cb78fbd",
       "role": "user",
       "content": "生成しました。\n完全現状維持とは程遠い\n妖怪みたな、悪魔みたいな顔に変わってました。",
-      "status": "pending",
+      "status": "cancelled",
       "model": "gemini-4-argon-medium",
       "client_type": "gemini-bridge",
       "parent_message_id": null,
       "created_at": "2026-10-24T23:14:13.654Z",
+      "sender": "ios",
+      "is_cancelled": true
+    },
+    {
+      "id": "f47e09cd-cbd7-4555-8169-12f65ccc008f",
+      "role": "user",
+      "content": "生成しました。\n完全現状維持とは程遠い\n妖怪みたな、悪魔みたいな顔に変わってました。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-24T23:15:19.907Z",
       "sender": "ios",
       "is_cancelled": false
     }
