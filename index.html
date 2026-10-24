@@ -672,21 +672,76 @@
             </div>
           </div>
 
-          <!-- ② 使用するAIモデル一覧 -->
+          <!-- ========================================================
+               🎙️ 【改善B】AIボーカル自動分離（伴奏カット口パク解析 ➔ 原曲再合成）
+               ======================================================== -->
+          <div id="vocalSeparationCard" style="background: rgba(6, 78, 59, 0.35); border: 2px solid #10b981; border-radius: 16px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 1.08rem; font-weight: 900; color: #6ee7b7; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+              <span>🎙️ ②【改善B】AIボーカル自動分離（口パク精度アップ）：</span>
+              <span id="vocalSepStatusBadge" style="background: rgba(16, 185, 129, 0.3); border: 1.5px solid #34d399; color: #ecfdf5; font-size: 0.85rem; font-weight: 900; padding: 3px 10px; border-radius: 999px;">✨ ON：自動分離する（推奨）</span>
+            </div>
+            <p style="font-size: 0.9rem; color: #e2e8f0; margin: 0 0 12px 0; line-height: 1.5;">
+              ドラムやギター等の<strong>伴奏の音に反応して口が勝手にパクパク動くのを防ぐ機能</strong>です。<br>
+              AI（Demucs）が曲から「歌声だけ」を抜き出して口パクを計算し、<strong>完成した動画には元の伴奏入りの高音質曲を自動で合体</strong>させます。
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <button type="button" class="video-res-btn vocal-sep-btn active" data-sep="on" style="padding: 14px 10px;">
+                ✨ ON：歌声だけ抽出して口パク<br><small style="font-size: 0.78rem; color: #a7f3d0; font-weight: 700;">伴奏入りの曲に必須【おすすめ】</small>
+              </button>
+              <button type="button" class="video-res-btn vocal-sep-btn" data-sep="off" style="padding: 14px 10px;">
+                🎵 OFF：原曲のまま直接口パク<br><small style="font-size: 0.78rem; color: #cbd5e1; font-weight: 500;">アカペラ音源や時間短縮したい時</small>
+              </button>
+            </div>
+            <!-- 抽出されたボーカル音源の試聴プレビュー（生成時に自動表示） -->
+            <div id="isolatedVocalPreviewBox" class="hidden" style="margin-top: 12px; background: rgba(15, 23, 42, 0.9); border: 1.5px solid #34d399; border-radius: 12px; padding: 10px 12px;">
+              <div style="font-size: 0.88rem; font-weight: 800; color: #6ee7b7; margin-bottom: 6px;">
+                🎤 AIが抽出した「ボーカル声のみ」の音源（この声に合わせて口が動きます）：
+              </div>
+              <audio id="isolatedVocalAudioPlayer" controls preload="metadata" style="width: 100%; height: 38px;"></audio>
+            </div>
+          </div>
+
+          <!-- ③ 使用するAIモデル一覧（改善A：2段階ハイブリッド生成を最上位に搭載） -->
           <div style="font-size: 1.08rem; font-weight: 900; color: #fbcfe8; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-            <span>② 使用するAIモデルをタップして選択：</span>
+            <span>③ 使用するAI生成モード・モデルをタップして選択：</span>
             <span id="currentMaterialIndicatorBadge" style="background: rgba(168, 85, 247, 0.35); border: 1px solid #c084fc; color: #f0abfc; font-size: 0.85rem; font-weight: 800; padding: 3px 10px; border-radius: 999px;">📷 写真モード</span>
           </div>
 
           <!-- A. 写真／1コマ切り出し用AIモデル群（Photo または 動画パターンB） -->
           <div id="photoModelsGroup" class="models-grid-group">
-            <!-- Model 1: ByteDance OmniHuman v1.5 (Lip-Sync + Full Performance) -->
-            <button type="button" class="v11b-model-btn active" data-model="fal-ai/bytedance/omnihuman/v1.5" data-mode="lipsync" data-supports-prompt="true" data-label="ByteDance OmniHuman v1.5 (リップシンク)">
+            <!-- Model 0 (NEW v14.0 Flagship): 改善A・2段階ハイブリッド自動生成 (Kling 3.0 Pro ➔ Sync Lipsync v3) -->
+            <button type="button" class="v11b-model-btn active" data-model="hybrid-kling3-sync3" data-mode="hybrid_lipsync" data-supports-prompt="true" data-label="【改善A】2段階ハイブリッド生成 (Kling 3.0 Pro ➔ Sync v3)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🎤 ByteDance OmniHuman v1.5（一番人気・リップシンク）</strong>
+                <strong style="font-size: 1.16rem; color: #fde047;">👑 【改善A】2段階ハイブリッド生成（Kling 3.0 ➔ Sync v3 口パク）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.88rem; padding: 4px 12px; border-radius: 999px;">✔ 選択中</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲＋演出 ➔ 歌唱動画】歌声に合わせて口元・顔の表情・上半身の身振りまで同期する最高峰モデル（✨3つの演出プロンプト対応）</span>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.5; display: block;">
+                【プロ推奨・喋る証明写真を卒業！】①まず最新 <strong>Kling 3.0 Pro</strong> で写真から「映画のようにカメラと全身が動く動画」を作り、②続けて <strong>Sync Lipsync v3</strong> で口元を歌声にピタッと合わせる2段階を自動実行！（✨3つの演出プロンプトが100%劇的に効きます）
+              </span>
+            </button>
+
+            <!-- 改善A（2段階ハイブリッド）選択時の第2段階リップシンクAI切り替えサブボックス -->
+            <div id="hybridStage2SelectorBox" style="background: rgba(30, 27, 75, 0.85); border: 2px solid #eab308; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;">
+              <div style="font-size: 0.92rem; font-weight: 900; color: #fef08a; margin-bottom: 8px;">
+                🔗 2段階ハイブリッドの「口パク合成（第2段階）」に使うAI：
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button type="button" class="video-res-btn hybrid-stage2-btn active" data-stage2-model="fal-ai/sync-lipsync/v3" data-stage2-label="Sync Lipsync v3">
+                  🎥 Sync Lipsync v3<br><small style="font-size: 0.75rem; color: #fef08a; font-weight: 700;">自然な口元・長尺対応【推奨】</small>
+                </button>
+                <button type="button" class="video-res-btn hybrid-stage2-btn" data-stage2-model="fal-ai/kling-video/lipsync/audio-to-video" data-stage2-label="Kling LipSync">
+                  🎬 Kling LipSync<br><small style="font-size: 0.75rem; color: #cbd5e1; font-weight: 500;">Kling純正の口元合成（10秒以内）</small>
+                </button>
+              </div>
+            </div>
+
+            <!-- Model 1: ByteDance OmniHuman v1.5 (Lip-Sync + Full Performance) -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/bytedance/omnihuman/v1.5" data-mode="lipsync" data-supports-prompt="true" data-label="ByteDance OmniHuman v1.5 (リップシンク)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.15rem;">🎤 ByteDance OmniHuman v1.5（1段階・全身リップシンク）</strong>
+                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲＋演出 ➔ 1段階で歌唱動画】歌声に合わせて口元・顔の表情・上半身の身振りまで1回で同期するモデル（✨3つの演出プロンプト対応）</span>
             </button>
 
             <!-- Model 2: Kling AI Avatar v2 Pro (Lip-Sync) -->
@@ -765,10 +820,10 @@
             </button>
           </div>
 
-          <!-- ③ 歌い方・表情・演出スタイルの指定 -->
+          <!-- ④ 歌い方・表情・演出スタイルの指定 -->
           <div id="aiPromptStyleWrap">
             <div style="font-size: 1.05rem; font-weight: 900; color: #f3e8ff; margin-bottom: 10px;">
-              ③ 歌い方・カメラワーク・身体の演出指定（ワンタップ選択）：
+              ④ 歌い方・カメラワーク・身体の演出指定（ワンタップ選択）：
             </div>
 
             <!-- プロンプト非対応モデル（MiniMax H3 Lip-Sync等）選択時の正直な注意バナー -->
@@ -1086,9 +1141,9 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
   <script src="lame.min.js"></script>
-  <script src="audio-engine.js?v=20261019_131"></script>
-  <script src="presets.js?v=20261019_131"></script>
-  <script src="character-renderer.js?v=20261019_131"></script>
-  <script src="app.js?v=20261019_131"></script>
+  <script src="audio-engine.js?v=20261024_140"></script>
+  <script src="presets.js?v=20261024_140"></script>
+  <script src="character-renderer.js?v=20261024_140"></script>
+  <script src="app.js?v=20261024_140"></script>
 </body>
 </html>
