@@ -2010,6 +2010,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Helper: Extract Canvas as Lossless PNG Blob (Preserves 100% of character face contours & art style)
+  function canvasToPngBlob(canvas) {
+    return new Promise((resolve) => {
+      if (canvas && typeof canvas.toBlob === 'function') {
+        canvas.toBlob((blob) => resolve(blob), 'image/png');
+      } else {
+        resolve(null);
+      }
+    });
+  }
+
   // Apply completed AI video URL to Inline Player, Save Modal, and Stage
   async function handleCompletedAiVideo(videoUrl, modelLabel) {
     const dim = getTargetVideoDimensions();
@@ -2157,9 +2168,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const promptText = (aiVideoPromptInput && aiVideoPromptInput.value.trim())
+      let rawPromptText = (aiVideoPromptInput && aiVideoPromptInput.value.trim())
         ? aiVideoPromptInput.value.trim()
-        : 'The camera slowly pushes in toward the singer. Passionate singing performance, expressive eyebrows and eyes closing on emotional high notes, natural head tilt, lifting one hand toward the chest with heartfelt emotion, realistic upper body movement.';
+        : 'Strictly preserve the exact original face, facial features, eye shape, and art style from the reference image. The camera slowly pushes in toward the singer. Passionate singing performance facing forward, keeping eyes open and clear, lifting one hand toward the chest with heartfelt emotion, smooth upper body sway.';
+
+      // v14.1: 🔒 Identity & Art Style 100% Lock — sanitize words that cause AI to alter anime/illustration/photo faces
+      if (enableIdentityLock) {
+        rawPromptText = rawPromptText
+          .replace(/\b(photorealistic|hyperrealistic|realistic)\b/gi, 'consistent')
+          .replace(/eyes\s+closing(\s+on\s+emotional\s+high\s+notes)?/gi, 'keeping eyes open and clear')
+          .replace(/closing\s+eyes/gi, 'keeping eyes open');
+        if (!/preserve the exact original face/i.test(rawPromptText)) {
+          rawPromptText = `Strictly preserve the exact original face, facial features, eye shape, and art style from the reference image. Do not alter facial identity or art style. ${rawPromptText}`;
+        }
+      }
+      const promptText = rawPromptText;
 
       generateAiLipsyncBtn.disabled = true;
       const originalBtnHtml = generateAiLipsyncBtn.innerHTML;
