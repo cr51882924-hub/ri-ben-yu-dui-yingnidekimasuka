@@ -112,6 +112,18 @@
       "created_at": "2026-10-24T15:50:22.742Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "0dfa87fb-6f73-4a7e-b4c7-32f9bf55dbbf",
+      "role": "user",
+      "content": "このままここで進めます。\n\n最新のあなたの提案を再度おしえてください。",
+      "status": "pending",
+      "model": "auto",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-24T15:50:54.842Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
