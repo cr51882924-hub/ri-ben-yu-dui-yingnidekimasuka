@@ -724,26 +724,26 @@
             </div>
           </div>
 
-          <!-- ③ 使用するAIモデル一覧（v16.0: 顔生成ゼロ・元写真固定V2V口唇ピンポイント方式へ全面刷新） -->
+          <!-- ③ 使用するAIモデル一覧（v16.1: 顔生成ゼロ・元写真100%固定V2V口唇ピンポイント方式のみ厳選） -->
           <div style="font-size: 1.08rem; font-weight: 900; color: #fbcfe8; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-            <span>③ 使用するAIモデルをタップして選択（①〜④は「顔生成ゼロ・本人100%固定」方式）：</span>
+            <span>③ 使用するAIモデルをタップして選択（すべて「顔生成ゼロ・元写真100%固定」方式）：</span>
             <span id="currentMaterialIndicatorBadge" style="background: rgba(16, 185, 129, 0.35); border: 1px solid #34d399; color: #6ee7b7; font-size: 0.85rem; font-weight: 800; padding: 3px 10px; border-radius: 999px;">🔒 写真100%固定V2Vモード</span>
           </div>
 
-          <!-- A. 写真／1コマ切り出し用AIモデル群（v16.0: 元写真無劣化ビデオ化 ➔ Video-to-Video 口唇限定同期） -->
-          <div id="photoModelsGroup" class="models-grid-group">
-            <!-- Model 1 (NEW v16.0 DEFAULT): Photo-Lock FFmpeg ➔ Sync-3 Video-to-Video (lips-only) -->
+          <!-- A. 写真／1コマ切り出し用AIモデル群（v16.1: 元写真無劣化ビデオ化 ➔ Video-to-Video 口唇限定同期のみ） -->
+          <div id="photoModelsGroup" class="models-grid-group" style="margin-bottom: 18px;">
+            <!-- Model 1 (DEFAULT): Photo-Lock FFmpeg ➔ Sync-3 Video-to-Video (lips-only) -->
             <button type="button" class="v11b-model-btn active" data-model="fal-ai/sync-lipsync/v3" data-mode="photolock_v2v" data-supports-prompt="false" data-label="🔒 Sync-3 Video Lips-Only (顔生成ゼロ・元写真100%固定)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.16rem; color: #6ee7b7;">👑 🔒 ① Sync-3 Video Lips-Only（【最推奨】顔生成ゼロ・元写真100%そのまま口唇のみ同期）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.88rem; padding: 4px 12px; border-radius: 999px;">✔ 選択中</span>
               </div>
               <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.5; display: block;">
-                【別人化ゼロ！】AIに顔や頭を作らせる旧「image-to-video方式」を廃止。<strong>アップした写真をそのまま無劣化固定ビデオ化し、動画専用の `sync-lipsync/v3`（`model_mode: "lips"`＝唇のみ編集）で口唇だけを歌わせます。</strong>目・鼻・輪郭・画風は100%あなたの写真のまま絶対に変わりません！
+                【別人化ゼロ！】アップした写真をそのまま無劣化固定ビデオ化し、動画専用の `sync-lipsync/v3`（`model_mode: "lips"`＝唇のみ編集）で<strong>くちびるだけを歌わせます。</strong>目・鼻・輪郭・画風は100%あなたの写真のまま絶対に変わりません！
               </span>
             </button>
 
-            <!-- Model 2 (NEW v16.0): Photo-Lock FFmpeg ➔ Sync React-1 (model_mode: "lips" strict minimal facial change) -->
+            <!-- Model 2: Photo-Lock FFmpeg ➔ Sync React-1 (model_mode: "lips" strict minimal facial change) -->
             <button type="button" class="v11b-model-btn" data-model="fal-ai/sync-lipsync/react-1" data-mode="photolock_v2v" data-supports-prompt="false" data-label="🔒 Sync React-1 Lips-Only (唇のみ最小変化モード)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.15rem; color: #a7f3d0;">🔒 ② Sync React-1 Lips-Only（唇のみ最小編集モード `model_mode: "lips"`）</strong>
@@ -754,7 +754,7 @@
               </span>
             </button>
 
-            <!-- Model 3 (NEW v16.0): Photo-Lock FFmpeg ➔ Kling Video LipSync / LatentSync V2V -->
+            <!-- Model 3: Photo-Lock FFmpeg ➔ Kling Video LipSync / LatentSync V2V -->
             <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/lipsync/audio-to-video" data-mode="photolock_v2v" data-supports-prompt="false" data-label="🔒 Kling LipSync V2V (写真固定ビデオ ➔ 口マスク専用)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.15rem; color: #bae6fd;">🔒 ③ Kling LipSync V2V ／ LatentSync（写真固定ビデオ ➔ 口周りマスク専用）</strong>
@@ -765,7 +765,7 @@
               </span>
             </button>
 
-            <!-- Model 4 (NEW v16.0): Photo-Lock FFmpeg ➔ HeyGen v3 Precision / VEED v2 -->
+            <!-- Model 4: Photo-Lock FFmpeg ➔ HeyGen v3 Precision / VEED v2 -->
             <button type="button" class="v11b-model-btn" data-model="fal-ai/heygen/v3/lipsync/precision" data-mode="photolock_v2v" data-supports-prompt="false" data-label="🔒 HeyGen v3 Precision V2V (写真固定ビデオ ➔ 精密アテレコ)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
                 <strong style="font-size: 1.15rem; color: #f5d0fe;">🔒 ④ HeyGen v3 Precision ／ VEED v2（写真固定ビデオ ➔ 高精度アテレコV2V）</strong>
@@ -775,50 +775,10 @@
                 【顔生成ゼロ・動画アテレコ方式】元写真の固定ビデオに対し、HeyGen v3 Precision（および VEED Lipsync v2）で元の顔立ちを保ったまま口元だけを精密にアテレコ合成します
               </span>
             </button>
-
-            <!-- Model 5 (Optional Full-Body Generation - clearly warned that AI redraws face): OmniHuman 2.0 -->
-            <button type="button" class="v11b-model-btn" data-model="bytedance/omnihuman/v2" data-mode="lipsync" data-supports-prompt="true" data-label="ByteDance OmniHuman 2.0 (※全身動きますがAIが顔を再描画します)">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.08rem; color: #cbd5e1;">⚠️ ⑤【参考：全身生成】ByteDance OmniHuman 2.0（※AIが顔を描き直すため顔が変わります）</strong>
-                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
-              </div>
-              <span class="v11b-model-desc" style="font-size: 0.9rem; line-height: 1.45; display: block; color: #94a3b8;">
-                ※注意：このモデルは全身やカメラを動かすため、AIが顔全体をゼロから描き直します（別人の顔になりやすいため、写真の顔を100%維持したい場合は上の①〜④をご使用ください）
-              </span>
-            </button>
-
-            <!-- Model 6 (Optional Hybrid): 改善A・2段階ハイブリッド -->
-            <button type="button" class="v11b-model-btn" data-model="hybrid-kling4-sync3" data-mode="hybrid_lipsync" data-supports-prompt="true" data-label="【参考：全身生成】2段階ハイブリッド (Kling 4.0 ➔ Sync v3)">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.08rem; color: #cbd5e1;">⚠️ ⑥【参考：全身生成】2段階ハイブリッド Kling 4.0 ➔ Sync v3（※Klingが顔を描き直します）</strong>
-                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
-              </div>
-              <span class="v11b-model-desc" style="font-size: 0.9rem; line-height: 1.45; display: block; color: #94a3b8;">
-                ※注意：第1段階のKling 4.0がカメラと身体を動かす際に顔をAI再生成します。写真の顔をそのまま維持したい場合は必ず上の①〜④をお選びください。
-              </span>
-            </button>
-
-            <!-- 改善A（2段階ハイブリッド）選択時の第2段階リップシンクAI切り替えサブボックス（初期非表示） -->
-            <div id="hybridStage2SelectorBox" class="hidden" style="background: rgba(30, 27, 75, 0.85); border: 2px solid #eab308; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;">
-              <div style="font-size: 0.92rem; font-weight: 900; color: #fef08a; margin-bottom: 8px;">
-                🔗 2段階ハイブリッドの「口パク合成（第2段階）」に使う最新AI：
-              </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-                <button type="button" class="hybrid-stage2-btn active" data-stage2-model="fal-ai/sync-lipsync/v3" data-stage2-label="Sync Lipsync v3">
-                  🎥 Sync v3<br><small style="font-size: 0.72rem; color: #fef08a; font-weight: 700;">最新標準【推奨】</small>
-                </button>
-                <button type="button" class="hybrid-stage2-btn" data-stage2-model="fal-ai/heygen/v3/lipsync/precision" data-stage2-label="HeyGen v3 Precision">
-                  💎 HeyGen v3<br><small style="font-size: 0.72rem; color: #cbd5e1; font-weight: 500;">高精度Precision</small>
-                </button>
-                <button type="button" class="hybrid-stage2-btn" data-stage2-model="veed/lipsync/v2" data-stage2-label="VEED Lipsync v2">
-                  ✨ VEED v2<br><small style="font-size: 0.72rem; color: #cbd5e1; font-weight: 500;">自然な口元合成</small>
-                </button>
-              </div>
-            </div>
           </div>
 
           <!-- B. 動画そのまま口元リップシンク用AIモデル群（動画パターン①/A） -->
-          <div id="videoModelsGroup" class="models-grid-group hidden">
+          <div id="videoModelsGroup" class="models-grid-group hidden" style="margin-bottom: 18px;">
             <!-- Model V1: Sync Lipsync v3 -->
             <button type="button" class="v11b-model-btn" data-model="fal-ai/sync-lipsync/v3" data-mode="videolipsync" data-supports-prompt="false" data-label="Sync Lipsync v3 (最新動画口パク同期)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
@@ -845,36 +805,6 @@
               </div>
               <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【動画＋楽曲 ➔ 歌唱動画】VEED最新v2リップシンクAI。動いている人物動画の口元を控えめで自然な形に合わせて合成</span>
             </button>
-          </div>
-
-          <!-- ④ 歌い方・表情・演出スタイルの指定（顔崩壊ワード完全排除・穏やか仕様） -->
-          <div id="aiPromptStyleWrap">
-            <div style="font-size: 1.05rem; font-weight: 900; color: #f3e8ff; margin-bottom: 10px;">
-              ④ 歌い方・カメラワークの指定（顔が歪まない穏やか仕様）：
-            </div>
-
-            <!-- 顔生成ゼロ・口唇限定V2Vモデル（①〜④）選択時の安心案内バナー（初期表示） -->
-            <div id="promptUnsupportedNotice" style="background: rgba(6, 78, 59, 0.45); border: 2px solid #10b981; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; color: #ecfdf5; font-size: 0.92rem; line-height: 1.55; font-weight: 700;">
-              🔒 <strong>現在選択中のモデル（①〜④）は「AIによる顔の再生成を一切行わず、元の写真の目・鼻・輪郭を100%固定してくちびる（口唇）のみを動かす」本人完全維持モードです。</strong><br>
-              プロンプト（指示文）による顔の変形や別人化を防ぐため、下の演出プロンプトは自動的にスキップされます（そのまま下の生成ボタンを押してください）。
-            </div>
-
-            <div id="promptStyleButtonsBox" style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 14px; opacity: 0.45;">
-              <button type="button" class="ai-style-chip active" data-style="sway" data-prompt="Calm, gentle singing with minimal movement.">
-                🎤 優しい歌唱（穏やかな表情で歌う）
-              </button>
-              <button type="button" class="ai-style-chip" data-style="zoom" data-prompt="Static portrait shot. Calm and gentle ballad singing with minimal, delicate movement.">
-                🎥 カメラ固定＆穏やかバラード
-              </button>
-              <button type="button" class="ai-style-chip" data-style="dynamic" data-prompt="Relaxed singing with subtle rhythmic motion.">
-                ⚡ 軽やかリズム
-              </button>
-            </div>
-
-            <label for="aiVideoPromptInput" style="display: block; font-size: 0.95rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 700;">
-              📝 演出プロンプト（※①〜④の「顔100%固定モード」では顔変わり防止のため使用しません）：
-            </label>
-            <input type="text" id="aiVideoPromptInput" value="Calm, gentle singing with minimal movement." placeholder="演出の指示（プロンプト）..." style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 14px; color: #fff; font-size: 1rem; margin-bottom: 18px; opacity: 0.45;">
           </div>
 
           <!-- AI生成ステータス＆リアルタイム進捗ボックス -->
