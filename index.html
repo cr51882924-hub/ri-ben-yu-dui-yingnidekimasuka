@@ -685,10 +685,10 @@
               AI（Demucs）が曲から「歌声だけ」を抜き出して口パクを計算し、<strong>完成した動画には元の伴奏入りの高音質曲を自動で合体</strong>させます。
             </p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <button type="button" class="video-res-btn vocal-sep-btn active" data-sep="on" style="padding: 14px 10px;">
+              <button type="button" class="vocal-sep-btn active" data-sep="on" style="padding: 14px 10px;">
                 ✨ ON：歌声だけ抽出して口パク<br><small style="font-size: 0.78rem; color: #a7f3d0; font-weight: 700;">伴奏入りの曲に必須【おすすめ】</small>
               </button>
-              <button type="button" class="video-res-btn vocal-sep-btn" data-sep="off" style="padding: 14px 10px;">
+              <button type="button" class="vocal-sep-btn" data-sep="off" style="padding: 14px 10px;">
                 🎵 OFF：原曲のまま直接口パク<br><small style="font-size: 0.78rem; color: #cbd5e1; font-weight: 500;">アカペラ音源や時間短縮したい時</small>
               </button>
             </div>
@@ -714,10 +714,10 @@
               AIに渡す口パク計算用の音声だけを「優しい会話レベルの音量（-13dB）」に自動調整して<strong>元の顔の可愛さ・美しさを保ったまま上品に口を動かし</strong>、最後に100%元の大迫力の楽曲を合体させます。
             </p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <button type="button" class="video-res-btn identity-lock-btn active" data-lock="on" style="padding: 14px 10px;">
+              <button type="button" class="identity-lock-btn active" data-lock="on" style="padding: 14px 10px;">
                 🔒 ON：顔崩壊を防止して上品に歌う<br><small style="font-size: 0.78rem; color: #f5d0fe; font-weight: 700;">妖怪顔・大口開き防止【必須推奨】</small>
               </button>
-              <button type="button" class="video-res-btn identity-lock-btn" data-lock="off" style="padding: 14px 10px;">
+              <button type="button" class="identity-lock-btn" data-lock="off" style="padding: 14px 10px;">
                 🔓 OFF：音量そのまま大きく口を開ける<br><small style="font-size: 0.78rem; color: #cbd5e1; font-weight: 500;">激しい曲では顔が歪むことがあります</small>
               </button>
             </div>
@@ -770,13 +770,13 @@
                 🔗 2段階ハイブリッドの「口パク合成（第2段階）」に使う最新AI：
               </div>
               <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-                <button type="button" class="video-res-btn hybrid-stage2-btn active" data-stage2-model="fal-ai/sync-lipsync/v3" data-stage2-label="Sync Lipsync v3">
+                <button type="button" class="hybrid-stage2-btn active" data-stage2-model="fal-ai/sync-lipsync/v3" data-stage2-label="Sync Lipsync v3">
                   🎥 Sync v3<br><small style="font-size: 0.72rem; color: #fef08a; font-weight: 700;">最新標準【推奨】</small>
                 </button>
-                <button type="button" class="video-res-btn hybrid-stage2-btn" data-stage2-model="fal-ai/heygen/v3/lipsync/precision" data-stage2-label="HeyGen v3 Precision">
+                <button type="button" class="hybrid-stage2-btn" data-stage2-model="fal-ai/heygen/v3/lipsync/precision" data-stage2-label="HeyGen v3 Precision">
                   💎 HeyGen v3<br><small style="font-size: 0.72rem; color: #cbd5e1; font-weight: 500;">高精度Precision</small>
                 </button>
-                <button type="button" class="video-res-btn hybrid-stage2-btn" data-stage2-model="veed/lipsync/v2" data-stage2-label="VEED Lipsync v2">
+                <button type="button" class="hybrid-stage2-btn" data-stage2-model="veed/lipsync/v2" data-stage2-label="VEED Lipsync v2">
                   ✨ VEED v2<br><small style="font-size: 0.72rem; color: #cbd5e1; font-weight: 500;">自然な口元合成</small>
                 </button>
               </div>
