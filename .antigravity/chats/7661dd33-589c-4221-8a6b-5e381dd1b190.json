@@ -4,5 +4,18 @@
   "createdAt": "2026-10-25T16:04:51.535Z",
   "filename": "7661dd33-589c-4221-8a6b-5e381dd1b190.json",
   "geminiStarted": false,
-  "messages": []
+  "messages": [
+    {
+      "id": "90631b37-ae64-4ea5-8860-34403e6b3692",
+      "role": "user",
+      "content": "全ての選択肢で、写真のキャラの顔ではなく、新しく創作した顔になります。\n\nあと、私はいちいち確認したくありません。開発しているあなたが確認をしてちゃんと完成した状態で私にしらせてください。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-25T16:04:53.429Z",
+      "sender": "ios",
+      "is_cancelled": false
+    }
+  ]
 }
