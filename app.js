@@ -958,9 +958,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedHybridStage2Model = 'fal-ai/sync-lipsync/v3';
   let selectedHybridStage2Label = 'Sync Lipsync v3';
 
-  let selectedV11bModel = 'bytedance/omnihuman/v2';
-  let selectedV11bMode = 'lipsync';
-  let selectedV11bLabel = 'ByteDance OmniHuman 2.0 (最新v2・高精細リップシンク)';
+  let selectedV11bModel = 'fal-ai/sync-lipsync/v3';
+  let selectedV11bMode = 'photolock_v2v';
+  let selectedV11bLabel = '🔒 Sync-3 Video Lips-Only (顔生成ゼロ・元写真100%固定)';
   let selectedAiPromptStyle = 'sway';
 
   // --- 5-Layer Persistent Key Vault (Safari + iOS Home Screen Web App) ---
@@ -1255,9 +1255,9 @@ document.addEventListener('DOMContentLoaded', () => {
       activePill.style.color = '';
     }
 
-    selectedV11bModel = targetBtn.dataset.model || 'bytedance/omnihuman/v2';
-    selectedV11bMode = targetBtn.dataset.mode || 'lipsync';
-    selectedV11bLabel = targetBtn.dataset.label || 'ByteDance OmniHuman 2.0 (最新v2・高精細リップシンク)';
+    selectedV11bModel = targetBtn.dataset.model || 'fal-ai/sync-lipsync/v3';
+    selectedV11bMode = targetBtn.dataset.mode || 'photolock_v2v';
+    selectedV11bLabel = targetBtn.dataset.label || '🔒 Sync-3 Video Lips-Only (顔生成ゼロ・元写真100%固定)';
 
     // Toggle Hybrid Stage 2 sub-selector visibility
     const hybridStage2SelectorBox = document.getElementById('hybridStage2SelectorBox');
@@ -1344,20 +1344,20 @@ document.addEventListener('DOMContentLoaded', () => {
       enableIdentityLock = (btn.dataset.lock === 'on');
       if (identityLockStatusBadge) {
         if (enableIdentityLock) {
-          identityLockStatusBadge.textContent = '🔒 ON：穏やか口パク＆顔保護（推奨）';
+          identityLockStatusBadge.textContent = '🔒 ON：元写真の顔100%固定（必須推奨）';
           identityLockStatusBadge.style.background = 'rgba(217, 70, 239, 0.35)';
           identityLockStatusBadge.style.borderColor = '#f0abfc';
           identityLockStatusBadge.style.color = '#fdf4ff';
         } else {
-          identityLockStatusBadge.textContent = '🔓 OFF：音量そのまま大きく口を開ける';
+          identityLockStatusBadge.textContent = '🔓 OFF：保護ロックなし';
           identityLockStatusBadge.style.background = 'rgba(148, 163, 184, 0.25)';
           identityLockStatusBadge.style.borderColor = '#94a3b8';
           identityLockStatusBadge.style.color = '#e2e8f0';
         }
       }
       showToast(enableIdentityLock
-        ? '🔒 顔崩壊（妖怪化）防止＆穏やか口パク保護を「ON」にしました'
-        : '🔓 顔崩壊防止ロックを「OFF」にしました');
+        ? '🔒 「別人化ゼロ」元写真100%顔固定・口唇限定ロックを「ON」にしました'
+        : '🔓 顔固定ロックを「OFF」にしました');
     });
   });
 
