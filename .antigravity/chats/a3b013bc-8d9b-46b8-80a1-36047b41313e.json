@@ -196,6 +196,18 @@
       "created_at": "2026-10-25T07:55:55.755Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "2b190c91-b072-4fd6-a01d-f88270cf3605",
+      "role": "agent",
+      "content": "ご指摘の通り、こちらのプログラム上のミス（バグ）でした。混乱させてしまい大変申し訳ございません。\n\n### 原因と修正内容\n* **原因**:\n  [index.html](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/index.html#L688-L781) にて、「②【改善B】AIボーカル自動分離」「②-2 顔崩壊防止ロック」「改善Aの第2段階AI選択」の各ボタンに、見た目のデザインを共通化する目的で解像度ボタンと同じクラス名（`video-res-btn`）が付与されていました。\n  そのため、[app.js](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/app.js#L1913-L1928) の解像度切り替え処理まで同時に反応してしまい、本来の通知メッセージが「🎞️ 解像度を〜に設定しました」に上書きされる不具合が起きていました（さらに他方のボタンの選択枠が外れてしまう副作用も発生していました）。\n* **修正**:\n  1. [index.html](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/index.html#L688-L781) で各ボタンのクラス名を完全に分離（`vocal-sep-btn` / `identity-lock-btn` / `hybrid-stage2-btn`）しました。\n  2. [style.css](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/style.css#L2674-L2716) でそれぞれのボタン専用のデザインと選択時ハイライトを設定しました。\n  3. [app.js](https://github.com/cr51882924-hub/ri-ben-yu-dui-yingnidekimasuka/blob/main/app.js#L1913-L1928) でも解像度ボタン（`.video-res-btn[data-res]`）のみに反応するよう厳密化しました。\n\n現在はそれぞれのボタンを押した際、対応する正しいコメント（改善BのON/OFF、顔崩壊防止ロックのON/OFFなど）だけが表示され、選択状態も互いに干渉しないよう修正済みです。\n\nこちらから修正後の画面をご確認いただけます：\nhttps://antigravity.luch.dev/site/99be14d3-31d5-4abb-884c-c3b755893105/e9856f67f45823b115dd6ebe/",
+      "status": "completed",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "5d435f5e-2c09-4fa0-affc-a8d114ec3507",
+      "created_at": "2026-10-25T07:59:02.987Z",
+      "sender": "macOS",
+      "is_cancelled": false
     }
   ]
 }
