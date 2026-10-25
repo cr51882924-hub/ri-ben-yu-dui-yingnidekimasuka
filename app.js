@@ -1910,10 +1910,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Event Listeners for Resolution Buttons (720p / 1080p - strictly 1 active item)
-  document.querySelectorAll('.video-res-btn').forEach(btn => {
+  document.querySelectorAll('.video-res-btn[data-res]').forEach(btn => {
     btn.addEventListener('click', () => {
       triggerHaptic();
-      document.querySelectorAll('.video-res-btn').forEach(b => {
+      document.querySelectorAll('.video-res-btn[data-res]').forEach(b => {
         b.classList.remove('active');
         b.style.background = '';
         b.style.borderColor = '';
