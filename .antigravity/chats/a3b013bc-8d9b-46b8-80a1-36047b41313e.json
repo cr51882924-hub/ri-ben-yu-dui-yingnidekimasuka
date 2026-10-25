@@ -213,13 +213,13 @@
       "id": "5a423eed-f298-4a4d-9611-ba7d9aa81eed",
       "role": "user",
       "content": "推奨されているままにやりました。写真通りにはならず顔を生成しちゃっています。\n化け物までは酷くないが、\n別人です。\n\nこれではだめです。使えばクレームの嵐です。",
-      "status": "pending",
+      "status": "cancelled",
       "model": "gemini-4-argon-medium",
       "client_type": "gemini-bridge",
       "parent_message_id": null,
       "created_at": "2026-10-25T15:32:14.619Z",
       "sender": "ios",
-      "is_cancelled": false
+      "is_cancelled": true
     }
   ]
 }
