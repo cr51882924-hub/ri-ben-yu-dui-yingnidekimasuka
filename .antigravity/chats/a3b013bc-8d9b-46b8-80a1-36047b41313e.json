@@ -184,6 +184,18 @@
       "created_at": "2026-10-24T23:29:20.551Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "5d435f5e-2c09-4fa0-affc-a8d114ec3507",
+      "role": "user",
+      "content": "まだ生成前ですが、\n②改善Ｂや、顔崩壊〜の部分の選択肢を押すと、\n\n解像度が〜〜というコメントがでます。\n\nボタンの内容と関係のないコメントがでるのは、ミスでしょうか？\n使う側としては非常に困惑します。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-25T07:55:55.755Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
