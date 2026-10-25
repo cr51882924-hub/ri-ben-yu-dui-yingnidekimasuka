@@ -10153,3 +10153,1906 @@ body.zoom-huge .player-status-badge {
 </html>
 
 ```
+
+### 5.8 `audio-cutter.html`
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="音声カッター">
+  <meta name="theme-color" content="#090d16">
+  <title>楽曲カッター＆トリマー - 曲の長さを決めてカット音声をダウンロード</title>
+  <link rel="stylesheet" href="style.css?v=20261019_131">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* Specific styling for standalone audio cutter tool */
+    .cutter-container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px 14px 100px 14px;
+    }
+    .tool-header-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .tool-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .tool-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+    }
+    .switch-studio-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #f1f5f9;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .switch-studio-link:hover, .switch-studio-link:active {
+      background: rgba(236, 72, 153, 0.25);
+      border-color: #ec4899;
+      transform: translateY(-1px);
+    }
+    .tool-title {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: #fff;
+      margin: 0 0 6px 0;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+    }
+    .tool-sub {
+      font-size: 0.92rem;
+      color: #94a3b8;
+      margin: 0;
+      line-height: 1.5;
+    }
+    /* Format selection card */
+    .export-format-card {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+    .format-options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .format-option-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .format-option-label:has(input:checked) {
+      border-color: #a855f7;
+      background: rgba(168, 85, 247, 0.15);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    }
+    .format-option-label input[type="radio"] {
+      margin-top: 3px;
+      accent-color: #a855f7;
+      width: 18px;
+      height: 18px;
+    }
+    .format-option-text strong {
+      display: block;
+      color: #fff;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+    .format-option-text span {
+      display: block;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      line-height: 1.3;
+    }
+    .download-giant-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      border-radius: 18px;
+      padding: 20px 16px;
+      font-size: 1.25rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-top: 18px;
+    }
+    .download-giant-btn:active {
+      transform: scale(0.98);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .download-giant-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+    }
+    .progress-box {
+      margin-top: 14px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .progress-bar-track {
+      background: rgba(255, 255, 255, 0.1);
+      height: 10px;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #10b981, #34d399);
+      height: 100%;
+      width: 0%;
+      transition: width 0.15s ease;
+    }
+    .loaded-file-card {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1.5px solid rgba(16, 185, 129, 0.4);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .loaded-file-icon {
+      font-size: 1.8rem;
+    }
+    .loaded-file-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .loaded-file-name {
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .loaded-file-meta {
+      color: #6ee7b7;
+      font-size: 0.82rem;
+    }
+    .dragover {
+      border-color: #a855f7 !important;
+      background: rgba(168, 85, 247, 0.15) !important;
+    }
+  </style>
+</head>
+<body style="background-color: #090d16; color: #f1f5f9; font-family: 'Noto Sans JP', sans-serif;">
+
+  <div class="cutter-container">
+
+    <!-- Header Navigation & Title -->
+    <header class="tool-header-card">
+      <div class="tool-header-top">
+        <span class="tool-badge">✂️ 楽曲切り出し専用ツール</span>
+        <a href="index.html" class="switch-studio-link">
+          <span>✨ 新生MVスタジオへ戻る</span>
+          <span>➔</span>
+        </a>
+      </div>
+      <h1 class="tool-title">楽曲カッター＆サビ抽出ツール</h1>
+      <p class="tool-sub">
+        曲全体のサウンドを聴きながら使いたい区間（サビやワンフレーズ）を直感的にカットして、
+        元の拡張子（MP3/WAV等）または選んだ形式で即座にダウンロードできます。
+      </p>
+    </header>
+
+    <!-- STEP 1: 楽曲をアップロード -->
+    <section class="large-section">
+      <div class="section-title-wrap">
+        <span class="step-badge highlight-badge">1</span>
+        <div>
+          <h2 class="section-title">楽曲ファイルを選択する</h2>
+          <p class="section-sub">スマホの音楽やファイル（MP3, WAV, M4A, AAC等）を選べます</p>
+        </div>
+      </div>
+
+      <!-- Upload card -->
+      <label for="audioFileInput" class="giant-action-card audio-upload-card" id="audioUploadCard" role="button" tabindex="0">
+        <span class="action-card-icon">🎵</span>
+        <div class="action-card-text">
+          <strong id="audioUploadTitle">楽曲をアップロード（タップして選択）</strong>
+          <span id="audioUploadHint">MP3, WAV, M4A, AAC, FLAC対応 / ドラッグ＆ドロップも可能</span>
+        </div>
+      </label>
+      <input type="file" id="audioFileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg" class="sr-only-input">
+
+      <!-- Loaded Banner -->
+      <div id="fileLoadedBanner" class="loaded-file-card hidden">
+        <span class="loaded-file-icon">🎧</span>
+        <div class="loaded-file-info">
+          <div id="loadedFileName" class="loaded-file-name">読み込み完了</div>
+          <div id="loadedFileMeta" class="loaded-file-meta">形式: MP3 | 00:00</div>
+        </div>
+      </div>
+
+      <!-- Quick Demo Song Button -->
+      <div style="margin-top: 12px; text-align: center;">
+        <button id="loadDemoBtn" type="button" class="btn-sub-action" style="width: 100%; border-style: dashed;">
+          <span>🌟 手元に曲がない場合は「公式デモ曲（Shining Beat）」で試す</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 2: 曲全体の秒数チェック＆サビ探し -->
+    <section class="large-section" style="margin-top: 24px;">
+      <div class="section-title-wrap">
+        <span class="step-badge highlight-badge">2</span>
+        <div>
+          <h2 class="section-title">曲全体の秒数チェック＆サビ探し</h2>
+          <p class="section-sub">曲を流して秒数を確認しながら「いまの秒数を開始位置にセット」でワンタッチ指定できます</p>
+        </div>
+      </div>
+
+      <div class="trimmer-card">
+        <!-- リアルタイム秒数ディスプレイ（1段目: ラベル＋再生状態バッジ / 2段目: 秒数と曲全体の時間・重なりゼロ＆縦揺れゼロ固定） -->
+        <div class="current-time-large-display">
+          <div class="time-display-top-row">
+            <span class="time-label">⏱ 現在の再生位置:</span>
+            <div id="fullPlayerStatusBadge" class="player-status-badge">一時停止中</div>
+          </div>
+          <div class="time-readout-wrap">
+            <span id="fullPlayerCurrentTime" class="time-counter-big">00:00</span>
+            <span class="time-slash">/</span>
+            <span id="fullPlayerTotalTime" class="time-counter-total">00:30</span>
+          </div>
+        </div>
+
+        <!-- タイムライン・波形トラック -->
+        <div class="timeline-visual-container">
+          <div class="timeline-track" id="timelineTrack">
+            <!-- 選択中の動画区間ハイライト帯 -->
+            <div class="timeline-selection-range" id="timelineSelectionRange">
+              <span class="selection-range-label">✂️ 切り出し区間</span>
+            </div>
+            <!-- 現在の再生位置インジケーター（再生針） -->
+            <div class="timeline-playhead" id="timelinePlayhead"></div>
+          </div>
+          <input type="range" id="fullSongSeekSlider" class="timeline-seek-slider" min="0" max="30" value="0" step="0.5" aria-label="曲全体の再生位置をシーク">
+          <div class="timeline-labels">
+            <span>00:00 (曲の始まり)</span>
+            <span id="timelineMidLabel">00:15</span>
+            <span id="timelineEndLabel">00:30 (曲の終わり)</span>
+          </div>
+        </div>
+
+        <!-- 再生操作＆ワンタップ頭出しボタン群 -->
+        <div class="full-player-controls-row">
+          <button id="fullPlayToggleBtn" class="giant-btn giant-play-inline-btn" type="button">
+            <span id="fullPlayIcon">▶</span>
+            <span id="fullPlayLabel">曲全体を再生する</span>
+          </button>
+
+          <button id="fullPlayRewindBtn" class="btn-sub-action" type="button" title="曲の最初に戻る">
+            <span>⏮ 最初から (00:00)</span>
+          </button>
+
+          <button id="setStartFromCurrentBtn" class="btn-start-sync-action" type="button">
+            <span class="btn-icon">📍</span>
+            <span>いまの秒数を開始位置にセット</span>
+          </button>
+
+          <button id="setEndFromCurrentBtn" class="btn-sub-action" type="button" style="border-color: #38bdf8;">
+            <span class="btn-icon">🏁</span>
+            <span>いまの秒数を終了位置にセット</span>
+          </button>
+        </div>
+        <div class="preview-helper-text">💡 曲を聴きながらサビが来たら「📍 いまの秒数を開始位置にセット」を押すと、一発で開始位置を合わせられます！</div>
+      </div>
+    </section>
+
+    <!-- STEP 3: 区間・長さの調整 -->
+    <section class="large-section" style="margin-top: 24px;">
+      <div class="section-title-wrap">
+        <span class="step-badge highlight-badge">3</span>
+        <div>
+          <h2 class="section-title">切り出す区間・長さを微調整する</h2>
+          <p class="section-sub">開始位置と長さ（秒数）を数値入力やスライダーで直感的に調整できます</p>
+        </div>
+      </div>
+
+      <div class="trimmer-card">
+        <!-- 区間ステータスボックス -->
+        <div class="trimmer-status-box">
+          <div class="trim-stat">
+            <span class="stat-label">切り出し開始位置:</span>
+            <strong id="trimStartReadout" class="stat-val">00:00</strong>
+          </div>
+          <div class="trim-arrow">〜</div>
+          <div class="trim-stat">
+            <span class="stat-label">切り出し終了位置:</span>
+            <strong id="trimEndReadout" class="stat-val">00:30</strong>
+          </div>
+          <div class="trim-stat total">
+            <span class="stat-label">カット後の長さ:</span>
+            <strong id="trimDurationReadout" class="stat-val highlight">30秒間</strong>
+          </div>
+        </div>
+
+        <!-- ① 開始位置 直接入力 ＆ 微調整 -->
+        <div class="trim-direct-input-card">
+          <div class="input-card-header">
+            <span class="input-card-title">① 曲のどこから始めるか（開始位置）</span>
+            <span class="input-card-badge" id="startPosBadge">00:00 からスタート</span>
+          </div>
+
+          <div class="min-sec-input-row">
+            <div class="time-input-group">
+              <input type="number" id="trimStartMinInput" class="time-num-input" min="0" max="59" value="0" inputmode="numeric" aria-label="開始位置（分）">
+              <span class="time-unit">分</span>
+            </div>
+            <span class="time-colon">:</span>
+            <div class="time-input-group">
+              <input type="number" id="trimStartSecInput" class="time-num-input" min="0" max="59" value="0" inputmode="numeric" aria-label="開始位置（秒）">
+              <span class="time-unit">秒</span>
+            </div>
+          </div>
+
+          <!-- 微調整ボタン -->
+          <div class="stepper-buttons-row">
+            <button type="button" class="stepper-btn" id="startMinus10Btn">◀ -10秒</button>
+            <button type="button" class="stepper-btn" id="startMinus1Btn">◀ -1秒</button>
+            <button type="button" class="stepper-btn" id="startPlus1Btn">+1秒 ▶</button>
+            <button type="button" class="stepper-btn" id="startPlus10Btn">+10秒 ▶</button>
+          </div>
+
+          <input type="range" id="trimStartSlider" class="super-fat-slider" min="0" max="300" value="0" step="1" aria-label="開始秒数スライダー">
+          <div class="slider-subtext">数字を直接タップして入力するか、スライダーまたは「-10秒 / +10秒」ボタンで直感調整できます</div>
+        </div>
+
+        <!-- ② 長さ・終了時間 直接入力 ＆ 微調整 -->
+        <div class="trim-direct-input-card" style="margin-top: 16px;">
+          <div class="input-card-header">
+            <span class="input-card-title">② 切り出す長さ・終了時間（何秒間にするか）</span>
+            <span class="input-card-badge" id="durationBadge">30秒間</span>
+          </div>
+
+          <div class="duration-input-row">
+            <div class="time-input-group">
+              <input type="number" id="trimDurationInput" class="time-num-input" min="1" max="600" value="30" inputmode="numeric" aria-label="切り出す長さ（秒間）">
+              <span class="time-unit">秒間</span>
+            </div>
+          </div>
+
+          <!-- 終了時間・長さの微調整ボタン -->
+          <div class="stepper-buttons-row">
+            <button type="button" class="stepper-btn" id="durMinus5Btn">◀ -5秒</button>
+            <button type="button" class="stepper-btn" id="durMinus1Btn">◀ -1秒</button>
+            <button type="button" class="stepper-btn" id="durPlus1Btn">+1秒 ▶</button>
+            <button type="button" class="stepper-btn" id="durPlus5Btn">+5秒 ▶</button>
+          </div>
+
+          <!-- ワンタッププリセットボタン -->
+          <div class="trim-presets-title">ワンタップで選ぶ：</div>
+          <div class="trim-presets-row">
+            <button class="trim-preset-chip" data-dur="15">⚡ 15秒 (Shorts)</button>
+            <button class="trim-preset-chip active" data-dur="30">🌟 30秒 (サビ)</button>
+            <button class="trim-preset-chip" data-dur="40">🎯 40秒 (長めサビ)</button>
+            <button class="trim-preset-chip" data-dur="60">🎬 60秒 (1コーラス)</button>
+            <button class="trim-preset-chip" data-dur="full">🎵 曲の最後まで</button>
+          </div>
+
+          <input type="range" id="trimDurationSlider" class="super-fat-slider" min="1" max="600" value="30" step="1" aria-label="切り出す長さスライダー" style="margin-top: 14px;">
+          <div class="slider-subtext">数字を直接タップして入力するか、スライダーまたは「-1秒 / +1秒」「-5秒 / +5秒」ボタンで直感調整できます</div>
+        </div>
+
+        <!-- 決定された区間の確認 ＆ 試聴ボタン -->
+        <div class="trim-confirm-card" style="margin-top: 18px;">
+          <div class="confirm-title">🎯 決定された切り出し区間</div>
+          <div class="confirm-detail" id="trimConfirmDetail">
+            開始 <strong id="confirmStartTxt">00:00</strong> 〜 終了 <strong id="confirmEndTxt">00:30</strong> （合計 <strong id="confirmDurTxt">30秒間</strong>）
+          </div>
+          <button id="previewTrimBtn" class="giant-btn giant-play-inline-btn" type="button" style="margin-top: 14px; width: 100%;">
+            <span id="previewTrimIcon">▶</span>
+            <span id="previewTrimLabel">この区間（サビ）だけを試聴する</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: 保存形式を選んでダウンロード -->
+    <section class="large-section" style="margin-top: 24px;">
+      <div class="section-title-wrap">
+        <span class="step-badge highlight-badge">4</span>
+        <div>
+          <h2 class="section-title">保存形式を選んでダウンロードする</h2>
+          <p class="section-sub">アップロード時と同じ形式、または高音質WAV／軽量MP3を選んで保存できます</p>
+        </div>
+      </div>
+
+      <div class="export-format-card">
+        <span style="font-weight: 700; color: #fff; font-size: 1rem;">📁 出力ファイル形式の選択:</span>
+
+        <div class="format-options-grid">
+          <label class="format-option-label">
+            <input type="radio" name="exportFormat" value="original" checked>
+            <div class="format-option-text">
+              <strong>元と同じ形式 (<span id="formatOriginalExtBadge">.MP3</span>)</strong>
+              <span>アップロードした楽曲と同じ拡張子で書き出します</span>
+            </div>
+          </label>
+
+          <label class="format-option-label">
+            <input type="radio" name="exportFormat" value="wav">
+            <div class="format-option-text">
+              <strong>WAV (非圧縮・最高音質)</strong>
+              <span>16-bit PCM ロスレス音質。動画編集や制作ツールに最適</span>
+            </div>
+          </label>
+
+          <label class="format-option-label">
+            <input type="radio" name="exportFormat" value="mp3">
+            <div class="format-option-text">
+              <strong>MP3 (軽量 192kbps)</strong>
+              <span>高音質かつファイル容量が軽く、スマホや共有に最適</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- 巨大ダウンロードボタン -->
+        <button id="downloadTrimmedBtn" class="download-giant-btn" type="button">
+          <span style="font-size: 1.5rem;">✂️</span>
+          <span>この区間を切り出してダウンロード</span>
+        </button>
+
+        <!-- 進捗ボックス -->
+        <div id="downloadProgressBox" class="progress-box hidden">
+          <div id="downloadProgressText" style="color: #6ee7b7; font-weight: 700; font-size: 0.9rem;">切り出しデータを生成中...</div>
+          <div class="progress-bar-track">
+            <div id="downloadProgressBar" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- スマホ保存ヒント -->
+        <div class="export-storage-hint" style="margin-top: 16px;">
+          <div class="hint-title">📱 スマホ（iPhone/Android）での保存について</div>
+          <div class="hint-desc">
+            ダウンロードボタンを押すとブラウザのダウンロード通知が出ます。iPhoneの場合は「ファイル」アプリの「ダウンロード」フォルダに保存され、そのまま動画編集アプリ（CapCut、VLLO、Premiere Rush等）やSNSで読み込めます。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- フッター・MVスタジオへのリンク -->
+    <footer style="margin-top: 40px; text-align: center; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+      <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 12px;">
+        切り出した音声を使って、本格的なAIリップシンクMVや3Dビートシンク動画を作りたいですか？
+      </p>
+      <a href="index.html" class="switch-studio-link" style="display: inline-flex; padding: 12px 24px; font-size: 1rem; border-color: #a855f7;">
+        <span>🎬 新生MV制作スタジオ（新バージョン）を開く</span>
+        <span>➔</span>
+      </a>
+    </footer>
+
+  </div>
+
+  <!-- Audio Complete & Save Modal (iPhone & Mobile Accessible) -->
+  <div id="audioCompleteModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="audioCompleteModalTitle">
+    <div class="modal-card">
+      <div class="modal-header" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(139, 92, 246, 0.3)); border-bottom: 1.5px solid rgba(110, 231, 183, 0.3);">
+        <div class="modal-title-group">
+          <span class="modal-sparkle-icon">✂️</span>
+          <h3 id="audioCompleteModalTitle" class="modal-title">カット音声を切り出しました！</h3>
+        </div>
+        <button id="closeAudioModalBtn" class="modal-close-icon" aria-label="閉じる">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Audio Cut Info Card -->
+        <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(110, 231, 183, 0.35); border-radius: 14px; padding: 14px 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px;">
+            <span id="modalAudioFileName" style="font-weight: 800; color: #fff; font-size: 0.95rem; word-break: break-all;">audio_cut.mp3</span>
+            <span id="modalAudioFormatBadge" style="background: rgba(16, 185, 129, 0.25); color: #6ee7b7; border: 1px solid #10b981; border-radius: 6px; padding: 2px 8px; font-size: 0.78rem; font-weight: 700; flex-shrink: 0;">MP3</span>
+          </div>
+          <div id="modalAudioMeta" style="font-size: 0.84rem; color: #94a3b8;">
+            区間: 00:00 〜 00:30 (30秒間)
+          </div>
+        </div>
+
+        <!-- Audio Preview Player -->
+        <div style="background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+          <div style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 8px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+            <span>🎧</span>
+            <span>切り出した音声を今すぐ試聴:</span>
+          </div>
+          <audio id="modalAudioPreview" controls playsinline preload="auto" style="width: 100%; height: 44px; border-radius: 8px; outline: none;"></audio>
+        </div>
+
+        <!-- Lyrics Card Preview (Pattern A) -->
+        <div id="modalLyricsCard" style="background: rgba(139, 92, 246, 0.12); border: 1.5px solid rgba(167, 139, 250, 0.35); border-radius: 14px; padding: 12px 14px; margin-top: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1.1rem;">📝</span>
+              <strong style="color: #c4b5fd; font-size: 0.88rem;">切り出し区間の歌詞（テキスト）</strong>
+            </div>
+            <button id="copyLyricsBtn" type="button" style="background: rgba(139, 92, 246, 0.35); border: 1px solid #a78bfa; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">📋 歌詞をコピー</button>
+          </div>
+          <div id="modalLyricsPreview" style="background: #0f172a; border-radius: 8px; padding: 10px; font-size: 0.82rem; color: #e2e8f0; line-height: 1.6; max-height: 110px; overflow-y: auto; white-space: pre-wrap; font-family: monospace;"></div>
+        </div>
+
+        <div class="modal-actions-list">
+          <!-- Save to iPhone / Share Sheet Button -->
+          <button id="audioShareBtn" class="giant-save-photos-btn" type="button" style="background: linear-gradient(135deg, #10b981, #06b6d4); border-color: #34d399; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);">
+            <span class="btn-icon" style="font-size: 1.6rem;">📱</span>
+            <div class="btn-text-col">
+              <strong style="font-size: 1.05rem;">音声＆歌詞をスマホに保存 / 共有</strong>
+              <span style="font-size: 0.82rem;">「"ファイル"に保存」でMP3と歌詞テキスト（.txt）を同時に保存</span>
+            </div>
+          </button>
+
+          <!-- Direct Download Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;">
+            <!-- Direct Audio Download Button -->
+            <button id="audioDirectDownloadBtn" class="giant-download-file-btn" type="button" style="padding: 12px 10px; justify-content: center;">
+              <span class="btn-icon" style="font-size: 1.3rem;">⬇️</span>
+              <div class="btn-text-col" style="text-align: left;">
+                <strong style="font-size: 0.88rem;">MP3を保存</strong>
+                <span style="font-size: 0.74rem;">音声ファイル</span>
+              </div>
+            </button>
+
+            <!-- Direct Lyrics Download Button -->
+            <button id="lyricsDirectDownloadBtn" class="giant-download-file-btn" type="button" style="padding: 12px 10px; justify-content: center; border-color: rgba(167, 139, 250, 0.4); background: rgba(30, 27, 75, 0.6);">
+              <span class="btn-icon" style="font-size: 1.3rem;">📝</span>
+              <div class="btn-text-col" style="text-align: left;">
+                <strong style="font-size: 0.88rem; color: #c4b5fd;">歌詞を保存</strong>
+                <span style="font-size: 0.74rem;">.txt テキスト</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Direct link fallback -->
+          <a id="modalAudioDownloadLink" class="modal-link-fallback" href="#" target="_blank" rel="noopener">↗️ 音声を新しいタブで開く・長押し保存</a>
+        </div>
+
+        <!-- Step-by-step guidance for iPhone -->
+        <div class="save-guidance-card">
+          <div class="guidance-head">
+            <span>📱</span>
+            <strong>iPhoneをお使いの方へ</strong>
+          </div>
+          <div class="guidance-step">
+            <span class="step-num" style="background: #10b981;">1</span>
+            <div>
+              <strong>iPhone本体に保存したい時：</strong>
+              <p>上の【音声＆歌詞をスマホに保存 / 共有】をタップし、メニュー一覧から<strong>「"ファイル"に保存」</strong>を選択してください（MP3と歌詞テキストが同時に保存されます）。</p>
+            </div>
+          </div>
+          <div class="guidance-step">
+            <span class="step-num" style="background: #10b981;">2</span>
+            <div>
+              <strong>外部アプリ（CapCut・SNS・GarageBand等）で使う時：</strong>
+              <p>同じメニューから直接動画編集アプリやメッセージに送ることも可能です。また上の「📋 歌詞をコピー」でテロップ用テキストをすぐ貼り付けられます。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="closeAudioModalBottomBtn" class="modal-btn-sub" type="button">
+          <span>切り出し操作画面に戻る</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- LameJS for client-side MP3 encoding -->
+  <script src="lame.min.js"></script>
+  <!-- Presets data for demo songs and lyrics -->
+  <script src="presets.js?v=20261013_13"></script>
+  <!-- Standalone Audio Cutter Logic -->
+  <script src="audio-cutter.js?v=20261013_14"></script>
+</body>
+</html>
+```
+
+### 5.9 `audio-cutter.js`
+
+```javascript
+/**
+ * Audio Trimmer & Cutter Engine
+ * Standalone tool for trimming audio tracks and downloading the sliced audio.
+ * Supports WAV (16-bit PCM lossless) and MP3 (lamejs 192kbps) encoding.
+ */
+
+(function () {
+  'use strict';
+
+  // State
+  let audioCtx = null;
+  let rawAudioBuffer = null;
+  let originalFile = null;
+  let originalExtension = 'mp3';
+  let isDemoTrack = false;
+
+  let totalDuration = 30;
+  let trimStart = 0;
+  let trimDuration = 30;
+  let trimEnd = 30;
+
+  // Playback states
+  let isPlayingFull = false;
+  let isPlayingTrim = false;
+  let currentSourceNode = null;
+  let playbackStartTime = 0;
+  let playbackStartOffset = 0;
+  let animFrameId = null;
+
+  // DOM Elements
+  const fileInput = document.getElementById('audioFileInput');
+  const uploadCard = document.getElementById('audioUploadCard');
+  const loadDemoBtn = document.getElementById('loadDemoBtn');
+  const fileLoadedBanner = document.getElementById('fileLoadedBanner');
+  const loadedFileName = document.getElementById('loadedFileName');
+  const loadedFileMeta = document.getElementById('loadedFileMeta');
+
+  // Full Player DOM
+  const fullPlayerCurrentTime = document.getElementById('fullPlayerCurrentTime');
+  const fullPlayerTotalTime = document.getElementById('fullPlayerTotalTime');
+  const fullPlayerStatusBadge = document.getElementById('fullPlayerStatusBadge');
+  const fullPlayToggleBtn = document.getElementById('fullPlayToggleBtn');
+  const fullPlayIcon = document.getElementById('fullPlayIcon');
+  const fullPlayLabel = document.getElementById('fullPlayLabel');
+  const fullPlayRewindBtn = document.getElementById('fullPlayRewindBtn');
+  const setStartFromCurrentBtn = document.getElementById('setStartFromCurrentBtn');
+  const setEndFromCurrentBtn = document.getElementById('setEndFromCurrentBtn');
+  const fullSongSeekSlider = document.getElementById('fullSongSeekSlider');
+  const timelineSelectionRange = document.getElementById('timelineSelectionRange');
+  const timelinePlayhead = document.getElementById('timelinePlayhead');
+  const timelineMidLabel = document.getElementById('timelineMidLabel');
+  const timelineEndLabel = document.getElementById('timelineEndLabel');
+
+  // Status displays
+  const trimStartReadout = document.getElementById('trimStartReadout');
+  const trimEndReadout = document.getElementById('trimEndReadout');
+  const trimDurationReadout = document.getElementById('trimDurationReadout');
+
+  // Trimmer controls
+  const startPosBadge = document.getElementById('startPosBadge');
+  const trimStartMinInput = document.getElementById('trimStartMinInput');
+  const trimStartSecInput = document.getElementById('trimStartSecInput');
+  const trimStartSlider = document.getElementById('trimStartSlider');
+
+  const startMinus10Btn = document.getElementById('startMinus10Btn');
+  const startMinus1Btn = document.getElementById('startMinus1Btn');
+  const startPlus1Btn = document.getElementById('startPlus1Btn');
+  const startPlus10Btn = document.getElementById('startPlus10Btn');
+
+  const durationBadge = document.getElementById('durationBadge');
+  const trimDurationInput = document.getElementById('trimDurationInput');
+  const trimDurationSlider = document.getElementById('trimDurationSlider');
+  const durMinus5Btn = document.getElementById('durMinus5Btn');
+  const durMinus1Btn = document.getElementById('durMinus1Btn');
+  const durPlus1Btn = document.getElementById('durPlus1Btn');
+  const durPlus5Btn = document.getElementById('durPlus5Btn');
+  const presetChips = document.querySelectorAll('.trim-preset-chip');
+
+  // Preview & Confirm
+  const confirmStartTxt = document.getElementById('confirmStartTxt');
+  const confirmEndTxt = document.getElementById('confirmEndTxt');
+  const confirmDurTxt = document.getElementById('confirmDurTxt');
+  const previewTrimBtn = document.getElementById('previewTrimBtn');
+  const previewTrimIcon = document.getElementById('previewTrimIcon');
+  const previewTrimLabel = document.getElementById('previewTrimLabel');
+
+  // Download section
+  const formatRadios = document.querySelectorAll('input[name="exportFormat"]');
+  const formatOriginalExtBadge = document.getElementById('formatOriginalExtBadge');
+  const downloadBtn = document.getElementById('downloadTrimmedBtn');
+  const downloadProgressBox = document.getElementById('downloadProgressBox');
+  const downloadProgressBar = document.getElementById('downloadProgressBar');
+  const downloadProgressText = document.getElementById('downloadProgressText');
+  const toastEl = document.getElementById('toast');
+
+  // Audio Complete Modal Elements
+  const audioCompleteModal = document.getElementById('audioCompleteModal');
+  const closeAudioModalBtn = document.getElementById('closeAudioModalBtn');
+  const closeAudioModalBottomBtn = document.getElementById('closeAudioModalBottomBtn');
+  const modalAudioFileName = document.getElementById('modalAudioFileName');
+  const modalAudioFormatBadge = document.getElementById('modalAudioFormatBadge');
+  const modalAudioMeta = document.getElementById('modalAudioMeta');
+  const modalAudioPreview = document.getElementById('modalAudioPreview');
+  const audioShareBtn = document.getElementById('audioShareBtn');
+  const audioDirectDownloadBtn = document.getElementById('audioDirectDownloadBtn');
+  const lyricsDirectDownloadBtn = document.getElementById('lyricsDirectDownloadBtn');
+  const copyLyricsBtn = document.getElementById('copyLyricsBtn');
+  const modalLyricsCard = document.getElementById('modalLyricsCard');
+  const modalLyricsPreview = document.getElementById('modalLyricsPreview');
+  const modalAudioDownloadLink = document.getElementById('modalAudioDownloadLink');
+
+  let lastCutBlob = null;
+  let lastCutFile = null;
+  let lastCutFilename = '';
+  let lastCutUrl = null;
+
+  let lastCutLyricsBlob = null;
+  let lastCutLyricsFile = null;
+  let lastCutLyricsFilename = '';
+  let lastCutLyricsText = '';
+
+  // Helper: Format seconds to MM:SS
+  function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return '00:00';
+    const s = Math.floor(seconds);
+    const m = Math.floor(s / 60);
+    const rem = s % 60;
+    return `${String(m).padStart(2, '0')}:${String(rem).padStart(2, '0')}`;
+  }
+
+  // Toast notification
+  let toastTimer = null;
+  function showToast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastEl.classList.remove('show');
+    }, 3200);
+  }
+
+  // Init AudioContext
+  function getAudioContext() {
+    if (!audioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContextClass();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  }
+
+  // Stop all playing audio
+  function stopAllAudio() {
+    if (currentSourceNode) {
+      try {
+        currentSourceNode.stop();
+        currentSourceNode.disconnect();
+      } catch (e) {}
+      currentSourceNode = null;
+    }
+    isPlayingFull = false;
+    isPlayingTrim = false;
+    if (animFrameId) {
+      cancelAnimationFrame(animFrameId);
+      animFrameId = null;
+    }
+    updateFullPlayerButtonUI();
+    updateTrimPreviewButtonUI();
+  }
+
+  // Update Trim UI & Clamping
+  function updateTrimmerUI() {
+    // Clamp start
+    trimStart = Math.max(0, Math.min(trimStart, Math.max(0, totalDuration - 1)));
+
+    // Clamp duration
+    const maxDur = Math.max(1, totalDuration - trimStart);
+    trimDuration = Math.max(1, Math.min(trimDuration, maxDur));
+    trimEnd = Math.min(totalDuration, trimStart + trimDuration);
+
+    // Update Status Readouts
+    if (trimStartReadout) trimStartReadout.textContent = formatTime(trimStart);
+    if (trimEndReadout) trimEndReadout.textContent = formatTime(trimEnd);
+    if (trimDurationReadout) trimDurationReadout.textContent = `${Math.round(trimDuration)}秒間`;
+
+    if (confirmStartTxt) confirmStartTxt.textContent = formatTime(trimStart);
+    if (confirmEndTxt) confirmEndTxt.textContent = formatTime(trimEnd);
+    if (confirmDurTxt) confirmDurTxt.textContent = `${Math.round(trimDuration)}秒間`;
+
+    // Direct Inputs
+    const m = Math.floor(trimStart / 60);
+    const s = Math.floor(trimStart % 60);
+    if (trimStartMinInput && document.activeElement !== trimStartMinInput) trimStartMinInput.value = m;
+    if (trimStartSecInput && document.activeElement !== trimStartSecInput) trimStartSecInput.value = s;
+    if (trimStartSlider && document.activeElement !== trimStartSlider) {
+      trimStartSlider.max = Math.max(1, Math.floor(totalDuration));
+      trimStartSlider.value = Math.floor(trimStart);
+    }
+    if (startPosBadge) startPosBadge.textContent = `${formatTime(trimStart)} からスタート`;
+
+    if (trimDurationInput && document.activeElement !== trimDurationInput) {
+      trimDurationInput.max = Math.max(1, Math.floor(maxDur));
+      trimDurationInput.value = Math.round(trimDuration);
+    }
+    if (trimDurationSlider && document.activeElement !== trimDurationSlider) {
+      trimDurationSlider.max = Math.max(1, Math.floor(maxDur));
+      trimDurationSlider.value = Math.round(trimDuration);
+    }
+    if (durationBadge) durationBadge.textContent = `${Math.round(trimDuration)}秒間（終了: ${formatTime(trimEnd)}）`;
+
+    // Presets Active styling
+    presetChips.forEach(chip => {
+      const d = chip.getAttribute('data-dur');
+      if (d === 'full') {
+        chip.classList.toggle('active', Math.abs(trimEnd - totalDuration) < 0.5);
+      } else {
+        chip.classList.toggle('active', Math.abs(trimDuration - Number(d)) < 0.5);
+      }
+    });
+
+    // Update visual range in timeline track
+    if (timelineSelectionRange && totalDuration > 0) {
+      const leftPct = (trimStart / totalDuration) * 100;
+      const widthPct = (trimDuration / totalDuration) * 100;
+      timelineSelectionRange.style.left = `${leftPct}%`;
+      timelineSelectionRange.style.width = `${Math.min(100 - leftPct, widthPct)}%`;
+    }
+  }
+
+  // Full Song Playback
+  function playFullSong(fromSeconds = 0) {
+    if (!rawAudioBuffer) return;
+    const ctx = getAudioContext();
+    stopAllAudio();
+
+    const startSec = Math.max(0, Math.min(fromSeconds, totalDuration - 0.2));
+    const src = ctx.createBufferSource();
+    src.buffer = rawAudioBuffer;
+    src.connect(ctx.destination);
+
+    playbackStartTime = ctx.currentTime;
+    playbackStartOffset = startSec;
+    currentSourceNode = src;
+    isPlayingFull = true;
+
+    src.onended = () => {
+      if (isPlayingFull) {
+        stopAllAudio();
+        updateTimelinePlayhead(0);
+      }
+    };
+
+    src.start(0, startSec);
+    updateFullPlayerButtonUI();
+    monitorPlaybackProgress();
+  }
+
+  // Trimmed Preview Playback (Looping within cut region)
+  function playTrimPreview() {
+    if (!rawAudioBuffer) return;
+    const ctx = getAudioContext();
+    stopAllAudio();
+
+    const src = ctx.createBufferSource();
+    src.buffer = rawAudioBuffer;
+    src.connect(ctx.destination);
+
+    playbackStartTime = ctx.currentTime;
+    playbackStartOffset = trimStart;
+    currentSourceNode = src;
+    isPlayingTrim = true;
+
+    src.onended = () => {
+      if (isPlayingTrim) {
+        // Loop trim preview smoothly
+        playTrimPreview();
+      }
+    };
+
+    src.start(0, trimStart, trimDuration);
+    updateTrimPreviewButtonUI();
+    monitorPlaybackProgress();
+  }
+
+  // Monitor progress for timeline playhead
+  function monitorPlaybackProgress() {
+    if (!isPlayingFull && !isPlayingTrim) return;
+    const ctx = getAudioContext();
+    const elapsed = ctx.currentTime - playbackStartTime;
+    const currentPos = playbackStartOffset + elapsed;
+
+    if (isPlayingTrim && currentPos >= trimEnd) {
+      // Loop
+      playTrimPreview();
+      return;
+    }
+
+    if (currentPos >= totalDuration) {
+      stopAllAudio();
+      updateTimelinePlayhead(0);
+      return;
+    }
+
+    updateTimelinePlayhead(currentPos);
+    animFrameId = requestAnimationFrame(monitorPlaybackProgress);
+  }
+
+  function updateTimelinePlayhead(sec) {
+    if (fullPlayerCurrentTime) fullPlayerCurrentTime.textContent = formatTime(sec);
+    if (fullSongSeekSlider && document.activeElement !== fullSongSeekSlider) {
+      fullSongSeekSlider.value = sec;
+    }
+    if (timelinePlayhead && totalDuration > 0) {
+      const pct = (sec / totalDuration) * 100;
+      timelinePlayhead.style.left = `${Math.min(100, Math.max(0, pct))}%`;
+    }
+  }
+
+  function updateFullPlayerButtonUI() {
+    if (isPlayingFull) {
+      if (fullPlayIcon) fullPlayIcon.textContent = '⏸';
+      if (fullPlayLabel) fullPlayLabel.textContent = '一時停止';
+      if (fullPlayToggleBtn) fullPlayToggleBtn.classList.add('playing');
+      if (fullPlayerStatusBadge) {
+        fullPlayerStatusBadge.textContent = '🎵 再生中';
+        fullPlayerStatusBadge.className = 'player-status-badge active';
+      }
+    } else {
+      if (fullPlayIcon) fullPlayIcon.textContent = '▶';
+      if (fullPlayLabel) fullPlayLabel.textContent = '曲全体を再生する';
+      if (fullPlayToggleBtn) fullPlayToggleBtn.classList.remove('playing');
+      if (fullPlayerStatusBadge) {
+        fullPlayerStatusBadge.textContent = '一時停止中';
+        fullPlayerStatusBadge.className = 'player-status-badge';
+      }
+    }
+  }
+
+  function updateTrimPreviewButtonUI() {
+    if (isPlayingTrim) {
+      if (previewTrimIcon) previewTrimIcon.textContent = '⏸';
+      if (previewTrimLabel) previewTrimLabel.textContent = '試聴を一時停止';
+      if (previewTrimBtn) previewTrimBtn.classList.add('playing');
+    } else {
+      if (previewTrimIcon) previewTrimIcon.textContent = '▶';
+      if (previewTrimLabel) previewTrimLabel.textContent = 'この区間（サビ）だけを試聴する';
+      if (previewTrimBtn) previewTrimBtn.classList.remove('playing');
+    }
+  }
+
+  // Load and decode user file
+  async function handleAudioFile(file) {
+    if (!file) return;
+
+    if (file.type && file.type.startsWith('image/')) {
+      alert('選択されたファイルは「画像」です。音楽ファイル（MP3, WAV, M4A等）を選択してください。');
+      return;
+    }
+
+    const ctx = getAudioContext();
+    stopAllAudio();
+
+    originalFile = file;
+    isDemoTrack = false;
+
+    // Detect extension
+    const parts = file.name.split('.');
+    originalExtension = parts.length > 1 ? parts.pop().toLowerCase() : 'mp3';
+    if (formatOriginalExtBadge) {
+      formatOriginalExtBadge.textContent = `.${originalExtension}`;
+    }
+
+    showToast(`音声ファイル「${file.name}」を読み込み中...`);
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const decoded = await ctx.decodeAudioData(arrayBuffer);
+
+      rawAudioBuffer = decoded;
+      totalDuration = decoded.duration;
+
+      // Reset trimming defaults
+      trimStart = 0;
+      trimDuration = Math.min(30, totalDuration);
+      trimEnd = trimDuration;
+
+      // Update UI
+      if (loadedFileName) loadedFileName.textContent = file.name;
+      if (loadedFileMeta) {
+        const mb = (file.size / (1024 * 1024)).toFixed(1);
+        loadedFileMeta.textContent = `形式: .${originalExtension.toUpperCase()} | 全長: ${formatTime(totalDuration)} | 容量: ${mb}MB | ${decoded.sampleRate}Hz`;
+      }
+      if (fileLoadedBanner) fileLoadedBanner.classList.remove('hidden');
+      if (fullPlayerTotalTime) fullPlayerTotalTime.textContent = formatTime(totalDuration);
+      if (timelineEndLabel) timelineEndLabel.textContent = `${formatTime(totalDuration)} (曲の終わり)`;
+      if (timelineMidLabel) timelineMidLabel.textContent = formatTime(totalDuration / 2);
+
+      if (fullSongSeekSlider) {
+        fullSongSeekSlider.max = Math.floor(totalDuration);
+        fullSongSeekSlider.value = 0;
+      }
+
+      updateTrimmerUI();
+      updateTimelinePlayhead(0);
+      showToast('✔ 音声の読み込みが完了しました！');
+    } catch (err) {
+      console.error('Audio decode failed:', err);
+      alert('音声の読み込みに失敗しました。MP3やWAV形式のファイルをお試しください。');
+    }
+  }
+
+  // Generate Synthesized Demo Track if user has no file
+  async function loadDemoSong() {
+    const ctx = getAudioContext();
+    stopAllAudio();
+
+    originalFile = null;
+    originalExtension = 'mp3';
+    isDemoTrack = true;
+
+    showToast('公式デモ曲（Shining Beat - J-POP）を生成中...');
+
+    // Synthesize a 30-second groovy demo buffer
+    const sampleRate = ctx.sampleRate;
+    const dur = 32;
+    const buffer = ctx.createBuffer(2, sampleRate * dur, sampleRate);
+    const left = buffer.getChannelData(0);
+    const right = buffer.getChannelData(1);
+
+    const bpm = 132;
+    const beatSec = 60 / bpm;
+
+    // Rich synth music track generator
+    for (let i = 0; i < buffer.length; i++) {
+      const t = i / sampleRate;
+      let sampleL = 0;
+      let sampleR = 0;
+
+      // Kick drum on every beat
+      const beatProgress = (t % beatSec) / beatSec;
+      const kickEnv = Math.max(0, 1 - beatProgress * 5);
+      const kick = Math.sin(2 * Math.PI * (130 - beatProgress * 95) * t) * kickEnv * 0.45;
+
+      // Snare on 2nd and 4th beats
+      const barProgress = (t % (beatSec * 4)) / beatSec;
+      let snare = 0;
+      if ((barProgress >= 1 && barProgress < 2) || (barProgress >= 3 && barProgress < 4)) {
+        const snareProg = barProgress % 1;
+        const snareEnv = Math.max(0, 1 - snareProg * 6);
+        const noise = (Math.random() * 2 - 1) * 0.28;
+        const tone = Math.sin(2 * Math.PI * 180 * t) * 0.2;
+        snare = (noise + tone) * snareEnv;
+      }
+
+      // Melodic synth chord
+      const chordIndex = Math.floor(t / (beatSec * 4)) % 4;
+      const chords = [
+        [261.63, 329.63, 392.00], // C
+        [220.00, 261.63, 329.63], // Am
+        [174.61, 220.00, 261.63], // F
+        [196.00, 246.94, 293.66]  // G
+      ];
+      const curChord = chords[chordIndex];
+      let synth = 0;
+      curChord.forEach(freq => {
+        synth += Math.sin(2 * Math.PI * freq * t) * 0.08;
+      });
+
+      // Vocal lead tone
+      const vocalMelody = [523.25, 587.33, 659.25, 587.33, 523.25, 440.00, 493.88, 523.25];
+      const vocalNote = vocalMelody[Math.floor(t / beatSec) % vocalMelody.length];
+      const vocal = Math.sin(2 * Math.PI * vocalNote * t) * 0.12 * (1 + Math.sin(t * 12) * 0.15);
+
+      sampleL = kick + snare * 0.8 + synth + vocal * 0.9;
+      sampleR = kick + snare * 0.8 + synth * 0.9 + vocal * 1.1;
+
+      // Master limiter
+      left[i] = Math.max(-0.95, Math.min(0.95, sampleL));
+      right[i] = Math.max(-0.95, Math.min(0.95, sampleR));
+    }
+
+    rawAudioBuffer = buffer;
+    totalDuration = dur;
+
+    trimStart = 0;
+    trimDuration = 30;
+    trimEnd = 30;
+
+    if (loadedFileName) loadedFileName.textContent = '🌟 公式デモ曲 - Shining Beat (J-POP 132BPM)';
+    if (loadedFileMeta) loadedFileMeta.textContent = '形式: .MP3 (デモ音源) | 全長: 00:32 | 44.1kHz Stereo';
+    if (fileLoadedBanner) fileLoadedBanner.classList.remove('hidden');
+    if (fullPlayerTotalTime) fullPlayerTotalTime.textContent = formatTime(totalDuration);
+    if (timelineEndLabel) timelineEndLabel.textContent = `${formatTime(totalDuration)} (曲の終わり)`;
+    if (timelineMidLabel) timelineMidLabel.textContent = formatTime(totalDuration / 2);
+
+    if (fullSongSeekSlider) {
+      fullSongSeekSlider.max = Math.floor(totalDuration);
+      fullSongSeekSlider.value = 0;
+    }
+
+    updateTrimmerUI();
+    updateTimelinePlayhead(0);
+    showToast('✔ 公式デモ曲をセットしました！');
+  }
+
+  // ==========================================
+  // Audio Trimming & Encoding Logic
+  // ==========================================
+
+  // Slice AudioBuffer
+  function sliceAudioBuffer(sourceBuffer, startSec, endSec) {
+    const ctx = getAudioContext();
+    const sampleRate = sourceBuffer.sampleRate;
+    const numChannels = sourceBuffer.numberOfChannels;
+
+    const startSample = Math.max(0, Math.floor(startSec * sampleRate));
+    const endSample = Math.min(sourceBuffer.length, Math.floor(endSec * sampleRate));
+    const frameCount = Math.max(1, endSample - startSample);
+
+    const slicedBuffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+
+    for (let c = 0; c < numChannels; c++) {
+      const srcChannel = sourceBuffer.getChannelData(c);
+      const sub = srcChannel.subarray(startSample, endSample);
+      slicedBuffer.getChannelData(c).set(sub);
+    }
+
+    return slicedBuffer;
+  }
+
+  // Pure JS WAV Encoder (16-bit PCM RIFF)
+  function encodeWAV(buffer) {
+    const numChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const bitDepth = 16;
+    const bytesPerSample = bitDepth / 8;
+    const blockAlign = numChannels * bytesPerSample;
+    const length = buffer.length;
+    const dataByteLength = length * blockAlign;
+    const headerByteLength = 44;
+    const totalLength = headerByteLength + dataByteLength;
+
+    const arrayBuffer = new ArrayBuffer(totalLength);
+    const view = new DataView(arrayBuffer);
+
+    function writeString(offset, str) {
+      for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+      }
+    }
+
+    /* RIFF chunk descriptor */
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + dataByteLength, true);
+    writeString(8, 'WAVE');
+
+    /* fmt sub-chunk */
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+    view.setUint16(20, 1, true); // AudioFormat (1 = PCM)
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * blockAlign, true); // ByteRate
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitDepth, true);
+
+    /* data sub-chunk */
+    writeString(36, 'data');
+    view.setUint32(40, dataByteLength, true);
+
+    // Channel pointers
+    const channels = [];
+    for (let c = 0; c < numChannels; c++) {
+      channels.push(buffer.getChannelData(c));
+    }
+
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+      for (let c = 0; c < numChannels; c++) {
+        let sample = channels[c][i];
+        // Clip
+        sample = Math.max(-1, Math.min(1, sample));
+        // Convert float32 to int16
+        const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+        view.setInt16(offset, intSample, true);
+        offset += 2;
+      }
+    }
+
+    return new Blob([arrayBuffer], { type: 'audio/wav' });
+  }
+
+  // Pure JS MP3 Encoder using lamejs (192kbps)
+  function encodeMP3(buffer, onProgress) {
+    if (typeof lamejs === 'undefined') {
+      console.warn('lamejs not available, falling back to WAV');
+      return encodeWAV(buffer);
+    }
+
+    const channels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const kbps = 192; // High quality 192 kbps MP3
+
+    const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
+    const mp3Data = [];
+
+    const sampleBlockSize = 1152;
+    const length = buffer.length;
+
+    // Convert Float32Array to Int16Array
+    const leftRaw = buffer.getChannelData(0);
+    const rightRaw = channels > 1 ? buffer.getChannelData(1) : leftRaw;
+
+    const leftInt16 = new Int16Array(length);
+    const rightInt16 = new Int16Array(length);
+
+    for (let i = 0; i < length; i++) {
+      const l = Math.max(-1, Math.min(1, leftRaw[i]));
+      leftInt16[i] = l < 0 ? l * 0x8000 : l * 0x7FFF;
+
+      const r = Math.max(-1, Math.min(1, rightRaw[i]));
+      rightInt16[i] = r < 0 ? r * 0x8000 : r * 0x7FFF;
+    }
+
+    for (let i = 0; i < length; i += sampleBlockSize) {
+      const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
+      let mp3buf;
+      if (channels === 1) {
+        mp3buf = mp3encoder.encodeBuffer(leftChunk);
+      } else {
+        const rightChunk = rightInt16.subarray(i, i + sampleBlockSize);
+        mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+      }
+      if (mp3buf.length > 0) {
+        mp3Data.push(mp3buf);
+      }
+
+      if (onProgress && i % (sampleBlockSize * 15) === 0) {
+        const pct = Math.round((i / length) * 100);
+        onProgress(pct);
+      }
+    }
+
+    const endBuf = mp3encoder.flush();
+    if (endBuf.length > 0) {
+      mp3Data.push(endBuf);
+    }
+
+    // Standard RFC MIME type for MP3 is audio/mpeg
+    return new Blob(mp3Data, { type: 'audio/mpeg' });
+  }
+
+  // Helper: Get lyrics data for current track
+  function getTrackLyricsData() {
+    if (isDemoTrack) {
+      if (window.GROOVE_PRESETS && window.GROOVE_PRESETS.songs && window.GROOVE_PRESETS.songs.jpop) {
+        return window.GROOVE_PRESETS.songs.jpop;
+      }
+      return {
+        title: 'Shining Beat',
+        genre: 'J-POP / アイドル',
+        bpm: 132,
+        lyrics: [
+          { time: 0, text: '輝くライトが ステージ照らし出す' },
+          { time: 4, text: '胸の鼓動が リズムと重なって' },
+          { time: 8, text: '世界中へ響け このメロディ！' },
+          { time: 14, text: '君の手を取って 走り出そう' },
+          { time: 20, text: 'Shining Beat! 奇跡を起こす瞬間へ' },
+          { time: 26, text: 'どこまでも高く 歌い続けるよ' }
+        ]
+      };
+    }
+    // Custom uploaded file
+    const fname = originalFile ? originalFile.name.replace(/\.[^/.]+$/, '') : '持ち込み音源';
+    return {
+      title: fname,
+      genre: '持ち込み楽曲',
+      bpm: null,
+      lyrics: []
+    };
+  }
+
+  // Format full lyrics text card (Pattern A)
+  function buildLyricsText(trackData, startSec, endSec) {
+    const durSec = Math.max(1, Math.round(endSec - startSec));
+    const startStr = formatTime(startSec);
+    const endStr = formatTime(endSec);
+    const dateStr = new Date().toLocaleDateString('ja-JP');
+
+    let text = `========================================\n`;
+    text += `【楽曲情報】\n`;
+    text += `曲名: ${trackData.title || '楽曲'}\n`;
+    if (trackData.genre) text += `ジャンル: ${trackData.genre}\n`;
+    if (trackData.bpm) text += `BPM: ${trackData.bpm}\n`;
+    text += `切り出し区間: ${startStr} 〜 ${endStr} (${durSec}秒間)\n`;
+    text += `========================================\n\n`;
+
+    if (trackData.lyrics && trackData.lyrics.length > 0) {
+      const trimmedLyrics = trackData.lyrics.filter(l => l.time >= startSec && l.time <= endSec);
+      text += `【✂️ 切り出し区間の歌詞】\n`;
+      if (trimmedLyrics.length > 0) {
+        trimmedLyrics.forEach(l => {
+          const relSec = Math.max(0, l.time - startSec);
+          text += `[${formatTime(relSec)}] (原曲 ${formatTime(l.time)}) ${l.text}\n`;
+        });
+      } else {
+        const active = trackData.lyrics.slice().reverse().find(l => l.time <= startSec) || trackData.lyrics[0];
+        text += `[00:00] (原曲 ${formatTime(active.time)}) ${active.text}\n`;
+      }
+      text += `\n----------------------------------------\n`;
+      text += `【🎵 曲全体の歌詞一覧】\n`;
+      trackData.lyrics.forEach(l => {
+        text += `[${formatTime(l.time)}] ${l.text}\n`;
+      });
+    } else {
+      text += `【✂️ 切り出し区間の歌詞 / テロップメモ】\n`;
+      text += `※ご自身のオリジナル持ち込み音源です。\n`;
+      text += `動画編集（CapCut等）やSNS投稿時の歌詞・テロップメモとして自由にご編集ください。\n\n`;
+      text += `[00:00] （ここに歌詞やテロップを入力）\n`;
+    }
+
+    text += `\n========================================\n`;
+    text += `作成日: ${dateStr}\n`;
+    text += `GrooveSync MV Studio\n`;
+    text += `========================================\n`;
+    return text;
+  }
+
+  // Open Audio Complete Modal with preview player, lyrics card and iPhone share actions
+  function openAudioModal(blob, file, filename, targetExt) {
+    if (!audioCompleteModal) return;
+    stopAllAudio();
+
+    lastCutBlob = blob;
+    lastCutFile = file;
+    lastCutFilename = filename;
+
+    if (lastCutUrl) {
+      try { URL.revokeObjectURL(lastCutUrl); } catch (e) {}
+    }
+    lastCutUrl = URL.createObjectURL(blob);
+
+    if (modalAudioFileName) modalAudioFileName.textContent = filename;
+    if (modalAudioFormatBadge) modalAudioFormatBadge.textContent = targetExt.toUpperCase();
+    if (modalAudioMeta) {
+      const kb = (blob.size / 1024).toFixed(1);
+      modalAudioMeta.textContent = `区間: ${formatTime(trimStart)} 〜 ${formatTime(trimEnd)} (${Math.round(trimDuration)}秒間) | 容量: ${kb} KB`;
+    }
+
+    // Build Lyrics Data & Text File
+    const trackData = getTrackLyricsData();
+    lastCutLyricsText = buildLyricsText(trackData, trimStart, trimEnd);
+    const baseName = filename.replace(/\.[^/.]+$/, '');
+    lastCutLyricsFilename = `${baseName}_歌詞.txt`;
+    lastCutLyricsBlob = new Blob([lastCutLyricsText], { type: 'text/plain;charset=utf-8' });
+    lastCutLyricsFile = new File([lastCutLyricsBlob], lastCutLyricsFilename, { type: 'text/plain;charset=utf-8' });
+
+    // Populate Lyrics Preview
+    if (modalLyricsPreview) {
+      // Extract short readable preview for modal display
+      if (trackData.lyrics && trackData.lyrics.length > 0) {
+        const trimmed = trackData.lyrics.filter(l => l.time >= trimStart && l.time <= trimEnd);
+        if (trimmed.length > 0) {
+          modalLyricsPreview.textContent = trimmed.map(l => {
+            const rel = Math.max(0, l.time - trimStart);
+            return `[${formatTime(rel)}] ${l.text}`;
+          }).join('\n');
+        } else {
+          modalLyricsPreview.textContent = `♪ ${trackData.title || '音楽'} を再生中`;
+        }
+      } else {
+        modalLyricsPreview.textContent = `♪ 持ち込み音源 (${formatTime(trimStart)} 〜 ${formatTime(trimEnd)})`;
+      }
+    }
+
+    if (modalAudioPreview) {
+      modalAudioPreview.src = lastCutUrl;
+      modalAudioPreview.load();
+    }
+
+    if (modalAudioDownloadLink) {
+      modalAudioDownloadLink.href = lastCutUrl;
+      modalAudioDownloadLink.download = filename;
+    }
+
+    audioCompleteModal.classList.remove('hidden');
+    audioCompleteModal.classList.add('visible');
+  }
+
+  function closeAudioModal() {
+    if (!audioCompleteModal) return;
+    if (modalAudioPreview) {
+      try { modalAudioPreview.pause(); } catch (e) {}
+    }
+    audioCompleteModal.classList.remove('visible');
+    audioCompleteModal.classList.add('hidden');
+  }
+
+  // Trigger file download helper (with safe lifetime for iOS/WebKit)
+  function triggerDownloadDirect(blob, filename) {
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        try { document.body.removeChild(a); } catch (e) {}
+      }, 1000);
+      setTimeout(() => {
+        try { URL.revokeObjectURL(url); } catch (e) {}
+      }, 60000);
+    } catch (e) {
+      console.warn('triggerDownloadDirect failed:', e);
+    }
+  }
+
+  // Main Download Handler
+  async function handleDownload() {
+    if (!rawAudioBuffer) {
+      showToast('🌟 公式デモ曲を自動ロード中...');
+      await loadDemoSong();
+    }
+
+    if (!rawAudioBuffer) {
+      alert('先に音楽ファイルをアップロードするか、デモ曲を選択してください。');
+      return;
+    }
+
+    // Determine chosen format
+    let chosenFormat = 'original';
+    formatRadios.forEach(r => {
+      if (r.checked) chosenFormat = r.value;
+    });
+
+    let targetExt = 'mp3';
+    if (chosenFormat === 'original') {
+      targetExt = (originalExtension === 'wav') ? 'wav' : 'mp3';
+    } else if (chosenFormat === 'wav') {
+      targetExt = 'wav';
+    } else {
+      targetExt = 'mp3';
+    }
+
+    // Generate output file name
+    const rawName = originalFile ? originalFile.name.replace(/\.[^/.]+$/, "") : (isDemoTrack ? 'Shining_Beat' : 'audio_cut');
+    const startTag = formatTime(trimStart).replace(':', 'm') + 's';
+    const endTag = formatTime(trimEnd).replace(':', 'm') + 's';
+    const outputFilename = `${rawName}_cut_${startTag}-${endTag}.${targetExt}`;
+
+    // Show Progress
+    if (downloadProgressBox) downloadProgressBox.classList.remove('hidden');
+    if (downloadProgressBar) downloadProgressBar.style.width = '15%';
+    if (downloadProgressText) downloadProgressText.textContent = '区間データを切り出し中...';
+    if (downloadBtn) downloadBtn.disabled = true;
+
+    // Small delay to allow UI render
+    await new Promise(r => setTimeout(r, 60));
+
+    try {
+      // 1. Slice buffer
+      const sliced = sliceAudioBuffer(rawAudioBuffer, trimStart, trimEnd);
+      if (downloadProgressBar) downloadProgressBar.style.width = '45%';
+      if (downloadProgressText) downloadProgressText.textContent = `${targetExt.toUpperCase()} 形式へエンコード中...`;
+      await new Promise(r => setTimeout(r, 60));
+
+      let blob = null;
+      const mime = (targetExt === 'wav') ? 'audio/wav' : 'audio/mpeg';
+
+      if (targetExt === 'wav') {
+        blob = encodeWAV(sliced);
+        if (downloadProgressBar) downloadProgressBar.style.width = '95%';
+      } else {
+        blob = encodeMP3(sliced, (pct) => {
+          if (downloadProgressBar) downloadProgressBar.style.width = `${45 + Math.floor(pct * 0.5)}%`;
+        });
+      }
+
+      if (downloadProgressBar) downloadProgressBar.style.width = '100%';
+      if (downloadProgressText) downloadProgressText.textContent = 'ダウンロード準備完了！';
+
+      const file = new File([blob], outputFilename, { type: mime });
+
+      // Open Audio Complete Modal with audio player and iPhone/Android save options
+      openAudioModal(blob, file, outputFilename, targetExt);
+      showToast(`✂️ 「${outputFilename}」を切り出しました！`);
+
+      // On PC / Desktop browsers, also trigger immediate download
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (!isMobile) {
+        triggerDownloadDirect(blob, outputFilename);
+      }
+
+      setTimeout(() => {
+        if (downloadProgressBox) downloadProgressBox.classList.add('hidden');
+        if (downloadBtn) downloadBtn.disabled = false;
+      }, 1000);
+
+    } catch (e) {
+      console.error('Download error:', e);
+      alert('音声の切り出し・エンコード中にエラーが発生しました: ' + e.message);
+      if (downloadProgressBox) downloadProgressBox.classList.add('hidden');
+      if (downloadBtn) downloadBtn.disabled = false;
+    }
+  }
+
+  // ==========================================
+  // Event Listeners Setup
+  // ==========================================
+  function setupEventListeners() {
+    // File upload
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleAudioFile(e.target.files[0]);
+        }
+      });
+    }
+
+    // Demo song
+    if (loadDemoBtn) {
+      loadDemoBtn.addEventListener('click', () => {
+        loadDemoSong();
+      });
+    }
+
+    // Drag & Drop
+    if (uploadCard) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        uploadCard.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          uploadCard.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        uploadCard.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          uploadCard.classList.remove('dragover');
+        });
+      });
+      uploadCard.addEventListener('drop', (e) => {
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files[0]) {
+          handleAudioFile(files[0]);
+        }
+      });
+    }
+
+    // Full Player controls
+    if (fullPlayToggleBtn) {
+      fullPlayToggleBtn.addEventListener('click', () => {
+        if (isPlayingFull) {
+          stopAllAudio();
+        } else {
+          const seekVal = fullSongSeekSlider ? Number(fullSongSeekSlider.value) : 0;
+          playFullSong(seekVal);
+        }
+      });
+    }
+
+    if (fullPlayRewindBtn) {
+      fullPlayRewindBtn.addEventListener('click', () => {
+        stopAllAudio();
+        updateTimelinePlayhead(0);
+        playFullSong(0);
+      });
+    }
+
+    // Set Start / End from current playback position
+    if (setStartFromCurrentBtn) {
+      setStartFromCurrentBtn.addEventListener('click', () => {
+        const curSec = fullSongSeekSlider ? Number(fullSongSeekSlider.value) : 0;
+        trimStart = curSec;
+        updateTrimmerUI();
+        showToast(`開始位置を「${formatTime(trimStart)}」にセットしました！`);
+      });
+    }
+
+    if (setEndFromCurrentBtn) {
+      setEndFromCurrentBtn.addEventListener('click', () => {
+        const curSec = fullSongSeekSlider ? Number(fullSongSeekSlider.value) : totalDuration;
+        if (curSec > trimStart) {
+          trimDuration = curSec - trimStart;
+          updateTrimmerUI();
+          showToast(`終了位置を「${formatTime(trimEnd)}」にセットしました！`);
+        } else {
+          showToast('終了位置は開始位置より後ろを指定してください');
+        }
+      });
+    }
+
+    // Timeline Seek Slider
+    if (fullSongSeekSlider) {
+      fullSongSeekSlider.addEventListener('input', (e) => {
+        const sec = Number(e.target.value);
+        updateTimelinePlayhead(sec);
+        if (isPlayingFull) {
+          playFullSong(sec);
+        }
+      });
+    }
+
+    // Start Position Steppers & Sliders
+    if (trimStartMinInput) {
+      trimStartMinInput.addEventListener('change', () => {
+        const m = Math.max(0, parseInt(trimStartMinInput.value, 10) || 0);
+        const s = Math.max(0, Math.min(59, parseInt(trimStartSecInput.value, 10) || 0));
+        trimStart = m * 60 + s;
+        updateTrimmerUI();
+      });
+    }
+
+    if (trimStartSecInput) {
+      trimStartSecInput.addEventListener('change', () => {
+        const m = Math.max(0, parseInt(trimStartMinInput.value, 10) || 0);
+        const s = Math.max(0, Math.min(59, parseInt(trimStartSecInput.value, 10) || 0));
+        trimStart = m * 60 + s;
+        updateTrimmerUI();
+      });
+    }
+
+    if (trimStartSlider) {
+      trimStartSlider.addEventListener('input', (e) => {
+        trimStart = Number(e.target.value);
+        updateTrimmerUI();
+      });
+    }
+
+    if (startMinus10Btn) {
+      startMinus10Btn.addEventListener('click', () => {
+        trimStart = Math.max(0, trimStart - 10);
+        updateTrimmerUI();
+      });
+    }
+    if (startMinus1Btn) {
+      startMinus1Btn.addEventListener('click', () => {
+        trimStart = Math.max(0, trimStart - 1);
+        updateTrimmerUI();
+      });
+    }
+    if (startPlus1Btn) {
+      startPlus1Btn.addEventListener('click', () => {
+        trimStart = Math.min(totalDuration - 1, trimStart + 1);
+        updateTrimmerUI();
+      });
+    }
+    if (startPlus10Btn) {
+      startPlus10Btn.addEventListener('click', () => {
+        trimStart = Math.min(totalDuration - 1, trimStart + 10);
+        updateTrimmerUI();
+      });
+    }
+
+    // Duration Steppers & Sliders
+    if (trimDurationInput) {
+      trimDurationInput.addEventListener('change', () => {
+        trimDuration = Math.max(1, parseInt(trimDurationInput.value, 10) || 1);
+        updateTrimmerUI();
+      });
+    }
+
+    if (trimDurationSlider) {
+      trimDurationSlider.addEventListener('input', (e) => {
+        trimDuration = Number(e.target.value);
+        updateTrimmerUI();
+      });
+    }
+
+    if (durMinus5Btn) {
+      durMinus5Btn.addEventListener('click', () => {
+        trimDuration = Math.max(1, trimDuration - 5);
+        updateTrimmerUI();
+      });
+    }
+    if (durMinus1Btn) {
+      durMinus1Btn.addEventListener('click', () => {
+        trimDuration = Math.max(1, trimDuration - 1);
+        updateTrimmerUI();
+      });
+    }
+    if (durPlus1Btn) {
+      durPlus1Btn.addEventListener('click', () => {
+        trimDuration = Math.min(totalDuration - trimStart, trimDuration + 1);
+        updateTrimmerUI();
+      });
+    }
+    if (durPlus5Btn) {
+      durPlus5Btn.addEventListener('click', () => {
+        trimDuration = Math.min(totalDuration - trimStart, trimDuration + 5);
+        updateTrimmerUI();
+      });
+    }
+
+    // Preset Chips
+    presetChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const d = chip.getAttribute('data-dur');
+        if (d === 'full') {
+          trimDuration = Math.max(1, totalDuration - trimStart);
+        } else {
+          trimDuration = Number(d);
+        }
+        updateTrimmerUI();
+        showToast(`長さを「${Math.round(trimDuration)}秒」にセットしました`);
+      });
+    });
+
+    // Preview Trim Button
+    if (previewTrimBtn) {
+      previewTrimBtn.addEventListener('click', () => {
+        if (isPlayingTrim) {
+          stopAllAudio();
+        } else {
+          playTrimPreview();
+        }
+      });
+    }
+
+    // Download Button
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', handleDownload);
+    }
+
+    // Audio Complete Modal Actions (Pattern A: Audio + Lyrics .txt)
+    if (copyLyricsBtn) {
+      copyLyricsBtn.addEventListener('click', async () => {
+        if (!lastCutLyricsText) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(lastCutLyricsText);
+            showToast('✔ 歌詞テキストをクリップボードにコピーしました！');
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = lastCutLyricsText;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('✔ 歌詞テキストをコピーしました！');
+          }
+        } catch (e) {
+          console.warn('Clipboard copy failed:', e);
+          showToast('コピーに失敗しました。プレビューから直接選択してコピーしてください');
+        }
+      });
+    }
+
+    if (lyricsDirectDownloadBtn) {
+      lyricsDirectDownloadBtn.addEventListener('click', () => {
+        if (!lastCutLyricsBlob || !lastCutLyricsFilename) return;
+        triggerDownloadDirect(lastCutLyricsBlob, lastCutLyricsFilename);
+        showToast('歌詞テキスト（.txt）のダウンロードを開始しました');
+      });
+    }
+
+    if (audioShareBtn) {
+      audioShareBtn.addEventListener('click', async () => {
+        if (!lastCutFile) return;
+
+        // Share both Audio MP3 and Lyrics TXT files together (Pattern A)
+        const filesToShare = [lastCutFile, lastCutLyricsFile].filter(Boolean);
+        const shareData = {
+          files: filesToShare
+        };
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+          try {
+            await navigator.share(shareData);
+            showToast('共有メニューを開きました。「"ファイル"に保存」でMP3と歌詞が同時に保存されます');
+            return;
+          } catch (err) {
+            if (err.name === 'AbortError') return;
+            console.warn('Dual-file share failed, trying audio-only share:', err);
+          }
+        }
+
+        // Fallback 1: Share audio file alone
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [lastCutFile] })) {
+          try {
+            await navigator.share({ files: [lastCutFile] });
+            showToast('音声ファイルを共有しました。歌詞は「歌詞を保存」ボタンから保存できます');
+            return;
+          } catch (err) {
+            if (err.name === 'AbortError') return;
+          }
+        }
+
+        // Fallback 2: Direct downloads
+        triggerDownloadDirect(lastCutBlob, lastCutFilename);
+        if (lastCutLyricsBlob) {
+          setTimeout(() => triggerDownloadDirect(lastCutLyricsBlob, lastCutLyricsFilename), 600);
+        }
+        showToast('ダウンロードを開始しました');
+      });
+    }
+
+    if (audioDirectDownloadBtn) {
+      audioDirectDownloadBtn.addEventListener('click', () => {
+        if (!lastCutBlob) return;
+        triggerDownloadDirect(lastCutBlob, lastCutFilename);
+        showToast('MP3音声のダウンロードを開始しました');
+      });
+    }
+
+    if (modalAudioDownloadLink) {
+      modalAudioDownloadLink.addEventListener('click', (e) => {
+        if (lastCutUrl) {
+          window.open(lastCutUrl, '_blank');
+        }
+      });
+    }
+
+    if (closeAudioModalBtn) {
+      closeAudioModalBtn.addEventListener('click', closeAudioModal);
+    }
+    if (closeAudioModalBottomBtn) {
+      closeAudioModalBottomBtn.addEventListener('click', closeAudioModal);
+    }
+    if (audioCompleteModal) {
+      audioCompleteModal.addEventListener('click', (e) => {
+        if (e.target === audioCompleteModal) {
+          closeAudioModal();
+        }
+      });
+    }
+  }
+
+  // Auto initialize on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', () => {
+    setupEventListeners();
+    updateTrimmerUI();
+
+    // Auto-load demo song so the user can immediately test trimming & downloading without empty state
+    setTimeout(() => {
+      if (!rawAudioBuffer && !originalFile) {
+        loadDemoSong();
+      }
+    }, 150);
+  });
+
+})();
+```
