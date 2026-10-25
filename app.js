@@ -2420,9 +2420,163 @@ document.addEventListener('DOMContentLoaded', () => {
             const trimDur = endSec - startSec;
 
             // =========================================================================
-            // 🎬 【改善A・最新v4】2段階ハイブリッド自動生成 (最新 Kling 4.0 ➔ Sync v3 / HeyGen v3 / VEED v2)
+            // 🔒 【v16.0 新標準】「別人化ゼロ・元写真100%固定」Photo-Lock V2V 口唇限定モード (①〜④)
+            // AIによる顔全体の生成（image-to-video）を完全廃止し、
+            // 1. 元写真を FFmpeg で無劣化のまま固定ビデオ（MP4）に変換
+            // 2. Video-to-Video 口唇限定モデル（model_mode: "lips" 等）で「くちびる領域のみ」を同期
+            // これにより目・眉・鼻・輪郭・髪・画風は100%元写真の生ピクセルのまま維持されます。
             // =========================================================================
-            if (!isVideoToVideo && selectedV11bMode === 'hybrid_lipsync') {
+            if (!isVideoToVideo && selectedV11bMode === 'photolock_v2v') {
+              let uploadedImageUrl = imgDataUrl;
+              if (imgFile && falClient.storage && typeof falClient.storage.upload === 'function') {
+                try {
+                  uploadedImageUrl = await falClient.storage.upload(imgFile);
+                } catch (uErr) {
+                  console.warn('Image storage upload fallback to DataURL:', uErr);
+                }
+              }
+
+              const durationMs = Math.max(2000, Math.round(trimDur * 1000));
+              showAiStatus(`🔒 <strong>[顔100%固定・手順1/2] アップされた写真を無劣化のまま固定ベース動画（${Math.round(trimDur)}秒）に変換中... (${elapsedSec}秒経過)</strong><br><small style="color:#6ee7b7;">AIに顔を創作させないよう、目・鼻・輪郭・画風を元写真のピクセルのまま100%ロックしています。</small>`, '#10b981');
+
+              let staticPhotoVideoUrl = '';
+              try {
+                const composeRes = await falClient.subscribe('fal-ai/ffmpeg-api/compose', {
+                  input: {
+                    tracks: [
+                      {
+                        id: 'photo_lock_track',
+                        type: 'video',
+                        keyframes: [
+                          {
+                            timestamp: 0,
+                            duration: durationMs,
+                            url: uploadedImageUrl
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  logs: true
+                });
+                const composeData = (composeRes && composeRes.data) ? composeRes.data : composeRes;
+                staticPhotoVideoUrl = (composeData && composeData.video_url) || (composeData && composeData.video && composeData.video.url) || '';
+              } catch (compErr) {
+                console.warn('FFmpeg compose static video error:', compErr);
+              }
+
+              if (!staticPhotoVideoUrl) {
+                throw new Error('元写真の固定ベース動画作成に失敗しました。もう一度お試しください。');
+              }
+
+              const targetV2VModel = selectedV11bModel || 'fal-ai/sync-lipsync/v3';
+              showAiStatus(`🎤 <strong>[顔100%固定・手順2/2] 「${selectedV11bLabel}」で元の顔を一切変えず「くちびる（口唇）のみ」を歌声に同期中... (${elapsedSec}秒経過)</strong><br><small style="color:#6ee7b7;">目・鼻・輪郭は元の写真のまま、口元だけを自然に動かしています（約1〜2分）。</small>`, '#10b981');
+
+              const runSync3LipsOnly = async () => {
+                const r = await falClient.subscribe('fal-ai/sync-lipsync/v3', {
+                  input: {
+                    video_url: staticPhotoVideoUrl,
+                    audio_url: lipSyncAudioUrl,
+                    sync_mode: 'cut_off',
+                    options: {
+                      model_mode: 'lips',
+                      sync_mode: 'cut_off'
+                    }
+                  },
+                  logs: true,
+                  onQueueUpdate: (st) => {
+                    if (st && st.status === 'IN_PROGRESS') {
+                      showAiStatus(`🎤 <strong>[顔100%固定] Sync-3 (model_mode: "lips") が口唇のみをピンポイント描画中... (${elapsedSec}秒経過)</strong><br><small style="color:#6ee7b7;">目・鼻・輪郭は元写真の生ピクセルを100%維持しています。</small>`, '#10b981');
+                    }
+                  }
+                });
+                const d = (r && r.data) ? r.data : r;
+                return (d && d.video && d.video.url) || (d && d.video_url) || '';
+              };
+
+              if (targetV2VModel === 'fal-ai/sync-lipsync/react-1') {
+                // Sync React-1 Lips-Only (supports up to 15s; >15s or error auto-chains to Sync-3 Lips-Only)
+                if (trimDur <= 15) {
+                  try {
+                    const r1Res = await falClient.subscribe('fal-ai/sync-lipsync/react-1', {
+                      input: {
+                        video_url: staticPhotoVideoUrl,
+                        audio_url: lipSyncAudioUrl,
+                        model_mode: 'lips',
+                        emotion: 'neutral',
+                        temperature: 0.2,
+                        lipsync_mode: 'cut_off'
+                      },
+                      logs: true
+                    });
+                    const r1Data = (r1Res && r1Res.data) ? r1Res.data : r1Res;
+                    finalVideoUrl = (r1Data && r1Data.video && r1Data.video.url) || (r1Data && r1Data.video_url) || '';
+                  } catch (r1Err) {
+                    console.warn('React-1 Lips-Only fallback to Sync-3 Lips-Only:', r1Err);
+                    finalVideoUrl = await runSync3LipsOnly();
+                  }
+                } else {
+                  finalVideoUrl = await runSync3LipsOnly();
+                }
+              } else if (targetV2VModel === 'fal-ai/kling-video/lipsync/audio-to-video') {
+                try {
+                  const klRes = await falClient.subscribe('fal-ai/kling-video/lipsync/audio-to-video', {
+                    input: {
+                      video_url: staticPhotoVideoUrl,
+                      audio_url: lipSyncAudioUrl
+                    },
+                    logs: true
+                  });
+                  const klData = (klRes && klRes.data) ? klRes.data : klRes;
+                  finalVideoUrl = (klData && klData.video && klData.video.url) || (klData && klData.video_url) || '';
+                } catch (klErr) {
+                  console.warn('Kling LipSync V2V fallback to LatentSync / Sync-3 Lips-Only:', klErr);
+                  try {
+                    const lsRes = await falClient.subscribe('fal-ai/latentsync', {
+                      input: {
+                        video_url: staticPhotoVideoUrl,
+                        audio_url: lipSyncAudioUrl
+                      },
+                      logs: true
+                    });
+                    const lsData = (lsRes && lsRes.data) ? lsRes.data : lsRes;
+                    finalVideoUrl = (lsData && lsData.video && lsData.video.url) || (lsData && lsData.video_url) || '';
+                  } catch (lsErr) {
+                    finalVideoUrl = await runSync3LipsOnly();
+                  }
+                }
+              } else if (targetV2VModel === 'fal-ai/heygen/v3/lipsync/precision') {
+                try {
+                  const hgRes = await falClient.subscribe('fal-ai/heygen/v3/lipsync/precision', {
+                    input: {
+                      video_url: staticPhotoVideoUrl,
+                      audio_url: lipSyncAudioUrl
+                    },
+                    logs: true
+                  });
+                  const hgData = (hgRes && hgRes.data) ? hgRes.data : hgRes;
+                  finalVideoUrl = (hgData && hgData.video && hgData.video.url) || (hgData && hgData.video_url) || '';
+                } catch (hgErr) {
+                  console.warn('HeyGen v3 V2V fallback to VEED v2 / Sync-3 Lips-Only:', hgErr);
+                  try {
+                    const vdRes = await falClient.subscribe('veed/lipsync/v2', {
+                      input: {
+                        video_url: staticPhotoVideoUrl,
+                        audio_url: lipSyncAudioUrl
+                      },
+                      logs: true
+                    });
+                    const vdData = (vdRes && vdRes.data) ? vdRes.data : vdRes;
+                    finalVideoUrl = (vdData && vdData.video && vdData.video.url) || (vdData && vdData.video_url) || '';
+                  } catch (vdErr) {
+                    finalVideoUrl = await runSync3LipsOnly();
+                  }
+                }
+              } else {
+                // Default Model ①: Sync-3 Video Lips-Only
+                finalVideoUrl = await runSync3LipsOnly();
+              }
+            } else if (!isVideoToVideo && selectedV11bMode === 'hybrid_lipsync') {
               let uploadedImageUrl = imgDataUrl;
               if (imgFile && falClient.storage && typeof falClient.storage.upload === 'function') {
                 try {
