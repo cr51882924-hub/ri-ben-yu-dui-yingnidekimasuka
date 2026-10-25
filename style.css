@@ -2672,7 +2672,10 @@ body.zoom-huge .toast {
 }
 
 .video-fit-btn,
-.video-res-btn {
+.video-res-btn,
+.vocal-sep-btn,
+.identity-lock-btn,
+.hybrid-stage2-btn {
   background: rgba(15, 23, 42, 0.88) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   border-radius: 10px;
@@ -2693,12 +2696,29 @@ body.zoom-huge .toast {
   box-shadow: 0 0 14px rgba(192, 132, 252, 0.35);
 }
 
-.video-res-btn.active {
+.video-res-btn.active,
+.vocal-sep-btn.active {
   background: rgba(16, 185, 129, 0.28) !important;
   border: 2px solid #10b981 !important;
   color: #ffffff !important;
   font-weight: 900;
   box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+}
+
+.identity-lock-btn.active {
+  background: rgba(217, 70, 239, 0.32) !important;
+  border: 2px solid #e879f9 !important;
+  color: #ffffff !important;
+  font-weight: 900;
+  box-shadow: 0 0 14px rgba(232, 121, 249, 0.38);
+}
+
+.hybrid-stage2-btn.active {
+  background: rgba(234, 179, 8, 0.28) !important;
+  border: 2px solid #facc15 !important;
+  color: #ffffff !important;
+  font-weight: 900;
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.35);
 }
 
 .ai-style-chip {
