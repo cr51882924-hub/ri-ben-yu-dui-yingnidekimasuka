@@ -16,6 +16,18 @@
       "created_at": "2026-10-25T16:20:46.683Z",
       "sender": "ios",
       "is_cancelled": true
+    },
+    {
+      "id": "6877b112-03b0-421e-ab6b-f71d75370685",
+      "role": "user",
+      "content": "別のAIに開発を引き継ぐため、現在のプロジェクトの目的・ファイル構成・実装済み機能・未解決の課題・主要ファイルのコード全文を1つのMarkdownにまとめて出力して。",
+      "status": "pending",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-25T16:25:16.571Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
