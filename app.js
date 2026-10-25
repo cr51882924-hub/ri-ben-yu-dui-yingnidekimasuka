@@ -774,7 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
     appReloadBtn.addEventListener('click', () => {
       triggerHaptic();
       const verSpan = document.getElementById('headerVersionLabel');
-      const currentVerText = verSpan && verSpan.textContent ? verSpan.textContent.trim() : '最新版 (v15.0)';
+      const currentVerText = verSpan && verSpan.textContent ? verSpan.textContent.trim() : '最新版 (v16.0)';
       if (verSpan) {
         verSpan.textContent = '更新中...';
       }
