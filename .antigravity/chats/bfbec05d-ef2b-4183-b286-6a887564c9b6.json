@@ -3,17 +3,29 @@
   "name": "推奨されているままにやりました。写真通りにはならず顔を生成しちゃっています。 化け物までは酷くないが、 別人です。 これではだめです。使えばクレームの嵐です。 上から順番に ①のAI→別人の顔をつくる。",
   "createdAt": "2026-10-25T16:00:41.531Z",
   "filename": "bfbec05d-ef2b-4183-b286-6a887564c9b6.json",
-  "geminiStarted": false,
+  "geminiStarted": true,
   "messages": [
     {
       "id": "b0deda54-4aaf-4973-9f6a-b1ce6fecbde5",
+      "role": "user",
+      "content": "推奨されているままにやりました。写真通りにはならず顔を生成しちゃっています。\n化け物までは酷くないが、\n別人です。\n\nこれではだめです。使えばクレームの嵐です。\n\n上から順番に\n①のAI→別人の顔をつくる。\n②のAI→別人の顔をつくる。\nいまから残りもやってみるが、正直、期待していない。",
+      "status": "cancelled",
+      "model": "gemini-4-argon-medium",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-25T16:00:43.641Z",
+      "sender": "ios",
+      "is_cancelled": true
+    },
+    {
+      "id": "881ca211-2d52-471b-9e6b-e0ae247663e7",
       "role": "user",
       "content": "推奨されているままにやりました。写真通りにはならず顔を生成しちゃっています。\n化け物までは酷くないが、\n別人です。\n\nこれではだめです。使えばクレームの嵐です。\n\n上から順番に\n①のAI→別人の顔をつくる。\n②のAI→別人の顔をつくる。\nいまから残りもやってみるが、正直、期待していない。",
       "status": "pending",
       "model": "gemini-4-argon-medium",
       "client_type": "gemini-bridge",
       "parent_message_id": null,
-      "created_at": "2026-10-25T16:00:43.641Z",
+      "created_at": "2026-10-25T16:01:10.732Z",
       "sender": "ios",
       "is_cancelled": false
     }
