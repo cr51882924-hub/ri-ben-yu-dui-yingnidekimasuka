@@ -7,8 +7,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="GrooveSync MV">
   <meta name="theme-color" content="#090d16">
-  <title>GrooveSync MV Studio - 本格AIリップシンク歌唱動画生成スタジオ (v15.0)</title>
-  <link rel="stylesheet" href="style.css?v=20261024_150">
+  <title>GrooveSync MV Studio - 本格AIリップシンク歌唱動画生成スタジオ (v16.0)</title>
+  <link rel="stylesheet" href="style.css?v=20261025_160">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
 
         <button id="appReloadBtn" class="app-reload-btn" aria-label="アプリを最新状態に更新・リロードします" title="最新バージョンを再読み込み">
           <span class="reload-icon">🔄</span>
-          <span id="headerVersionLabel">最新版 (v15.0)</span>
+          <span id="headerVersionLabel">最新版 (v16.0)</span>
         </button>
       </div>
     </header>
@@ -50,7 +50,7 @@
 
       <!-- Step-by-Step Arrow Flow Guide Banner (矢印フロー解説) -->
       <section class="flow-guide-card">
-        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v15.0: 最新 OmniHuman 2.0 ＆ Kling 4.0 ＆ 顔崩壊防止エンジン搭載)</span>
+        <span class="flow-badge" id="flowGuideBadge">🎤 本格AIリップシンクMV制作スタジオ (v16.0: 「顔生成ゼロ・元写真100%固定 ➔ 口唇のみV2V同期」搭載)</span>
         <div class="flow-steps-row">
           <span class="flow-chip highlight">🔑 APIキー登録</span>
           <span class="flow-arrow">➔</span>
@@ -702,65 +702,99 @@
           </div>
 
           <!-- ========================================================
-               🔒 【最重要】キャラクターの顔・画風維持 ＆「絶叫・顔崩壊（妖怪化）」完全防止ロック
+               🔒 【最重要】「別人化ゼロ・元写真100%そのまま」完全保護ロック
                ======================================================== -->
-          <div id="identityLockCard" style="background: rgba(88, 28, 135, 0.42); border: 2.5px solid #e879f9; border-radius: 16px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(232, 121, 249, 0.2);">
+          <div id="identityLockCard" style="background: rgba(88, 28, 135, 0.48); border: 2.5px solid #e879f9; border-radius: 16px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(232, 121, 249, 0.25);">
             <div style="font-size: 1.08rem; font-weight: 900; color: #f5d0fe; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-              <span>🔒 ②-2 顔崩壊（妖怪化）防止・スタイル維持ロック：</span>
-              <span id="identityLockStatusBadge" style="background: rgba(217, 70, 239, 0.35); border: 1.5px solid #f0abfc; color: #fdf4ff; font-size: 0.85rem; font-weight: 900; padding: 3px 10px; border-radius: 999px;">🔒 ON：穏やか口パク＆顔保護（推奨）</span>
+              <span>🔒 ②-2 「別人化ゼロ」元写真100%顔固定・口唇限定ロック：</span>
+              <span id="identityLockStatusBadge" style="background: rgba(217, 70, 239, 0.35); border: 1.5px solid #f0abfc; color: #fdf4ff; font-size: 0.85rem; font-weight: 900; padding: 3px 10px; border-radius: 999px;">🔒 ON：元写真の顔100%固定（必須推奨）</span>
             </div>
-            <p style="font-size: 0.9rem; color: #f3e8ff; margin: 0 0 12px 0; line-height: 1.5;">
-              歌声が大きいときにAIが「絶叫している」と勘違いして<strong>口が裂けたり目がギョロッと見開いて悪魔・妖怪のような顔に崩れる現象を自動防止</strong>します。<br>
-              AIに渡す口パク計算用の音声だけを「優しい会話レベルの音量（-13dB）」に自動調整して<strong>元の顔の可愛さ・美しさを保ったまま上品に口を動かし</strong>、最後に100%元の大迫力の楽曲を合体させます。
+            <p style="font-size: 0.9rem; color: #f3e8ff; margin: 0 0 12px 0; line-height: 1.55;">
+              AIが勝手に<strong>「別人の顔（違う目・違う鼻・違う輪郭）」を生成してしまうのを物理的に遮断する機能</strong>です。<br>
+              ① アップした写真を<strong>無劣化のまま固定ビデオ（FFmpeg）に変換してAIによる全顔生成を禁止</strong>し、<br>
+              ② <strong>目・眉・鼻・頬・輪郭・髪・背景は元写真の生ピクセルを100%そのまま維持</strong>した状態で、<strong>「くちびる（口唇）だけ」</strong>を優しい音量（-13dB）で動かします。
             </p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <button type="button" class="identity-lock-btn active" data-lock="on" style="padding: 14px 10px;">
-                🔒 ON：顔崩壊を防止して上品に歌う<br><small style="font-size: 0.78rem; color: #f5d0fe; font-weight: 700;">妖怪顔・大口開き防止【必須推奨】</small>
+                🔒 ON：写真の顔を100%固定（唇のみ）<br><small style="font-size: 0.78rem; color: #f5d0fe; font-weight: 700;">別人化・顔生成を完全禁止【必須推奨】</small>
               </button>
               <button type="button" class="identity-lock-btn" data-lock="off" style="padding: 14px 10px;">
-                🔓 OFF：音量そのまま大きく口を開ける<br><small style="font-size: 0.78rem; color: #cbd5e1; font-weight: 500;">激しい曲では顔が歪むことがあります</small>
+                🔓 OFF：保護ロックなし<br><small style="font-size: 0.78rem; color: #cbd5e1; font-weight: 500;">顔や口が大きく変形することがあります</small>
               </button>
             </div>
           </div>
 
-          <!-- ③ 使用するAIモデル一覧（2026年10月最新 OmniHuman 2.0 ＆ Kling 4.0 搭載） -->
+          <!-- ③ 使用するAIモデル一覧（v16.0: 顔生成ゼロ・元写真固定V2V口唇ピンポイント方式へ全面刷新） -->
           <div style="font-size: 1.08rem; font-weight: 900; color: #fbcfe8; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-            <span>③ 使用する最新AIモデルをタップして選択：</span>
-            <span id="currentMaterialIndicatorBadge" style="background: rgba(168, 85, 247, 0.35); border: 1px solid #c084fc; color: #f0abfc; font-size: 0.85rem; font-weight: 800; padding: 3px 10px; border-radius: 999px;">📷 写真モード</span>
+            <span>③ 使用するAIモデルをタップして選択（①〜④は「顔生成ゼロ・本人100%固定」方式）：</span>
+            <span id="currentMaterialIndicatorBadge" style="background: rgba(16, 185, 129, 0.35); border: 1px solid #34d399; color: #6ee7b7; font-size: 0.85rem; font-weight: 800; padding: 3px 10px; border-radius: 999px;">🔒 写真100%固定V2Vモード</span>
           </div>
 
-          <!-- A. 写真／1コマ切り出し用AIモデル群（Photo または 動画パターンB） -->
+          <!-- A. 写真／1コマ切り出し用AIモデル群（v16.0: 元写真無劣化ビデオ化 ➔ Video-to-Video 口唇限定同期） -->
           <div id="photoModelsGroup" class="models-grid-group">
-            <!-- Model 1 (NEW 2026-10-15 LATEST): ByteDance OmniHuman 2.0 -->
-            <button type="button" class="v11b-model-btn active" data-model="bytedance/omnihuman/v2" data-mode="lipsync" data-supports-prompt="true" data-label="ByteDance OmniHuman 2.0 (最新v2・高精細リップシンク)">
+            <!-- Model 1 (NEW v16.0 DEFAULT): Photo-Lock FFmpeg ➔ Sync-3 Video-to-Video (lips-only) -->
+            <button type="button" class="v11b-model-btn active" data-model="fal-ai/sync-lipsync/v3" data-mode="photolock_v2v" data-supports-prompt="false" data-label="🔒 Sync-3 Video Lips-Only (顔生成ゼロ・元写真100%固定)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.16rem; color: #f5d0fe;">👑 🎤 ByteDance OmniHuman 2.0（最新2.0・1段階直結リップシンク【最推奨】）</strong>
+                <strong style="font-size: 1.16rem; color: #6ee7b7;">👑 🔒 ① Sync-3 Video Lips-Only（【最推奨】顔生成ゼロ・元写真100%そのまま口唇のみ同期）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.88rem; padding: 4px 12px; border-radius: 999px;">✔ 選択中</span>
               </div>
               <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.5; display: block;">
-                【2026年10月最新リリース！】v1.5から大幅に進化した最新世代 <strong>OmniHuman 2.0 (`bytedance/omnihuman/v2`)</strong>。元写真のキャラクターの顔と画風を保ちながら、歌声に合わせた自然な口パクとカメラ演出を1段階で生成します（日本語・英語プロンプト両対応／4秒〜最大5分対応）
+                【別人化ゼロ！】AIに顔や頭を作らせる旧「image-to-video方式」を廃止。<strong>アップした写真をそのまま無劣化固定ビデオ化し、動画専用の `sync-lipsync/v3`（`model_mode: "lips"`＝唇のみ編集）で口唇だけを歌わせます。</strong>目・鼻・輪郭・画風は100%あなたの写真のまま絶対に変わりません！
               </span>
             </button>
 
-            <!-- Model 2 (NEW): Sync-3 Avatar Image-to-Video (Direct Face/Mouth-only Lip-Sync) -->
-            <button type="button" class="v11b-model-btn" data-model="fal-ai/sync-lipsync/v3/image-to-video" data-mode="lipsync" data-supports-prompt="false" data-label="Sync-3 Avatar (最新v3・静止画から口元のみ自然リップシンク)">
+            <!-- Model 2 (NEW v16.0): Photo-Lock FFmpeg ➔ Sync React-1 (model_mode: "lips" strict minimal facial change) -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/sync-lipsync/react-1" data-mode="photolock_v2v" data-supports-prompt="false" data-label="🔒 Sync React-1 Lips-Only (唇のみ最小変化モード)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem; color: #6ee7b7;">✨ Sync-3 Avatar（最新v3・元写真の顔と目を一切変えず口元だけリップシンク）</strong>
+                <strong style="font-size: 1.15rem; color: #a7f3d0;">🔒 ② Sync React-1 Lips-Only（唇のみ最小編集モード `model_mode: "lips"`）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
               <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">
-                【写真のスタイル・目鼻立ちを絶対に変えたくない時に最適！】余計な全身変形や目の描き直しを行わず、アップした写真の雰囲気をそのままに口元だけを歌声に同期させる最新Sync-3アバターモデル
+                【目・鼻・頭部の変化を完全禁止した公式 `lips` 専用モード！】元写真の無劣化固定ビデオに対し、SyncLabs React-1 の<strong>「唇のみ編集（minimal facial changes）」</strong>を適用。顔の印象を1ミリも変えたくない時に最適です（※15秒超の曲は自動で①のSync-3 Lipsに連携）
               </span>
             </button>
 
-            <!-- Model 3 (NEW 2026-10-16 LATEST): 改善A・2段階ハイブリッド自動生成 (Kling 4.0 ➔ Sync Lipsync v3) -->
-            <button type="button" class="v11b-model-btn" data-model="hybrid-kling4-sync3" data-mode="hybrid_lipsync" data-supports-prompt="true" data-label="【改善A・最新v4】2段階ハイブリッド (Kling 4.0 ➔ Sync v3)">
+            <!-- Model 3 (NEW v16.0): Photo-Lock FFmpeg ➔ Kling Video LipSync / LatentSync V2V -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/kling-video/lipsync/audio-to-video" data-mode="photolock_v2v" data-supports-prompt="false" data-label="🔒 Kling LipSync V2V (写真固定ビデオ ➔ 口マスク専用)">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem; color: #fde047;">🎬 【改善A・最新v4】2段階ハイブリッド（最新 Kling 4.0 ➔ Sync v3 口パク）</strong>
+                <strong style="font-size: 1.15rem; color: #bae6fd;">🔒 ③ Kling LipSync V2V ／ LatentSync（写真固定ビデオ ➔ 口周りマスク専用）</strong>
                 <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
               </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.5; display: block;">
-                【2026年10月最新 <strong>Kling 4.0 (`kling/v4/image-to-video`)</strong> 搭載！】①Kling 4.0で始点・終点の両方に元写真をロックした映画品質ムービー（1080p）を生成し、②最新Sync v3（またはHeyGen v3 / VEED v2）で口パクを合成するダイナミックモード
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">
+                【顔生成ゼロ・口マスク限定インペイント】元写真を無劣化固定ビデオ化したうえで、動画の口元マスク領域だけを歌声に合わせる Video-to-Video 専用エンジン（Kling LipSync V2V ＆ LatentSync 自動連携）
+              </span>
+            </button>
+
+            <!-- Model 4 (NEW v16.0): Photo-Lock FFmpeg ➔ HeyGen v3 Precision / VEED v2 -->
+            <button type="button" class="v11b-model-btn" data-model="fal-ai/heygen/v3/lipsync/precision" data-mode="photolock_v2v" data-supports-prompt="false" data-label="🔒 HeyGen v3 Precision V2V (写真固定ビデオ ➔ 精密アテレコ)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.15rem; color: #f5d0fe;">🔒 ④ HeyGen v3 Precision ／ VEED v2（写真固定ビデオ ➔ 高精度アテレコV2V）</strong>
+                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">
+                【顔生成ゼロ・動画アテレコ方式】元写真の固定ビデオに対し、HeyGen v3 Precision（および VEED Lipsync v2）で元の顔立ちを保ったまま口元だけを精密にアテレコ合成します
+              </span>
+            </button>
+
+            <!-- Model 5 (Optional Full-Body Generation - clearly warned that AI redraws face): OmniHuman 2.0 -->
+            <button type="button" class="v11b-model-btn" data-model="bytedance/omnihuman/v2" data-mode="lipsync" data-supports-prompt="true" data-label="ByteDance OmniHuman 2.0 (※全身動きますがAIが顔を再描画します)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.08rem; color: #cbd5e1;">⚠️ ⑤【参考：全身生成】ByteDance OmniHuman 2.0（※AIが顔を描き直すため顔が変わります）</strong>
+                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span class="v11b-model-desc" style="font-size: 0.9rem; line-height: 1.45; display: block; color: #94a3b8;">
+                ※注意：このモデルは全身やカメラを動かすため、AIが顔全体をゼロから描き直します（別人の顔になりやすいため、写真の顔を100%維持したい場合は上の①〜④をご使用ください）
+              </span>
+            </button>
+
+            <!-- Model 6 (Optional Hybrid): 改善A・2段階ハイブリッド -->
+            <button type="button" class="v11b-model-btn" data-model="hybrid-kling4-sync3" data-mode="hybrid_lipsync" data-supports-prompt="true" data-label="【参考：全身生成】2段階ハイブリッド (Kling 4.0 ➔ Sync v3)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                <strong style="font-size: 1.08rem; color: #cbd5e1;">⚠️ ⑥【参考：全身生成】2段階ハイブリッド Kling 4.0 ➔ Sync v3（※Klingが顔を描き直します）</strong>
+                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
+              </div>
+              <span class="v11b-model-desc" style="font-size: 0.9rem; line-height: 1.45; display: block; color: #94a3b8;">
+                ※注意：第1段階のKling 4.0がカメラと身体を動かす際に顔をAI再生成します。写真の顔をそのまま維持したい場合は必ず上の①〜④をお選びください。
               </span>
             </button>
 
@@ -781,35 +815,6 @@
                 </button>
               </div>
             </div>
-
-            <!-- Model 4 (NEW 2026-08): Mirage Avatar X Reference-to-Video -->
-            <button type="button" class="v11b-model-btn" data-model="mirage-api/avatar-x/reference-to-video" data-mode="lipsync" data-supports-prompt="false" data-label="Mirage Avatar X (最新リファレンス歌唱アバター)">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem; color: #bae6fd;">🌟 Mirage Avatar X（2026年8月最新・高精細リファレンス歌唱アバター）</strong>
-                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
-              </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">
-                【写真＋楽曲 ➔ 歌唱動画】最新の Mirage Avatar X エンジン。アップした写真（9:16 または 16:9）をリファレンスとして忠実に保ちながら歌わせる最新世代モデル
-              </span>
-            </button>
-
-            <!-- Model 5: MiniMax H3 Max Lip-Sync -->
-            <button type="button" class="v11b-model-btn" data-model="minimax/h3-max/lip-sync/image-to-video" data-mode="lipsync" data-supports-prompt="false" data-label="MiniMax H3 Max Lip-Sync">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🎤 MiniMax H3 Max Lip-Sync（2026年9月・1080p発音特化リップシンク）</strong>
-                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
-              </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【写真＋楽曲 ➔ 口パク特化】顔の他の部分を動かさず母音・子音の発音に口元を合わせる専用AI（※演出プロンプトは使わず口元のみの同期になります）</span>
-            </button>
-
-            <!-- Model 6 (NEW 2026-10-16 LATEST): Kling 4.0 Image-to-Video (Motion + Audio Merge) -->
-            <button type="button" class="v11b-model-btn" data-model="kling/v4/image-to-video" data-mode="video" data-supports-prompt="true" data-label="Kling 4.0 (2026年10月最新v4・全身＆カメラ演出動画)">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
-                <strong style="font-size: 1.15rem;">🎥 Kling 4.0（2026年10月最新v4・口パクなし全身＆映画カメラ演出動画）</strong>
-                <span class="v11b-model-pill" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">タップで選択</span>
-              </div>
-              <span class="v11b-model-desc" style="font-size: 0.96rem; line-height: 1.45; display: block;">【2026年10月16日最新リリース！】Kling 3.0を超える最新フラッグシップ <strong>Kling 4.0 (`kling/v4/image-to-video`)</strong>。顔の歪みがない最も美しいカメラワーク＆全身ムービーを生成し、あなたの楽曲を合成します</span>
-            </button>
           </div>
 
           <!-- B. 動画そのまま口元リップシンク用AIモデル群（動画パターン①/A） -->
